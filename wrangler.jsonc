@@ -14,7 +14,7 @@
 		"not_found_handling": "single-page-application",
 		// Let the Worker handle /api/*; assets handle the SPA.
 		"binding": "ASSETS",
-		// /api/* → Worker; well-known files get correct Content-Type via Worker
+		// Force Worker for API + deep-link metadata (avoid SPA rewrite of AASA)
 		"run_worker_first": ["/api/*", "/.well-known/*"]
 	},
 	"d1_databases": [

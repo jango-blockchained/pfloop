@@ -69,43 +69,67 @@ app.route("/api/reservations", reservationsRoutes);
 
 /**
  * Digital Asset Links (Android) + Apple App Site Association (iOS Universal Links).
- * Served by the Worker so Content-Type is correct (assets often mis-type extensionless files).
+ * Inline JSON (not ASSETS) so SPA not_found_handling cannot rewrite extensionless
+ * AASA to index.html. Keep in sync with public/.well-known/* sources of truth.
  * Replace TEAMID in AASA after you have an Apple Developer Team ID.
  */
-app.get("/.well-known/assetlinks.json", async (c) => {
-	const res = await c.env.ASSETS.fetch(
-		new Request(new URL("/.well-known/assetlinks.json", c.req.url)),
-	);
-	if (!res.ok) {
-		return c.json({ error: "assetlinks nicht gefunden" }, 404);
-	}
-	const body = await res.text();
-	return new Response(body, {
-		headers: {
-			"Content-Type": "application/json; charset=utf-8",
-			"Cache-Control": "public, max-age=300",
+const ASSETLINKS_JSON = JSON.stringify(
+	[
+		{
+			relation: ["delegate_permission/common.handle_all_urls"],
+			target: {
+				namespace: "android_app",
+				package_name: "dev.cryptolinx.grabme",
+				sha256_cert_fingerprints: [
+					"88:5A:C1:BD:3B:D9:89:EB:61:18:DB:95:EB:AC:C7:2D:31:02:09:70:41:1B:05:C3:3F:13:2F:6E:C1:FB:88:0F",
+				],
+			},
 		},
-	});
-});
+	],
+	null,
+	2,
+);
 
-app.get("/.well-known/apple-app-site-association", async (c) => {
-	const res = await c.env.ASSETS.fetch(
-		new Request(
-			new URL("/.well-known/apple-app-site-association", c.req.url),
-		),
-	);
-	if (!res.ok) {
-		return c.json({ error: "AASA nicht gefunden" }, 404);
-	}
-	const body = await res.text();
+const APPLE_APP_SITE_ASSOCIATION = JSON.stringify(
+	{
+		applinks: {
+			apps: [],
+			details: [
+				{
+					appIDs: ["TEAMID.dev.cryptolinx.grabme"],
+					components: [
+						{ "/": "/auth/*", comment: "Magic-link verify" },
+						{ "/": "/angebot/*", comment: "Offer detail" },
+						{ "/": "/*", comment: "All app paths" },
+					],
+				},
+			],
+		},
+		webcredentials: {
+			apps: ["TEAMID.dev.cryptolinx.grabme"],
+		},
+	},
+	null,
+	2,
+);
+
+function wellKnownJson(body: string): Response {
 	return new Response(body, {
 		headers: {
-			// Apple accepts application/json
 			"Content-Type": "application/json; charset=utf-8",
 			"Cache-Control": "public, max-age=300",
 		},
 	});
-});
+}
+
+app.get("/.well-known/assetlinks.json", () => wellKnownJson(ASSETLINKS_JSON));
+app.get("/.well-known/apple-app-site-association", () =>
+	wellKnownJson(APPLE_APP_SITE_ASSOCIATION),
+);
+// Some clients probe the .json suffix
+app.get("/.well-known/apple-app-site-association.json", () =>
+	wellKnownJson(APPLE_APP_SITE_ASSOCIATION),
+);
 
 export default {
 	fetch: app.fetch,
