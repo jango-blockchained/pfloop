@@ -76,3 +76,72 @@ export function insertItemStatements(
 			),
 	);
 }
+
+export async function loadRecurringOfferItems(
+	db: D1Database,
+	recurringOfferId: string,
+): Promise<OfferItemRow[]> {
+	const { results } = await db
+		.prepare(
+			`SELECT item_type, quantity, unit_cents, line_cents
+			 FROM recurring_offer_items WHERE recurring_offer_id = ?
+			 ORDER BY rowid`,
+		)
+		.bind(recurringOfferId)
+		.all<OfferItemRow>();
+	return results ?? [];
+}
+
+export async function loadRecurringOfferItemsForMany(
+	db: D1Database,
+	ids: string[],
+): Promise<Map<string, OfferItemRow[]>> {
+	const map = new Map<string, OfferItemRow[]>();
+	if (ids.length === 0) return map;
+
+	const placeholders = ids.map(() => "?").join(",");
+	const { results } = await db
+		.prepare(
+			`SELECT recurring_offer_id, item_type, quantity, unit_cents, line_cents
+			 FROM recurring_offer_items
+			 WHERE recurring_offer_id IN (${placeholders})
+			 ORDER BY rowid`,
+		)
+		.bind(...ids)
+		.all<OfferItemRow & { recurring_offer_id: string }>();
+
+	for (const row of results ?? []) {
+		const list = map.get(row.recurring_offer_id) ?? [];
+		list.push({
+			item_type: row.item_type,
+			quantity: row.quantity,
+			unit_cents: row.unit_cents,
+			line_cents: row.line_cents,
+		});
+		map.set(row.recurring_offer_id, list);
+	}
+	return map;
+}
+
+export function insertRecurringItemStatements(
+	db: D1Database,
+	recurringOfferId: string,
+	lines: PfandLineComputed[],
+): D1PreparedStatement[] {
+	return lines.map((line) =>
+		db
+			.prepare(
+				`INSERT INTO recurring_offer_items (
+					id, recurring_offer_id, item_type, quantity, unit_cents, line_cents
+				) VALUES (?, ?, ?, ?, ?, ?)`,
+			)
+			.bind(
+				crypto.randomUUID(),
+				recurringOfferId,
+				line.type,
+				line.quantity,
+				line.unit_cents,
+				line.line_cents,
+			),
+	);
+}

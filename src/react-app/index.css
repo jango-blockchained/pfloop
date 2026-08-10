@@ -1464,6 +1464,66 @@ code {
 	color: var(--brand);
 }
 
+/* —— Create offer mode toggle —— */
+.mode-toggle {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.5rem;
+}
+
+.mode-option {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	padding: 0.75rem;
+	border: 1px solid var(--border);
+	border-radius: 0.75rem;
+	background: var(--panel, #fff);
+	cursor: pointer;
+	font: inherit;
+}
+
+.mode-option input {
+	margin-top: 0.2rem;
+}
+
+.mode-option span {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	min-width: 0;
+}
+
+.mode-option.active {
+	border-color: var(--brand);
+	background: var(--brand-soft, #ecfdf5);
+	box-shadow: 0 0 0 1px var(--brand);
+}
+
+.map-marker-recurring {
+	background: transparent !important;
+	border: 0 !important;
+}
+
+.map-marker-recurring-inner {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 50% 50% 50% 0;
+	transform: rotate(-45deg);
+	background: #0f766e;
+	color: #fff;
+	font-size: 0.95rem;
+	font-weight: 700;
+	box-shadow: 0 2px 8px rgba(15, 23, 42, 0.35);
+}
+
+.map-marker-recurring-inner::after {
+	/* icon glyph is already rotated parent — un-rotate text via child not needed */
+	content: none;
+}
+
 /* —— Forms: sections & field errors —— */
 .form-section {
 	display: flex;

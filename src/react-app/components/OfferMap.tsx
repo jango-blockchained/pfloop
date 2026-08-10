@@ -19,8 +19,13 @@ import {
 	type FormEvent,
 	type KeyboardEvent,
 } from "react";
-import { centsToEuro, type PublicOffer } from "../lib/api";
+import {
+	centsToEuro,
+	type PublicOffer,
+	type PublicRecurringOffer,
+} from "../lib/api";
 import { formatItemsShort } from "../lib/pfand-ui";
+import { weekdayLabel } from "../lib/labels";
 import { searchAddress, type GeocodeResult } from "../lib/geocode";
 import { DEFAULT_MAP_CENTER } from "../hooks/useGeolocation";
 
@@ -47,6 +52,8 @@ export type MapFlyTarget = {
 
 type Props = {
 	offers: PublicOffer[];
+	/** Optional weekly recurring pins (open only). */
+	recurringOffers?: PublicRecurringOffer[];
 	center?: [number, number];
 	/** Fly once when initial center is ready (e.g. first geolocation). */
 	followCenterOnce?: boolean;
@@ -71,6 +78,14 @@ type Props = {
 	}) => void;
 	className?: string;
 };
+
+const recurringIcon = L.divIcon({
+	className: "map-marker-recurring",
+	html: `<span class="map-marker-recurring-inner" title="Wöchentlich">↻</span>`,
+	iconSize: [28, 28],
+	iconAnchor: [14, 28],
+	popupAnchor: [0, -24],
+});
 
 function BoundsWatcher({
 	onBoundsChange,
@@ -168,6 +183,38 @@ const OfferMarker = memo(function OfferMarker({ offer }: { offer: PublicOffer })
 					)}
 					<Link className="map-popup-link" to={`/angebot/${offer.id}`}>
 						Details & annehmen
+					</Link>
+				</div>
+			</Popup>
+		</Marker>
+	);
+});
+
+const RecurringMarker = memo(function RecurringMarker({
+	offer,
+}: {
+	offer: PublicRecurringOffer;
+}) {
+	const items = formatItemsShort(offer.items);
+	const title = offer.title?.trim() || items || "Wöchentliches Pfand";
+	const pfand = centsToEuro(offer.pfand_value_cents);
+	const day = weekdayLabel(offer.weekday);
+
+	return (
+		<Marker position={[offer.lat, offer.lng]} icon={recurringIcon}>
+			<Popup>
+				<div className="map-popup">
+					<div className="map-popup-value">{pfand} € · wöchentlich</div>
+					<strong className="map-popup-title">{title}</strong>
+					<div className="map-popup-items muted small">
+						{day}
+						{offer.time_hint ? ` · ${offer.time_hint}` : ""}
+					</div>
+					{offer.address_hint ? (
+						<div className="map-popup-hint muted small">{offer.address_hint}</div>
+					) : null}
+					<Link className="map-popup-link" to={`/woche/${offer.id}`}>
+						Details & bewerben
 					</Link>
 				</div>
 			</Popup>
@@ -426,6 +473,7 @@ const DEFAULT_CENTER = DEFAULT_MAP_CENTER;
 
 export function OfferMap({
 	offers,
+	recurringOffers = [],
 	center = DEFAULT_CENTER,
 	followCenterOnce = false,
 	flyTo = null,
@@ -441,8 +489,13 @@ export function OfferMap({
 	const activeFly = flyTo ?? internalFly;
 
 	const markers = useMemo(
-		() => offers.map((o) => <OfferMarker key={o.id} offer={o} />),
-		[offers],
+		() => [
+			...offers.map((o) => <OfferMarker key={`o-${o.id}`} offer={o} />),
+			...recurringOffers.map((o) => (
+				<RecurringMarker key={`r-${o.id}`} offer={o} />
+			)),
+		],
+		[offers, recurringOffers],
 	);
 
 	const onFly = useCallback((t: MapFlyTarget) => {

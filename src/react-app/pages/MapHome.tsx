@@ -6,15 +6,27 @@ import {
 	collectOffer,
 	confirmOffer,
 	fetchMyOffers,
+	fetchMyRecurringApplications,
+	fetchMyRecurringOffers,
 	fetchMyReservations,
 	fetchOffersInBbox,
+	fetchRecurringInBbox,
+	type MyRecurringApplication,
 	type OwnOffer,
+	type OwnRecurringOffer,
 	type PublicOffer,
+	type PublicRecurringOffer,
 	type ReservationRow,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
 import { formatCountdown } from "../lib/format";
-import { offerStatusClass, offerStatusLabel } from "../lib/labels";
+import {
+	offerStatusClass,
+	offerStatusLabel,
+	recurringAppStatusLabel,
+	recurringStatusLabel,
+	weekdayLabel,
+} from "../lib/labels";
 import { formatItemsShort } from "../lib/pfand-ui";
 import { useGeolocation } from "../hooks/useGeolocation";
 
@@ -40,7 +52,12 @@ export function MapHome() {
 	const { user, loading: authLoading } = useAuth();
 	const { center, ready: geoReady, error: geoError } = useGeolocation();
 	const [offers, setOffers] = useState<PublicOffer[]>([]);
+	const [recurring, setRecurring] = useState<PublicRecurringOffer[]>([]);
 	const [mine, setMine] = useState<OwnOffer[]>([]);
+	const [mineRecurring, setMineRecurring] = useState<OwnRecurringOffer[]>([]);
+	const [myRecurringApps, setMyRecurringApps] = useState<
+		MyRecurringApplication[]
+	>([]);
 	const [reservations, setReservations] = useState<ReservationRow[]>([]);
 	const [error, setError] = useState<string | null>(null);
 	const [mapLoading, setMapLoading] = useState(false);
@@ -75,18 +92,24 @@ export function MapHome() {
 	const loadSide = useCallback(async () => {
 		if (!user) {
 			setMine([]);
+			setMineRecurring([]);
+			setMyRecurringApps([]);
 			setReservations([]);
 			setSideLoading(false);
 			return;
 		}
 		setSideLoading(true);
 		try {
-			const [m, r] = await Promise.all([
+			const [m, r, mr, ma] = await Promise.all([
 				fetchMyOffers(),
 				fetchMyReservations(),
+				fetchMyRecurringOffers(),
+				fetchMyRecurringApplications(),
 			]);
 			setMine(m.offers);
 			setReservations(r.reservations);
+			setMineRecurring(mr.offers);
+			setMyRecurringApps(ma.applications);
 		} catch (e) {
 			console.warn(e);
 		} finally {
@@ -106,10 +129,13 @@ export function MapHome() {
 		lastFetchedBboxRef.current = bbox;
 		setMapLoading(true);
 		try {
-			// fetchOffersInBbox has no signal; guard with generation counter
-			const data = await fetchOffersInBbox(bbox);
+			const [data, rec] = await Promise.all([
+				fetchOffersInBbox(bbox),
+				fetchRecurringInBbox(bbox),
+			]);
 			if (ac.signal.aborted || gen !== fetchGenRef.current) return;
 			setOffers(data.offers);
+			setRecurring(rec.offers);
 			setError(null);
 			setMapLoadedOnce(true);
 		} catch (e) {
@@ -191,11 +217,13 @@ export function MapHome() {
 	);
 
 	const openCount = offers.length;
+	const recurringCount = recurring.length;
 	const summaryBits = [
 		mapLoading && !mapLoadedOnce
 			? "Lade Angebote…"
-			: `${openCount} offen in Sicht`,
-		user ? `${mine.length} eigene` : null,
+			: `${openCount + recurringCount} offen in Sicht`,
+		recurringCount ? `${recurringCount} wöchentlich` : null,
+		user ? `${mine.length + mineRecurring.length} eigene` : null,
 		unfinishedReservations.length
 			? `${unfinishedReservations.length} Abholung offen`
 			: null,
@@ -210,6 +238,7 @@ export function MapHome() {
 				{geoReady && (
 					<OfferMap
 						offers={offers}
+						recurringOffers={recurring}
 						center={center}
 						followCenterOnce
 						showControls
@@ -264,7 +293,10 @@ export function MapHome() {
 						<div className="panel-head">
 							<h2>In der Nähe</h2>
 							{mapLoadedOnce && (
-								<span className="muted small">{openCount} offen</span>
+								<span className="muted small">
+									{openCount} einmalig
+									{recurringCount ? ` · ${recurringCount} wöchentlich` : ""}
+								</span>
 							)}
 						</div>
 						{!mapLoadedOnce && mapLoading && (
@@ -272,7 +304,10 @@ export function MapHome() {
 								Lade offene Angebote auf der Karte…
 							</p>
 						)}
-						{mapLoadedOnce && openCount === 0 && !mapLoading && (
+						{mapLoadedOnce &&
+							openCount === 0 &&
+							recurringCount === 0 &&
+							!mapLoading && (
 							<div className="empty-state">
 								<p className="muted">
 									Keine offenen Angebote im sichtbaren Kartenbereich.
@@ -291,9 +326,9 @@ export function MapHome() {
 								)}
 							</div>
 						)}
-						{openCount > 0 && (
+						{(openCount > 0 || recurringCount > 0) && (
 							<ul className="list">
-								{offers.slice(0, 8).map((o) => {
+								{offers.slice(0, 6).map((o) => {
 									const items = formatItemsShort(o.items);
 									return (
 										<li key={o.id} className="list-item">
@@ -314,12 +349,30 @@ export function MapHome() {
 										</li>
 									);
 								})}
+								{recurring.slice(0, 6).map((o) => {
+									const items = formatItemsShort(o.items);
+									return (
+										<li key={`r-${o.id}`} className="list-item">
+											<div>
+												<Link to={`/woche/${o.id}`}>
+													<strong>
+														↻ {o.title?.trim() || items || "Wöchentlich"}
+													</strong>
+												</Link>
+												<span className="list-pfand">
+													{centsToEuro(o.pfand_value_cents)} €
+												</span>
+											</div>
+											<div className="meta">
+												{weekdayLabel(o.weekday)}
+												{o.time_hint ? ` · ${o.time_hint}` : ""}
+												{" · "}
+												{o.address_hint || "Ungefähre Lage"}
+											</div>
+										</li>
+									);
+								})}
 							</ul>
-						)}
-						{openCount > 8 && (
-							<p className="muted small">
-								+{openCount - 8} weitere auf der Karte — zoomen für Details
-							</p>
 						)}
 					</div>
 
@@ -337,12 +390,18 @@ export function MapHome() {
 								</p>
 							</div>
 						)}
-						{user && sideLoading && mine.length === 0 && (
+						{user &&
+							sideLoading &&
+							mine.length === 0 &&
+							mineRecurring.length === 0 && (
 							<p className="muted" role="status">
 								Lade deine Angebote…
 							</p>
 						)}
-						{user && !sideLoading && mine.length === 0 && (
+						{user &&
+							!sideLoading &&
+							mine.length === 0 &&
+							mineRecurring.length === 0 && (
 							<div className="empty-state">
 								<p className="muted">Noch keine eigenen Angebote.</p>
 								<Link className="btn btn-primary btn-sm" to="/neu">
@@ -391,8 +450,64 @@ export function MapHome() {
 									</li>
 								);
 							})}
+							{mineRecurring.map((o) => (
+								<li key={`mr-${o.id}`} className="list-item">
+									<div>
+										<Link to={`/woche/${o.id}`}>
+											<strong>
+												↻ {o.title?.trim() || "Wöchentlich"}
+											</strong>
+										</Link>
+										<span className={offerStatusClass(o.status)}>
+											{recurringStatusLabel(o.status)}
+										</span>
+									</div>
+									<div className="meta">
+										<span className="list-pfand-inline">
+											{centsToEuro(o.pfand_value_cents)} €
+										</span>
+										{" · "}
+										{weekdayLabel(o.weekday)}
+										{o.pending_applications > 0
+											? ` · ${o.pending_applications} Bewerbung(en)`
+											: ""}
+										{o.assigned_display_name
+											? ` · ${o.assigned_display_name}`
+											: ""}
+									</div>
+								</li>
+							))}
 						</ul>
 					</div>
+
+					{user && myRecurringApps.length > 0 && (
+						<div className="panel-block">
+							<div className="panel-head">
+								<h2>Meine Bewerbungen (wöchentlich)</h2>
+							</div>
+							<ul className="list">
+								{myRecurringApps.map((a) => (
+									<li key={a.application_id} className="list-item">
+										<div>
+											<Link to={`/woche/${a.offer_id}`}>
+												<strong>{a.title}</strong>
+											</Link>
+											<span className={offerStatusClass(a.application_status)}>
+												{recurringAppStatusLabel(a.application_status)}
+											</span>
+										</div>
+										<div className="meta">
+											{centsToEuro(a.pfand_value_cents)} € ·{" "}
+											{weekdayLabel(a.weekday)}
+											{a.is_assigned && a.address_text
+												? ` · ${a.address_text}`
+												: ` · ${a.address_hint}`}
+										</div>
+									</li>
+								))}
+							</ul>
+						</div>
+					)}
 
 					<div className="panel-block">
 						<div className="panel-head">

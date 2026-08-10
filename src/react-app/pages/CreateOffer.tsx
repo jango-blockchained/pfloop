@@ -5,8 +5,14 @@ import {
 	emptyQuantities,
 	PfandQuantityForm,
 } from "../components/PfandQuantityForm";
-import { createOffer, getErrorMessage } from "../lib/api";
+import {
+	createOffer,
+	createRecurringOffer,
+	getErrorMessage,
+	type Weekday,
+} from "../lib/api";
 import { useAuth } from "../lib/auth-context";
+import { weekdayLabel } from "../lib/labels";
 import {
 	MIN_PFAND_CENTS,
 	centsUntilMinimum,
@@ -15,13 +21,18 @@ import {
 } from "../lib/pfand-ui";
 import { centsToEuroDe } from "../../shared/pfand";
 
+const WEEKDAYS: Weekday[] = [1, 2, 3, 4, 5, 6, 7];
+
 export function CreateOffer() {
 	const navigate = useNavigate();
 	const { user, loading } = useAuth();
+	const [mode, setMode] = useState<"once" | "recurring">("once");
 	const [note, setNote] = useState("");
 	const [quantities, setQuantities] = useState(emptyQuantities);
 	const [addressText, setAddressText] = useState("");
 	const [addressHint, setAddressHint] = useState("");
+	const [weekday, setWeekday] = useState<Weekday>(1);
+	const [timeHint, setTimeHint] = useState("");
 	const [pick, setPick] = useState<[number, number] | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
@@ -80,7 +91,11 @@ export function CreateOffer() {
 			return;
 		}
 		if (missingAddress) {
-			setError("Bitte die volle Adresse angeben (nur nach Annahme sichtbar).");
+			setError(
+				mode === "recurring"
+					? "Bitte die volle Adresse angeben (nur für den gewählten Abholer sichtbar)."
+					: "Bitte die volle Adresse angeben (nur nach Annahme sichtbar).",
+			);
 			return;
 		}
 		if (!pick) {
@@ -90,15 +105,29 @@ export function CreateOffer() {
 
 		setSaving(true);
 		try {
-			const { id } = await createOffer({
-				items,
-				note: note.trim() || undefined,
-				lat: pick[0],
-				lng: pick[1],
-				address_hint: addressHint.trim() || "—",
-				address_text: addressText.trim(),
-			});
-			navigate(`/angebot/${id}`);
+			if (mode === "recurring") {
+				const { id } = await createRecurringOffer({
+					items,
+					note: note.trim() || undefined,
+					lat: pick[0],
+					lng: pick[1],
+					address_hint: addressHint.trim() || "—",
+					address_text: addressText.trim(),
+					weekday,
+					time_hint: timeHint.trim() || undefined,
+				});
+				navigate(`/woche/${id}`);
+			} else {
+				const { id } = await createOffer({
+					items,
+					note: note.trim() || undefined,
+					lat: pick[0],
+					lng: pick[1],
+					address_hint: addressHint.trim() || "—",
+					address_text: addressText.trim(),
+				});
+				navigate(`/angebot/${id}`);
+			}
 		} catch (err) {
 			setError(getErrorMessage(err, "Speichern fehlgeschlagen"));
 		} finally {
@@ -131,11 +160,54 @@ export function CreateOffer() {
 			<h1>Angebot erstellen</h1>
 			<p className="muted">
 				Stückzahlen nach deutschem Pfandsystem (mind.{" "}
-				{centsToEuroDe(MIN_PFAND_CENTS)} €). Die exakte Adresse bleibt privat,
-				bis jemand annimmt — dann hat der Abholer 6 Stunden Zeit.
+				{centsToEuroDe(MIN_PFAND_CENTS)} €). Adresse bleibt privat, bis jemand
+				annimmt bzw. als wöchentlicher Abholer gewählt wird.
 			</p>
 
 			<form className="form" onSubmit={onSubmit} noValidate>
+				<section className="form-section">
+					<h2 className="form-section-title">Art des Angebots</h2>
+					<div className="mode-toggle" role="radiogroup" aria-label="Angebotsart">
+						<label className={`mode-option ${mode === "once" ? "active" : ""}`}>
+							<input
+								type="radio"
+								name="offer-mode"
+								checked={mode === "once"}
+								onChange={() => setMode("once")}
+							/>
+							<span>
+								<strong>Einmalig</strong>
+								<span className="muted small">
+									Abholer nimmt an → 6h-Fenster
+								</span>
+							</span>
+						</label>
+						<label
+							className={`mode-option ${mode === "recurring" ? "active" : ""}`}
+						>
+							<input
+								type="radio"
+								name="offer-mode"
+								checked={mode === "recurring"}
+								onChange={() => setMode("recurring")}
+							/>
+							<span>
+								<strong>Wöchentlich</strong>
+								<span className="muted small">
+									Bis 2 Stück · Bewerben → du wählst
+								</span>
+							</span>
+						</label>
+					</div>
+					{mode === "recurring" && (
+						<div className="banner info handover-hint">
+							<strong>Wiederkehrend:</strong> Andere melden sich. Du wählst
+							einen Abholer — danach ist das Angebot unsichtbar, bis du den
+							Abholer wieder freigibst. Max. 2 aktive wöchentliche Angebote.
+						</div>
+					)}
+				</section>
+
 				<section className="form-section">
 					<h2 className="form-section-title">1. Pfand-Stückliste</h2>
 					<PfandQuantityForm
@@ -156,8 +228,40 @@ export function CreateOffer() {
 					)}
 				</section>
 
+				{mode === "recurring" && (
+					<section className="form-section">
+						<h2 className="form-section-title">Wochentag & Zeit</h2>
+						<label>
+							Wochentag
+							<select
+								value={weekday}
+								onChange={(e) =>
+									setWeekday(Number(e.target.value) as Weekday)
+								}
+							>
+								{WEEKDAYS.map((d) => (
+									<option key={d} value={d}>
+										{weekdayLabel(d)}
+									</option>
+								))}
+							</select>
+						</label>
+						<label>
+							Zeit-Hinweis (optional)
+							<input
+								value={timeHint}
+								onChange={(e) => setTimeHint(e.target.value)}
+								placeholder="z. B. ab 18 Uhr, vormittags…"
+								maxLength={80}
+							/>
+						</label>
+					</section>
+				)}
+
 				<section className="form-section">
-					<h2 className="form-section-title">2. Hinweise & Adresse</h2>
+					<h2 className="form-section-title">
+						{mode === "recurring" ? "Hinweise & Adresse" : "2. Hinweise & Adresse"}
+					</h2>
 					<label>
 						Hinweis für Abholer (optional)
 						<textarea
@@ -167,14 +271,12 @@ export function CreateOffer() {
 							placeholder="z. B. im Hof, klingeln bei Müller…"
 							maxLength={500}
 						/>
-						<span className="muted small">
-							Sichtbar für alle — keine Hausnummer nötig, wenn sie in der
-							privaten Adresse steht.
-						</span>
 					</label>
 
 					<label>
-						Volle Adresse (privat bis zur Annahme)
+						{mode === "recurring"
+							? "Volle Adresse (nur gewählter Abholer)"
+							: "Volle Adresse (privat bis zur Annahme)"}
 						<input
 							value={addressText}
 							onChange={(e) => setAddressText(e.target.value)}
@@ -183,9 +285,6 @@ export function CreateOffer() {
 							autoComplete="street-address"
 							aria-invalid={attempted && missingAddress}
 						/>
-						<span className="muted small">
-							Nur für den Abholer nach Annahme sichtbar.
-						</span>
 						{attempted && missingAddress && (
 							<span className="field-error">Adresse angeben.</span>
 						)}
@@ -198,14 +297,11 @@ export function CreateOffer() {
 							placeholder="Berlin-Mitte"
 							autoComplete="address-level2"
 						/>
-						<span className="muted small">
-							Auf der Karte sichtbar, ohne genaue Straße.
-						</span>
 					</label>
 				</section>
 
 				<section className="form-section">
-					<h2 className="form-section-title">3. Standort auf der Karte</h2>
+					<h2 className="form-section-title">Standort auf der Karte</h2>
 					<div className="form-map">
 						<p className="label">
 							Adresse suchen, Karte tippen oder ◎ für deinen Standort
@@ -237,14 +333,12 @@ export function CreateOffer() {
 						) : (
 							<p
 								className={
-									attempted && missingPin
-										? "banner error"
-										: "muted small"
+									attempted && missingPin ? "banner error" : "muted small"
 								}
 							>
 								{attempted && missingPin
 									? "Bitte einen Punkt auf der Karte setzen."
-									: "Noch kein Kartenpunkt — Abholer brauchen ungefähren Standort."}
+									: "Noch kein Kartenpunkt."}
 							</p>
 						)}
 					</div>
@@ -260,8 +354,10 @@ export function CreateOffer() {
 						title={publishBlockedReason ?? undefined}
 					>
 						{saving
-							? "Veröffentliche Angebot…"
-							: `Angebot veröffentlichen (${centsToEuroDe(totalCents)} €)`}
+							? "Veröffentliche…"
+							: mode === "recurring"
+								? `Wöchentlich veröffentlichen (${centsToEuroDe(totalCents)} € · ${weekdayLabel(weekday)})`
+								: `Angebot veröffentlichen (${centsToEuroDe(totalCents)} €)`}
 					</button>
 					{!canPublish && !saving && (
 						<p className="muted small publish-hint">{publishBlockedReason}</p>

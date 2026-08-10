@@ -6,7 +6,40 @@ const OFFER: Record<string, string> = {
 	collected: "Abgeholt — wartet auf Bestätigung",
 	completed: "Erledigt",
 	cancelled: "Storniert",
+	assigned: "Abholer zugewiesen",
 };
+
+const WEEKDAY_LABELS: Record<number, string> = {
+	1: "Montag",
+	2: "Dienstag",
+	3: "Mittwoch",
+	4: "Donnerstag",
+	5: "Freitag",
+	6: "Samstag",
+	7: "Sonntag",
+};
+
+const RECURRING_APP: Record<string, string> = {
+	pending: "Beworben",
+	selected: "Ausgewählt",
+	rejected: "Abgelehnt",
+	withdrawn: "Zurückgezogen",
+};
+
+export function weekdayLabel(weekday: number): string {
+	return WEEKDAY_LABELS[weekday] ?? `Tag ${weekday}`;
+}
+
+export function recurringAppStatusLabel(status: string): string {
+	return RECURRING_APP[status] ?? status;
+}
+
+export function recurringStatusLabel(status: string): string {
+	if (status === "open") return "Sucht Abholer";
+	if (status === "assigned") return "Abholer zugewiesen";
+	if (status === "cancelled") return "Storniert";
+	return OFFER[status] ?? status;
+}
 
 const RESERVATION: Record<string, string> = {
 	active: "Unterwegs (6h-Fenster)",
@@ -39,6 +72,7 @@ export function offerStatusHint(status: string): string {
 export function offerStatusClass(status: string): string {
 	if (status === "reserved") return "badge badge-warn";
 	if (status === "collected") return "badge badge-warn";
+	if (status === "assigned") return "badge badge-warn";
 	if (status === "completed") return "badge badge-ok";
 	if (status === "cancelled") return "badge badge-muted";
 	return "badge";

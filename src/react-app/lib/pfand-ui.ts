@@ -7,7 +7,8 @@ import {
 	type PfandLineComputed,
 } from "../../shared/pfand";
 
-export const MIN_PFAND_CENTS = 500;
+/** Keep in sync with worker MIN_PFAND_CENTS (€3.00). */
+export const MIN_PFAND_CENTS = 300;
 
 export type QtyMap = Record<PfandItemType, number>;
 

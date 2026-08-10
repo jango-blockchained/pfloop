@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { offersRoutes } from "./routes/offers";
 import { reservationsRoutes } from "./routes/reservations";
+import { recurringRoutes } from "./routes/recurring";
 import { authRoutes } from "./routes/auth";
 import { releaseExpiredReservations } from "./cron";
 import { resolveSessionUser } from "./lib/auth";
@@ -11,6 +12,7 @@ import {
 	MAX_UNFINISHED_RESERVATIONS_PER_USER,
 	MAX_MAP_OFFERS,
 	MAX_BBOX_SPAN_DEG,
+	MAX_RECURRING_OFFERS_PER_USER,
 } from "./lib/constants";
 import { jsonInternalError } from "./lib/http";
 
@@ -55,10 +57,13 @@ app.get("/api/health", (c) =>
 			max_unfinished_reservations: MAX_UNFINISHED_RESERVATIONS_PER_USER,
 			max_map_offers: MAX_MAP_OFFERS,
 			max_bbox_span_deg: MAX_BBOX_SPAN_DEG,
+			max_recurring_offers_per_user: MAX_RECURRING_OFFERS_PER_USER,
 			address_privacy: "full_address_after_accept_only",
 			on_deadline_miss: "reopen_offer",
 			handover:
 				"collector_marks_collected_then_poster_confirms; unfinished blocks new accept",
+			recurring:
+				"apply_then_poster_selects; assigned_hidden_until_unassign; min_same_as_one_shot",
 		},
 	}),
 );
@@ -66,6 +71,7 @@ app.get("/api/health", (c) =>
 app.route("/api/auth", authRoutes);
 app.route("/api/offers", offersRoutes);
 app.route("/api/reservations", reservationsRoutes);
+app.route("/api/recurring", recurringRoutes);
 
 /**
  * Digital Asset Links (Android) + Apple App Site Association (iOS Universal Links).

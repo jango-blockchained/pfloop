@@ -23,6 +23,78 @@ export type OwnOffer = PublicOffer & {
 	updated_at: string;
 };
 
+/** ISO weekday 1=Mon … 7=Sun */
+export type Weekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export type PublicRecurringOffer = {
+	id: string;
+	kind: "recurring";
+	title: string;
+	description: string;
+	pfand_value_cents: number;
+	status: string;
+	lat: number;
+	lng: number;
+	address_hint: string;
+	weekday: number;
+	time_hint: string;
+	created_at: string;
+	items?: OfferItem[];
+};
+
+export type OwnRecurringOffer = PublicRecurringOffer & {
+	address_text: string;
+	updated_at: string;
+	assigned_collector_id: string | null;
+	assigned_at: string | null;
+	pending_applications: number;
+	assigned_display_name: string | null;
+};
+
+export type RecurringApplication = {
+	id: string;
+	applicant_id: string;
+	display_name: string;
+	email: string;
+	message: string;
+	status: string;
+	created_at: string;
+};
+
+export type RecurringDetail = PublicRecurringOffer & {
+	updated_at?: string;
+	is_own: boolean;
+	is_assigned_collector?: boolean;
+	assigned_collector_id?: string | null;
+	address_text: string | null;
+	items: OfferItem[];
+	my_application: {
+		id: string;
+		status: string;
+		message: string;
+		created_at: string;
+	} | null;
+	applications?: RecurringApplication[];
+};
+
+export type MyRecurringApplication = {
+	application_id: string;
+	application_status: string;
+	message: string;
+	applied_at: string;
+	offer_id: string;
+	title: string;
+	pfand_value_cents: number;
+	offer_status: string;
+	weekday: number;
+	time_hint: string;
+	address_hint: string;
+	lat: number;
+	lng: number;
+	is_assigned: boolean;
+	address_text: string | null;
+};
+
 export type OfferDetail = PublicOffer & {
 	updated_at?: string;
 	is_own: boolean;
@@ -243,5 +315,118 @@ export async function confirmOffer(id: string) {
 export async function cancelOffer(id: string) {
 	return json<{ ok: boolean }>(
 		await apiFetch(`/api/offers/${id}/cancel`, { method: "POST" }),
+	);
+}
+
+// ── Recurring weekly offers ─────────────────────────────────────────
+
+export async function fetchRecurringInBbox(bbox: {
+	south: number;
+	west: number;
+	north: number;
+	east: number;
+}) {
+	const q = new URLSearchParams({
+		south: String(bbox.south),
+		west: String(bbox.west),
+		north: String(bbox.north),
+		east: String(bbox.east),
+	});
+	return json<{
+		offers: PublicRecurringOffer[];
+		min_pfand_cents: number;
+		max_per_user: number;
+	}>(await apiFetch(`/api/recurring?${q}`, { method: "GET" }));
+}
+
+export async function fetchMyRecurringOffers() {
+	return json<{
+		offers: OwnRecurringOffer[];
+		max_per_user: number;
+	}>(await apiFetch("/api/recurring/mine"));
+}
+
+export async function fetchMyRecurringApplications() {
+	return json<{ applications: MyRecurringApplication[] }>(
+		await apiFetch("/api/recurring/applications/mine"),
+	);
+}
+
+export async function fetchRecurringOffer(id: string) {
+	return json<{ offer: RecurringDetail }>(
+		await apiFetch(`/api/recurring/${id}`),
+	);
+}
+
+export async function createRecurringOffer(body: {
+	items: Array<{ type: string; quantity: number }>;
+	note?: string;
+	title?: string;
+	lat: number;
+	lng: number;
+	address_hint: string;
+	address_text: string;
+	weekday: Weekday;
+	time_hint?: string;
+}) {
+	return json<{
+		id: string;
+		pfand_value_cents: number;
+		weekday: number;
+		items: Array<{
+			type: string;
+			quantity: number;
+			unit_cents: number;
+			line_cents: number;
+			label: string;
+		}>;
+	}>(
+		await apiFetch("/api/recurring", {
+			method: "POST",
+			body: JSON.stringify(body),
+		}),
+	);
+}
+
+export async function applyToRecurring(id: string, message?: string) {
+	return json<{ ok: boolean; application_id: string; status: string }>(
+		await apiFetch(`/api/recurring/${id}/apply`, {
+			method: "POST",
+			body: JSON.stringify({ message: message ?? "" }),
+		}),
+	);
+}
+
+export async function selectRecurringApplicant(
+	id: string,
+	opts: { applicant_id?: string; application_id?: string },
+) {
+	return json<{
+		ok: boolean;
+		status: string;
+		assigned_collector_id: string;
+	}>(
+		await apiFetch(`/api/recurring/${id}/select`, {
+			method: "POST",
+			body: JSON.stringify(opts),
+		}),
+	);
+}
+
+export async function unassignRecurringCollector(id: string) {
+	return json<{ ok: boolean; status: string }>(
+		await apiFetch(`/api/recurring/${id}/unassign`, { method: "POST" }),
+	);
+}
+
+export async function withdrawRecurringApplication(id: string) {
+	return json<{ ok: boolean }>(
+		await apiFetch(`/api/recurring/${id}/withdraw`, { method: "POST" }),
+	);
+}
+
+export async function cancelRecurringOffer(id: string) {
+	return json<{ ok: boolean }>(
+		await apiFetch(`/api/recurring/${id}/cancel`, { method: "POST" }),
 	);
 }

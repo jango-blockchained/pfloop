@@ -1,7 +1,7 @@
 /** Domain rules for GrabMe (Pfand pickup). */
 
-/** Minimum offer value in euro cents (€5.00). */
-export const MIN_PFAND_CENTS = 500;
+/** Minimum offer value in euro cents (€3.00) — one-shot and recurring. */
+export const MIN_PFAND_CENTS = 300;
 
 /** How long a collector has to pick up after accepting (before auto-reopen). */
 export const RESERVATION_HOURS = 6;
@@ -12,6 +12,13 @@ export const RESERVATION_HOURS = 6;
  * Max 1 so the last offer must be finished before the next.
  */
 export const MAX_UNFINISHED_RESERVATIONS_PER_USER = 1;
+
+/** Max active (open or assigned) recurring weekly offers per poster. */
+export const MAX_RECURRING_OFFERS_PER_USER = 2;
+
+/** ISO weekday: 1=Monday … 7=Sunday. */
+export const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7] as const;
+export type Weekday = (typeof WEEKDAYS)[number];
 
 /** Map / list query caps (rate-limit friendly). */
 export const MAX_MAP_OFFERS = 200;
