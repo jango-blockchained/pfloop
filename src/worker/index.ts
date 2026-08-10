@@ -67,6 +67,46 @@ app.route("/api/auth", authRoutes);
 app.route("/api/offers", offersRoutes);
 app.route("/api/reservations", reservationsRoutes);
 
+/**
+ * Digital Asset Links (Android) + Apple App Site Association (iOS Universal Links).
+ * Served by the Worker so Content-Type is correct (assets often mis-type extensionless files).
+ * Replace TEAMID in AASA after you have an Apple Developer Team ID.
+ */
+app.get("/.well-known/assetlinks.json", async (c) => {
+	const res = await c.env.ASSETS.fetch(
+		new Request(new URL("/.well-known/assetlinks.json", c.req.url)),
+	);
+	if (!res.ok) {
+		return c.json({ error: "assetlinks nicht gefunden" }, 404);
+	}
+	const body = await res.text();
+	return new Response(body, {
+		headers: {
+			"Content-Type": "application/json; charset=utf-8",
+			"Cache-Control": "public, max-age=300",
+		},
+	});
+});
+
+app.get("/.well-known/apple-app-site-association", async (c) => {
+	const res = await c.env.ASSETS.fetch(
+		new Request(
+			new URL("/.well-known/apple-app-site-association", c.req.url),
+		),
+	);
+	if (!res.ok) {
+		return c.json({ error: "AASA nicht gefunden" }, 404);
+	}
+	const body = await res.text();
+	return new Response(body, {
+		headers: {
+			// Apple accepts application/json
+			"Content-Type": "application/json; charset=utf-8",
+			"Cache-Control": "public, max-age=300",
+		},
+	});
+});
+
 export default {
 	fetch: app.fetch,
 

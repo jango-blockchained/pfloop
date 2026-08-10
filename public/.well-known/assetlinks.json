@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "dev.cryptolinx.grabme",
+      "sha256_cert_fingerprints": [
+        "88:5A:C1:BD:3B:D9:89:EB:61:18:DB:95:EB:AC:C7:2D:31:02:09:70:41:1B:05:C3:3F:13:2F:6E:C1:FB:88:0F"
+      ]
+    }
+  }
+]

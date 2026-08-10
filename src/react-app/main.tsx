@@ -4,8 +4,10 @@ import { BrowserRouter } from "react-router-dom";
 import { registerSW } from "virtual:pwa-register";
 import "./index.css";
 import App from "./App";
+import { initNativeShell } from "./lib/native";
 
 registerSW({ immediate: true });
+void initNativeShell();
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>

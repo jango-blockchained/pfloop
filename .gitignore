@@ -28,3 +28,31 @@ logs
 
 # Test / coverage
 coverage/
+
+# Android / Capacitor local build junk (keep android/ project itself)
+android/.gradle/
+android/app/build/
+android/build/
+android/captures/
+android/local.properties
+android/*.iml
+android/.idea/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# iOS / Xcode local junk (keep ios/ project itself)
+ios/App/Pods/
+ios/App/App/public/
+ios/DerivedData/
+ios/**/xcuserdata/
+ios/**/*.xcuserstate
+ios/App/App.xcworkspace/xcuserdata/
+*.ipa
+*.dSYM.zip
+*.xcarchive
+
+# keep exports/ folder, ignore built binaries inside
+exports/*
+!exports/.gitkeep

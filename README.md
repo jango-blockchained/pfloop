@@ -94,6 +94,30 @@ wrangler.jsonc        # Worker, D1, Cron, Assets
 - Service Worker cached App-Shell + OSM-Kacheln; `/api/*` immer Network-Only
 - Offline-Banner wenn keine Verbindung
 
+## Android & iOS (Capacitor)
+
+Native App-Shells (`dev.cryptolinx.grabme`) laden standardmäßig die Live-App,
+damit Login-Cookies und API same-origin bleiben.
+
+```bash
+# Android (Linux/Mac + Android SDK)
+npm run android:sync
+npm run android:open    # Android Studio
+npm run android:apk     # → exports/GrabMe-debug.apk
+
+# iOS (macOS + Xcode required to build/run)
+npm run ios:sync
+npm run ios:open        # Xcode
+
+# Both platforms
+npm run cap:sync
+```
+
+| Platform | Docs |
+|----------|------|
+| Android | [docs/ANDROID.md](docs/ANDROID.md) |
+| iOS | [docs/IOS.md](docs/IOS.md) |
+
 ## Roadmap
 
 | Phase | Inhalt |
@@ -102,7 +126,8 @@ wrangler.jsonc        # Worker, D1, Cron, Assets
 | **1** | Magic-Link-Auth, HttpOnly-Sessions |
 | **2** | Annehmen-UI, Countdown, Complete/Cancel |
 | **3** | PWA-Polish, Mobile Sheet, Geolocation |
-| Später | Capacitor (Mobile), Push, Fotos (R2), Bewertungen |
+| **4** | Capacitor Android + iOS shells |
+| Später | Push, Fotos (R2), Bewertungen |
 
 ## Lizenz
 
