@@ -1,0 +1,51 @@
+import { centsToEuro } from "../lib/api";
+import type { OfferItemDto } from "../lib/pfand-ui";
+import { getPfandEntry, isPfandItemType } from "../../shared/pfand";
+
+type Props = {
+	items: OfferItemDto[];
+	/** Optional total to show under the list (defaults to sum of lines). */
+	showTotal?: boolean;
+};
+
+export function PfandItemsList({ items, showTotal = true }: Props) {
+	if (!items.length) {
+		return <p className="muted small">Keine Stückliste hinterlegt.</p>;
+	}
+
+	const totalCents = items.reduce((sum, i) => sum + (i.line_cents || 0), 0);
+
+	return (
+		<div className="pfand-items">
+			<ul className="pfand-breakdown">
+				{items.map((item) => {
+					const label = isPfandItemType(item.item_type)
+						? getPfandEntry(item.item_type).label
+						: item.item_type;
+					return (
+						<li key={`${item.item_type}-${item.quantity}-${item.unit_cents}`}>
+							<span className="pfand-item-main">
+								<strong>
+									{item.quantity}× {label}
+								</strong>
+								<span className="muted small">
+									{" "}
+									à {centsToEuro(item.unit_cents)} €
+								</span>
+							</span>
+							<span className="pfand-item-line">
+								{centsToEuro(item.line_cents)} €
+							</span>
+						</li>
+					);
+				})}
+			</ul>
+			{showTotal && items.length > 1 && (
+				<p className="pfand-items-total muted small">
+					Summe Positionen:{" "}
+					<strong>{centsToEuro(totalCents)} €</strong>
+				</p>
+			)}
+		</div>
+	);
+}

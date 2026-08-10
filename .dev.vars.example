@@ -1,0 +1,6 @@
+# Copy to .dev.vars for local secrets (never commit real values)
+# Without RESEND_API_KEY, magic links are returned in the API JSON (dev mode).
+
+# RESEND_API_KEY=re_xxx
+# APP_URL=http://localhost:5173
+# EMAIL_FROM=GrabMe <onboarding@resend.dev>

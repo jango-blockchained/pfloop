@@ -1,0 +1,41 @@
+{
+	"name": "grabme",
+	"description": "GrabMe — Pfand-Abhol-PWA (Cloudflare Workers + D1)",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"preview": "npm run build && vite preview",
+		"deploy": "npm run build && wrangler deploy",
+		"cf-typegen": "wrangler types",
+		"db:migrate:local": "wrangler d1 migrations apply grabme --local",
+		"db:migrate:remote": "wrangler d1 migrations apply grabme --remote",
+		"check": "tsc -b && vite build && wrangler deploy --dry-run",
+		"lint": "eslint ."
+	},
+	"dependencies": {
+		"hono": "^4.11.1",
+		"leaflet": "^1.9.4",
+		"react": "^19.2.1",
+		"react-dom": "^19.2.1",
+		"react-leaflet": "^5.0.0",
+		"react-router-dom": "^7.9.0"
+	},
+	"devDependencies": {
+		"@cloudflare/vite-plugin": "^1.15.3",
+		"@types/leaflet": "^1.9.20",
+		"@types/node": "^24.10.1",
+		"@types/react": "^19.2.7",
+		"@types/react-dom": "^19.2.3",
+		"@vitejs/plugin-react": "^5.1.1",
+		"typescript": "^5.9.3",
+		"vite": "^7.0.0",
+		"vite-plugin-pwa": "^1.0.3",
+		"wrangler": "^4.88.0"
+	},
+	"allowScripts": {
+		"workerd@1.20260801.1": true,
+		"esbuild@0.28.1": true
+	}
+}
