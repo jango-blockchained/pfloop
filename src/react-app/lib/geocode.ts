@@ -101,9 +101,9 @@ export async function searchAddress(
 
 		if (!res.ok) {
 			if (res.status === 429) {
-				throw new Error("Zu viele Suchanfragen — bitte kurz warten");
+				throw new Error("Zu viele Suchen – warte kurz und versuch’s nochmal");
 			}
-			throw new Error("Adresssuche vorübergehend nicht verfügbar");
+			throw new Error("Adresssuche gerade nicht erreichbar");
 		}
 
 		const data = (await res.json()) as NominatimItem[];
@@ -117,7 +117,7 @@ export async function searchAddress(
 		const name = e instanceof Error ? e.name : "";
 		if (name === "AbortError" || name === "TimeoutError") {
 			if (didTimeout() || name === "TimeoutError") {
-				throw new Error("Adresssuche dauert zu lange — erneut versuchen");
+				throw new Error("Die Suche dauert zu lange – nochmal versuchen?");
 			}
 			throw e;
 		}
@@ -128,7 +128,7 @@ export async function searchAddress(
 			}
 			throw e;
 		}
-		throw new Error("Adresssuche fehlgeschlagen");
+		throw new Error("Suche hat nicht geklappt");
 	} finally {
 		cleanup();
 	}

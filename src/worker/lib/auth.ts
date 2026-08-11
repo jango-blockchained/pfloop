@@ -281,9 +281,9 @@ export async function sendMagicLinkEmail(
 		body: JSON.stringify({
 			from,
 			to: [to],
-			subject: "Dein GrabMe Login-Link",
-			text: `Hallo!\n\nKlicke zum Anmelden bei GrabMe (gültig 15 Minuten):\n\n${link}\n\nFalls du das nicht warst, ignoriere diese Mail.\n`,
-			html: `<p>Hallo!</p><p><a href="${link}">Bei GrabMe anmelden</a></p><p>Der Link ist 15 Minuten gültig.</p>`,
+			subject: "Dein Login-Link für GrabMe",
+			text: `Hi!\n\nHier ist dein Login-Link für GrabMe (einmalig, ca. 15 Minuten gültig):\n\n${link}\n\nFalls du das nicht warst, einfach ignorieren.\n`,
+			html: `<p>Hi!</p><p><a href="${link}">Jetzt bei GrabMe anmelden</a></p><p>Der Link gilt einmal und etwa 15 Minuten.</p><p>Falls du das nicht angefordert hast, kannst du die Mail ignorieren.</p>`,
 		}),
 	});
 
@@ -306,7 +306,7 @@ export async function sendMagicLinkEmail(
 			if (parsed.message) {
 				// Cap length so provider text cannot bloat the client response.
 				const msg = parsed.message.slice(0, 200);
-				hint = `E-Mail-Versand fehlgeschlagen: ${msg}`;
+				hint = `E-Mail konnte nicht raus: ${msg}`;
 			}
 		} catch {
 			/* keep generic */

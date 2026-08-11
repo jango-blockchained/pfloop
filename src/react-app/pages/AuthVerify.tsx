@@ -16,10 +16,10 @@ function friendlyVerifyError(raw: string): string {
 		lower.includes("used") ||
 		lower.includes("bereits")
 	) {
-		return "Dieser Login-Link ist abgelaufen oder wurde bereits verwendet. Bitte fordere einen neuen Link an.";
+		return "Der Link ist abgelaufen oder schon benutzt. Hol dir einfach einen neuen.";
 	}
-	if (lower.includes("token") || lower.includes("missing")) {
-		return "Im Link fehlt ein gültiges Token. Öffne den vollständigen Link aus der E-Mail oder fordere einen neuen an.";
+	if (lower.includes("token") || lower.includes("missing") || lower.includes("fehlt")) {
+		return "Im Link fehlt etwas. Öffne den kompletten Link aus der Mail oder forder einen neuen an.";
 	}
 	return raw;
 }
@@ -36,7 +36,7 @@ export function AuthVerify() {
 		if (!token) {
 			setPhase("error");
 			setError(
-				"Kein Token im Link. Bitte den vollständigen Magic-Link aus der E-Mail öffnen.",
+				"Im Link fehlt der Code. Bitte den kompletten Link aus der E-Mail öffnen.",
 			);
 			return;
 		}
@@ -48,13 +48,12 @@ export function AuthVerify() {
 				await refresh();
 				if (cancelled) return;
 				setPhase("success");
-				// Brief success state, then home
 				window.setTimeout(() => {
 					if (!cancelled) navigate("/", { replace: true });
 				}, 600);
 			} catch (e) {
 				if (cancelled) return;
-				const raw = getErrorMessage(e, "Login fehlgeschlagen");
+				const raw = getErrorMessage(e, "Anmeldung hat nicht geklappt");
 				setError(friendlyVerifyError(raw));
 				setPhase("error");
 			}
@@ -69,26 +68,24 @@ export function AuthVerify() {
 		<div className="page">
 			<h1>
 				{phase === "error"
-					? "Anmeldung fehlgeschlagen"
+					? "Anmeldung hat nicht geklappt"
 					: phase === "success"
-						? "Angemeldet"
-						: "Anmeldung…"}
+						? "Schön, du bist drin"
+						: "Einen Moment…"}
 			</h1>
 
 			{phase === "loading" && (
 				<>
-					<p className="muted">Bitte warten, der Magic-Link wird geprüft…</p>
-					<p className="muted small">
-						Das dauert in der Regel nur einen Moment.
-					</p>
+					<p className="muted">Wir prüfen deinen Login-Link…</p>
+					<p className="muted small">Das dauert normalerweise nur kurz.</p>
 				</>
 			)}
 
 			{phase === "success" && (
 				<div className="banner info">
-					<strong>Erfolgreich angemeldet.</strong>
+					<strong>Alles klar – du bist angemeldet.</strong>
 					<br />
-					Du wirst zur Karte weitergeleitet…
+					Gleich geht’s zur Karte…
 				</div>
 			)}
 
@@ -97,15 +94,15 @@ export function AuthVerify() {
 					<p className="banner error">{error}</p>
 					<div className="actions">
 						<Link className="btn btn-primary" to="/login">
-							Neuen Login-Link anfordern
+							Neuen Link holen
 						</Link>
 						<Link className="btn" to="/">
 							Zur Karte
 						</Link>
 					</div>
 					<p className="muted small">
-						Tipp: Links sind nur einmal und kurze Zeit gültig. Bei Problemen
-						Spam-Ordner prüfen oder denselben Link nicht mehrfach öffnen.
+						Tipp: Links gelten nur einmal und nicht lange. Spam-Ordner checken
+						und denselben Link nicht mehrmals hintereinander öffnen.
 					</p>
 				</>
 			)}

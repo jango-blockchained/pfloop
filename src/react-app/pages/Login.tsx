@@ -18,7 +18,7 @@ export function Login() {
 	const emailOk = isValidEmail(emailTrimmed);
 	const emailHint =
 		emailTouched && emailTrimmed.length > 0 && !emailOk
-			? "Bitte eine gültige E-Mail-Adresse eingeben."
+			? "Das sieht noch nicht nach einer gültigen E-Mail aus."
 			: null;
 
 	async function onSubmit(e: FormEvent) {
@@ -29,7 +29,7 @@ export function Login() {
 		setDevLink(null);
 
 		if (!emailOk) {
-			setError("Bitte eine gültige E-Mail-Adresse eingeben.");
+			setError("Bitte gib eine gültige E-Mail ein.");
 			return;
 		}
 		if (sending) return;
@@ -42,11 +42,11 @@ export function Login() {
 			);
 			setMessage(
 				res.message ||
-					"Wenn die Adresse gültig ist, senden wir dir einen Login-Link.",
+					"Wenn die Adresse stimmt, schicken wir dir einen Login-Link.",
 			);
 			if (res.magic_link) setDevLink(res.magic_link);
 		} catch (err) {
-			setError(getErrorMessage(err, "Senden fehlgeschlagen"));
+			setError(getErrorMessage(err, "Senden hat nicht geklappt"));
 		} finally {
 			setSending(false);
 		}
@@ -55,7 +55,7 @@ export function Login() {
 	if (loading) {
 		return (
 			<div className="page">
-				<p className="muted">Lade Sitzung…</p>
+				<p className="muted">Einen Moment…</p>
 			</div>
 		);
 	}
@@ -63,7 +63,7 @@ export function Login() {
 	if (user) {
 		return (
 			<div className="page">
-				<h1>Angemeldet</h1>
+				<h1>Du bist angemeldet</h1>
 				<div className="banner info">
 					<span>
 						{user.display_name || user.email}
@@ -90,8 +90,8 @@ export function Login() {
 		<div className="page">
 			<h1>Anmelden</h1>
 			<p className="muted">
-				Passwortlos per Magic-Link. Wir senden dir einen einmaligen Link an
-				deine E-Mail (ca. 15 Minuten gültig). Kein Passwort nötig.
+				Ganz ohne Passwort: Wir schicken dir einen Link per E-Mail. Der gilt
+				einmal und etwa 15 Minuten.
 			</p>
 
 			<form className="form" onSubmit={onSubmit} noValidate>
@@ -111,7 +111,7 @@ export function Login() {
 					{emailHint && <span className="field-error">{emailHint}</span>}
 				</label>
 				<label>
-					Anzeigename (optional, beim ersten Login)
+					Anzeigename (optional, beim ersten Mal)
 					<input
 						value={displayName}
 						onChange={(e) => setDisplayName(e.target.value)}
@@ -125,19 +125,19 @@ export function Login() {
 					type="submit"
 					disabled={sending || (emailTouched && !emailOk)}
 				>
-					{sending ? "Sende Login-Link…" : "Login-Link senden"}
+					{sending ? "Link wird gesendet…" : "Login-Link senden"}
 				</button>
 			</form>
 
 			{message && (
 				<div className="banner info">
-					<strong>Prüfe dein Postfach.</strong>
+					<strong>Schau in dein Postfach.</strong>
 					<br />
 					{message}
 					<br />
 					<small className="muted">
-						Nicht gefunden? Spam-Ordner prüfen oder Link erneut anfordern.
-						Der Link ist nur einmal und kurz gültig.
+						Nichts da? Spam checken oder nochmal anfordern. Der Link geht nur
+						einmal und nicht ewig.
 					</small>
 				</div>
 			)}
@@ -146,7 +146,7 @@ export function Login() {
 				<div className="banner info dev-link">
 					<strong>Entwickler-Modus</strong>
 					<p className="muted small" style={{ margin: "0.35rem 0" }}>
-						Keine E-Mail konfiguriert — öffne den Link direkt:
+						Keine E-Mail eingerichtet – hier ist der Link direkt:
 					</p>
 					<p style={{ wordBreak: "break-all", margin: 0 }}>
 						<a href={devLink}>{devLink}</a>
@@ -160,8 +160,8 @@ export function Login() {
 			)}
 
 			<p className="muted small" style={{ marginTop: "1.25rem" }}>
-				Mit der Anmeldung kannst du Angebote erstellen, annehmen und die
-				Zwei-Schritt-Übergabe abschließen.
+				Wenn du angemeldet bist, kannst du Angebote einstellen, annehmen und die
+				Übergabe abschließen.
 			</p>
 		</div>
 	);

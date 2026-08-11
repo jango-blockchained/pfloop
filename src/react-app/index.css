@@ -840,21 +840,25 @@ select {
 .form label {
 	display: flex;
 	flex-direction: column;
-	gap: 0.35rem;
+	gap: 0.45rem;
 	font-size: 0.9rem;
 	font-weight: 600;
+	margin: 0;
 }
 
 .form input,
-.form textarea {
+.form textarea,
+.form select {
 	font: inherit;
 	font-weight: 400;
 	padding: 0.6rem 0.7rem;
 	min-height: var(--touch-min);
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
-	background: var(--surface);
+	background: var(--surface, #fff);
 	color: var(--text);
+	/* Avoid OS dark native controls under color-scheme: light dark */
+	color-scheme: light;
 	transition:
 		border-color var(--transition-fast),
 		box-shadow var(--transition-fast);
@@ -865,15 +869,33 @@ select {
 	resize: vertical;
 }
 
+.form select {
+	width: 100%;
+	margin: 0;
+	cursor: pointer;
+	/* Match text inputs; keep custom padding (not flattened by appearance:none) */
+	appearance: auto;
+	background-color: var(--surface, #fff);
+	line-height: 1.35;
+}
+
+.form select option {
+	background: #fff;
+	color: var(--text, #0f172a);
+}
+
 .form input:hover,
-.form textarea:hover {
+.form textarea:hover,
+.form select:hover {
 	border-color: var(--border-strong);
 }
 
 .form input:focus,
 .form textarea:focus,
+.form select:focus,
 .form input:focus-visible,
 .form textarea:focus-visible,
+.form select:focus-visible,
 .map-search-input:focus,
 .map-search-input:focus-visible,
 .qty-input:focus,
@@ -885,7 +907,8 @@ select {
 }
 
 .form input:disabled,
-.form textarea:disabled {
+.form textarea:disabled,
+.form select:disabled {
 	opacity: 0.65;
 	cursor: not-allowed;
 	background: var(--surface-muted);

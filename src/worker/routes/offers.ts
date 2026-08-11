@@ -89,7 +89,7 @@ offersRoutes.get("/", async (c) => {
 offersRoutes.get("/mine", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const { results } = await c.env.DB.prepare(
@@ -121,7 +121,7 @@ offersRoutes.get("/mine", async (c) => {
 offersRoutes.get("/:id", async (c) => {
 	const id = c.req.param("id");
 	if (!isUuid(id)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const userId = c.get("userId");
@@ -148,7 +148,7 @@ offersRoutes.get("/:id", async (c) => {
 		}>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	let canSeeAddress = userId !== null && userId === offer.poster_id;
@@ -193,7 +193,7 @@ offersRoutes.get("/:id", async (c) => {
 offersRoutes.post("/", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const parsed = await readJsonBody<{
@@ -216,7 +216,7 @@ offersRoutes.post("/", async (c) => {
 		: [];
 	// Cap item array length early (catalog has 5 types; merged later).
 	if (itemsRaw.length > 20) {
-		return jsonError(c, "Zu viele Einträge in items", 400);
+		return jsonError(c, "Zu viele Einträge in der Stückliste", 400);
 	}
 
 	const computed = computePfandFromItems(itemsRaw);
@@ -289,12 +289,12 @@ offersRoutes.post("/", async (c) => {
 offersRoutes.post("/:id/accept", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const offerId = c.req.param("id");
 	if (!isUuid(offerId)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const offer = await c.env.DB.prepare(
@@ -309,17 +309,17 @@ offersRoutes.post("/:id/accept", async (c) => {
 		}>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 	if (offer.poster_id === userId) {
 		return jsonError(
 			c,
-			"Eigenes Angebot kann nicht angenommen werden",
+			"Dein eigenes Angebot kannst du nicht annehmen",
 			400,
 		);
 	}
 	if (offer.status !== "open") {
-		return jsonError(c, "Angebot ist nicht mehr verfügbar", 409);
+		return jsonError(c, "Das Angebot ist leider schon weg", 409);
 	}
 
 	// Block new accept while previous handover is unfinished (active or awaiting poster confirm).
@@ -333,7 +333,7 @@ offersRoutes.post("/:id/accept", async (c) => {
 	if ((unfinished?.n ?? 0) >= MAX_UNFINISHED_RESERVATIONS_PER_USER) {
 		return jsonError(
 			c,
-			"Du hast noch eine offene Abholung. Bitte zuerst als abgeholt melden und vom Inserenten bestätigen lassen, bevor du ein neues Angebot annimmst.",
+			"Du hast noch eine offene Abholung. Schließ die erst ab (abholen + bestätigen lassen), bevor du was Neues annimmst.",
 			400,
 		);
 	}
@@ -365,7 +365,7 @@ offersRoutes.post("/:id/accept", async (c) => {
 				.run();
 			return jsonError(
 				c,
-				"Angebot gerade von jemand anderem angenommen",
+				"Pech – gerade hat’s jemand anderes angenommen",
 				409,
 			);
 		}
@@ -373,7 +373,7 @@ offersRoutes.post("/:id/accept", async (c) => {
 		// Unique index on unfinished reservation per offer, or other constraint.
 		return jsonError(
 			c,
-			"Angebot gerade von jemand anderem angenommen",
+			"Pech – gerade hat’s jemand anderes angenommen",
 			409,
 		);
 	}
@@ -409,7 +409,7 @@ offersRoutes.post("/:id/accept", async (c) => {
 			]);
 			return jsonError(
 				c,
-				"Du hast noch eine offene Abholung. Bitte zuerst als abgeholt melden und vom Inserenten bestätigen lassen, bevor du ein neues Angebot annimmst.",
+				"Du hast noch eine offene Abholung. Schließ die erst ab (abholen + bestätigen lassen), bevor du was Neues annimmst.",
 				400,
 			);
 		}
@@ -425,7 +425,7 @@ offersRoutes.post("/:id/accept", async (c) => {
 	if (!ours) {
 		return jsonError(
 			c,
-			"Angebot gerade von jemand anderem angenommen",
+			"Pech – gerade hat’s jemand anderes angenommen",
 			409,
 		);
 	}
@@ -444,12 +444,12 @@ offersRoutes.post("/:id/accept", async (c) => {
 offersRoutes.post("/:id/collect", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const offerId = c.req.param("id");
 	if (!isUuid(offerId)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const now = nowIso();
@@ -461,12 +461,12 @@ offersRoutes.post("/:id/collect", async (c) => {
 		.first<{ poster_id: string; status: string }>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 	if (offer.poster_id === userId) {
 		return jsonError(
 			c,
-			"Als Inserent bestätigst du die Abholung, sobald der Abholer „Abgeholt“ gemeldet hat.",
+			"Als Inserent bestätigst du erst, wenn der Abholer „Abgeholt“ getippt hat.",
 			400,
 		);
 	}
@@ -474,8 +474,8 @@ offersRoutes.post("/:id/collect", async (c) => {
 		return jsonError(
 			c,
 			offer.status === "collected"
-				? "Bereits als abgeholt gemeldet — warte auf Bestätigung des Inserenten"
-				: "Nur angenommene (reservierte) Angebote können als abgeholt gemeldet werden",
+				? "Schon als abgeholt gemeldet – warte noch auf die Bestätigung"
+				: "Nur angenommene Angebote kannst du als abgeholt melden",
 			400,
 		);
 	}
@@ -488,7 +488,7 @@ offersRoutes.post("/:id/collect", async (c) => {
 		.first<{ id: string; deadline_at: string }>();
 
 	if (!reservation) {
-		return jsonError(c, "Keine aktive Reservierung für dich", 404);
+		return jsonError(c, "Du hast hier keine laufende Abholung", 404);
 	}
 
 	// Expired before cron: release and reject collect.
@@ -505,7 +505,7 @@ offersRoutes.post("/:id/collect", async (c) => {
 		]);
 		return jsonError(
 			c,
-			"Reservierung abgelaufen — das Angebot wurde wieder freigegeben",
+			"Die Zeit ist um – das Angebot ist wieder frei",
 			409,
 		);
 	}
@@ -525,7 +525,7 @@ offersRoutes.post("/:id/collect", async (c) => {
 	if ((results[0]?.meta?.changes ?? 0) === 0) {
 		return jsonError(
 			c,
-			"Reservierung konnte nicht aktualisiert werden — bitte neu laden",
+			"Hat nicht geklappt – bitte Seite neu laden",
 			409,
 		);
 	}
@@ -534,7 +534,7 @@ offersRoutes.post("/:id/collect", async (c) => {
 		ok: true,
 		status: "collected",
 		message:
-			"Als abgeholt gemeldet. Der Inserent muss die Übergabe noch bestätigen, bevor du ein neues Angebot annehmen kannst.",
+			"Super, gemeldet. Der Inserent muss noch bestätigen – erst dann kannst du was Neues annehmen.",
 	});
 });
 
@@ -545,12 +545,12 @@ offersRoutes.post("/:id/collect", async (c) => {
 offersRoutes.post("/:id/confirm", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const offerId = c.req.param("id");
 	if (!isUuid(offerId)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const now = nowIso();
@@ -562,12 +562,12 @@ offersRoutes.post("/:id/confirm", async (c) => {
 		.first<{ poster_id: string; status: string }>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 	if (offer.poster_id !== userId) {
 		return jsonError(
 			c,
-			"Nur der Inserent kann die Abholung bestätigen. Als Abholer: Status „Abgeholt“ melden und den Inserenten bitten zu bestätigen.",
+			"Nur der Inserent kann bestätigen. Als Abholer: tipp auf „Abgeholt“ und sag dem Inserenten Bescheid.",
 			403,
 		);
 	}
@@ -575,10 +575,10 @@ offersRoutes.post("/:id/confirm", async (c) => {
 		return jsonError(
 			c,
 			offer.status === "reserved"
-				? "Warte, bis der Abholer „Abgeholt“ gemeldet hat"
+				? "Warte noch, bis der Abholer „Abgeholt“ tippt"
 				: offer.status === "completed"
-					? "Angebot ist bereits erledigt"
-					: "Übergabe kann nur bestätigt werden, wenn der Abholer abgeholt hat",
+					? "Das ist schon erledigt"
+					: "Bestätigen geht erst, wenn der Abholer abgeholt hat",
 			400,
 		);
 	}
@@ -593,7 +593,7 @@ offersRoutes.post("/:id/confirm", async (c) => {
 	if (!reservation) {
 		return jsonError(
 			c,
-			"Keine ausstehende Abhol-Meldung — Status kann nicht bestätigt werden",
+			"Es gibt keine offene Abhol-Meldung zum Bestätigen",
 			409,
 		);
 	}
@@ -613,7 +613,7 @@ offersRoutes.post("/:id/confirm", async (c) => {
 	if ((results[0]?.meta?.changes ?? 0) === 0) {
 		return jsonError(
 			c,
-			"Bestätigung fehlgeschlagen — bitte neu laden",
+			"Bestätigung hat nicht geklappt – bitte neu laden",
 			409,
 		);
 	}
@@ -628,12 +628,12 @@ offersRoutes.post("/:id/confirm", async (c) => {
 offersRoutes.post("/:id/cancel", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const offerId = c.req.param("id");
 	if (!isUuid(offerId)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const now = nowIso();
@@ -645,13 +645,13 @@ offersRoutes.post("/:id/cancel", async (c) => {
 		.first<{ poster_id: string; status: string }>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 	if (offer.poster_id !== userId) {
-		return jsonError(c, "Nur der Inserent kann stornieren", 403);
+		return jsonError(c, "Nur du als Inserent kannst stornieren", 403);
 	}
 	if (offer.status === "completed" || offer.status === "cancelled") {
-		return jsonError(c, "Angebot kann nicht mehr storniert werden", 400);
+		return jsonError(c, "Das lässt sich nicht mehr stornieren", 400);
 	}
 
 	const stmts: D1PreparedStatement[] = [
@@ -673,7 +673,7 @@ offersRoutes.post("/:id/cancel", async (c) => {
 
 	const results = await c.env.DB.batch(stmts);
 	if ((results[0]?.meta?.changes ?? 0) === 0) {
-		return jsonError(c, "Angebot kann nicht mehr storniert werden", 400);
+		return jsonError(c, "Das lässt sich nicht mehr stornieren", 400);
 	}
 
 	return c.json({ ok: true });

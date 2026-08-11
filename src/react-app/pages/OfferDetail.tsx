@@ -48,7 +48,7 @@ export function OfferDetail() {
 			setLoadError(null);
 			setError(null);
 		} catch (e) {
-			setLoadError(getErrorMessage(e, "Laden fehlgeschlagen"));
+			setLoadError(getErrorMessage(e, "Laden hat nicht geklappt"));
 		} finally {
 			setLoading(false);
 		}
@@ -85,7 +85,7 @@ export function OfferDetail() {
 			await fn();
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Aktion fehlgeschlagen"));
+			setError(getErrorMessage(e, "Das hat nicht geklappt"));
 		} finally {
 			setBusy(null);
 		}
@@ -106,7 +106,7 @@ export function OfferDetail() {
 		if (!id) return;
 		if (
 			!confirm(
-				"Hast du das Pfand abgeholt?\n\nDer Inserent muss die Übergabe danach noch bestätigen (Schritt 2/2). Erst dann kannst du ein neues Angebot annehmen.",
+				"Hast du das Pfand abgeholt?\n\nDer Inserent muss danach noch bestätigen. Erst dann kannst du ein neues Angebot annehmen.",
 			)
 		) {
 			return;
@@ -120,7 +120,7 @@ export function OfferDetail() {
 		if (!id) return;
 		if (
 			!confirm(
-				"Bestätigst du, dass der Abholer das Pfand erhalten hat?\n\nDanach ist die Abholung erledigt.",
+				"Hat der Abholer das Pfand wirklich mitgenommen?\n\nDann ist die Abholung erledigt.",
 			)
 		) {
 			return;
@@ -151,7 +151,7 @@ export function OfferDetail() {
 	if (!id) {
 		return (
 			<div className="page">
-				<p className="banner error">Keine Angebots-ID</p>
+				<p className="banner error">Hier fehlt die Angebots-ID.</p>
 				<p>
 					<Link to="/">Zurück zur Karte</Link>
 				</p>
@@ -191,7 +191,7 @@ export function OfferDetail() {
 					<Link to="/">← Karte</Link>
 				</p>
 				<p className="banner error">
-					{loadError ?? "Angebot konnte nicht geladen werden."}
+					{loadError ?? "Das Angebot ließ sich nicht laden."}
 				</p>
 				<div className="actions">
 					<button
@@ -202,7 +202,7 @@ export function OfferDetail() {
 							void load();
 						}}
 					>
-						Erneut versuchen
+						Nochmal versuchen
 					</button>
 					<Link className="btn" to="/">
 						Zur Karte
@@ -248,7 +248,7 @@ export function OfferDetail() {
 
 			{nextStep && (
 				<div className="banner info handover-hint">
-					<strong>Nächster Schritt:</strong> {nextStep}
+					<strong>Als Nächstes:</strong> {nextStep}
 				</div>
 			)}
 
@@ -260,7 +260,7 @@ export function OfferDetail() {
 					</strong>
 				</div>
 				<div className="detail-desc">
-					<span className="label">Stückliste (Pfandsystem)</span>
+					<span className="label">Stückliste</span>
 					<PfandItemsList items={offer.items ?? []} />
 				</div>
 				<div className="detail-row">
@@ -320,9 +320,9 @@ export function OfferDetail() {
 
 				{!offer.address_text && offer.status === "open" && (
 					<p className="muted small">
-						Die genaue Adresse wird erst nach Annahme angezeigt. Danach hast du
-						6 Stunden Zeit für die Abholung. Die Übergabe läuft in zwei
-						Schritten: Abholer meldet „Abgeholt“, Inserent bestätigt.
+						Die genaue Adresse siehst du erst nach der Annahme. Danach hast du
+						6 Stunden zum Abholen. Danach: du tippst „Abgeholt“, der Inserent
+						bestätigt – fertig.
 					</p>
 				)}
 
@@ -337,14 +337,14 @@ export function OfferDetail() {
 					<div className="detail-row countdown-row">
 						<span className="label">
 							{offer.status === "reserved"
-								? "Abholfenster"
+								? "Zeit zum Abholen"
 								: "Reservierung"}
 						</span>
 						<span
 							className={`badge ${overdue ? "badge-muted" : "badge-warn"} countdown-badge`}
 						>
 							{overdue
-								? "Zeit abgelaufen — wird aktualisiert…"
+								? "Zeit um – wir aktualisieren…"
 								: `Noch ${formatCountdown(deadline, now)}`}
 						</span>
 					</div>
@@ -357,39 +357,37 @@ export function OfferDetail() {
 
 			{isCollectorView && offer.status === "reserved" && (
 				<div className="banner info handover-hint">
-					<strong>Zwei-Schritt-Übergabe · Schritt 1:</strong> Hole das Pfand ab
-					und tippe „Abgeholt melden“. Der Inserent bestätigt danach die
-					Übergabe — erst dann kannst du ein neues Angebot annehmen.
+					<strong>Schritt 1:</strong> Hol das Pfand ab und tipp auf „Abgeholt“.
+					Der Inserent bestätigt danach – erst dann kannst du was Neues annehmen.
 				</div>
 			)}
 
 			{isCollectorView && offer.status === "collected" && (
 				<div className="banner info handover-hint">
-					<strong>Schritt 2 beim Inserenten:</strong> Du hast abgeholt. Bitte den
-					Inserenten, die Übergabe in der App zu bestätigen. Bis dahin ist kein
-					neues Angebot möglich.
+					<strong>Fast geschafft:</strong> Du hast abgeholt. Bitte den Inserenten,
+					in der App zu bestätigen. Bis dahin kein neues Angebot.
 				</div>
 			)}
 
 			{offer.is_own && offer.status === "reserved" && (
 				<div className="banner info handover-hint">
-					<strong>Abholung läuft:</strong> Ein Abholer ist unterwegs (6h-Fenster).
-					Warte auf „Abgeholt melden“, danach bestätigst du die Übergabe.
+					<strong>Abholung läuft:</strong> Jemand ist unterwegs (6 Stunden Zeit).
+					Sobald er oder sie „Abgeholt“ tippt, bestätigst du die Übergabe.
 				</div>
 			)}
 
 			{canConfirm && (
 				<div className="banner info handover-hint">
-					<strong>Schritt 2/2 — deine Bestätigung:</strong> Der Abholer meldet
-					Abholung. Bitte bestätige, dass das Pfand übergeben wurde.
+					<strong>Deine Bestätigung:</strong> Der Abholer sagt, er war da.
+					Bestätige bitte, dass das Pfand wirklich weg ist.
 				</div>
 			)}
 
 			{offer.is_own && offer.status === "open" && (
 				<div className="banner info handover-hint">
-					<strong>Dein Angebot ist live.</strong> Adresse und genaue Position
-					sehen andere erst nach der Annahme. Du kannst stornieren, solange die
-					Übergabe nicht bestätigt ist.
+					<strong>Dein Angebot ist online.</strong> Adresse und genaue Position
+					sehen andere erst nach der Annahme. Stornieren geht, solange noch nicht
+					alles erledigt ist.
 				</div>
 			)}
 
@@ -402,8 +400,8 @@ export function OfferDetail() {
 						onClick={() => void onAccept()}
 					>
 						{busy === "accept"
-							? "Annahme läuft…"
-							: "Angebot annehmen (6h-Fenster)"}
+							? "Wird angenommen…"
+							: "Annehmen (6 Stunden Zeit)"}
 					</button>
 				)}
 				{canCollect && (
@@ -413,7 +411,7 @@ export function OfferDetail() {
 						disabled={anyBusy}
 						onClick={() => void onCollect()}
 					>
-						{busy === "collect" ? "Meldung wird gesendet…" : "Abgeholt melden"}
+						{busy === "collect" ? "Wird gemeldet…" : "Abgeholt"}
 					</button>
 				)}
 				{canConfirm && (
@@ -424,8 +422,8 @@ export function OfferDetail() {
 						onClick={() => void onConfirm()}
 					>
 						{busy === "confirm"
-							? "Bestätige Übergabe…"
-							: "Übergabe bestätigen (erledigt)"}
+							? "Wird bestätigt…"
+							: "Übergabe bestätigen"}
 					</button>
 				)}
 				{canCancel && (
@@ -440,7 +438,7 @@ export function OfferDetail() {
 				)}
 				{offer.status === "completed" && (
 					<p className="muted">
-						Übergabe bestätigt — Abholung erledigt. Danke!
+						Passt – Abholung erledigt. Danke!
 					</p>
 				)}
 				{offer.status === "cancelled" && (

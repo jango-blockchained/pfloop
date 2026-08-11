@@ -75,9 +75,10 @@ export function InstallPrompt() {
 			aria-describedby={descId}
 		>
 			<div className="install-copy">
-				<strong id={titleId}>GrabMe installieren</strong>
+				<strong id={titleId}>GrabMe aufs Handy legen?</strong>
 				<p id={descId} className="muted small">
-					Als App auf dem Homescreen — schneller Start, offline-fähige Shell.
+					Als App auf dem Homescreen – schneller Start, und die Oberfläche geht
+					auch offline.
 				</p>
 			</div>
 			<div className="install-actions">

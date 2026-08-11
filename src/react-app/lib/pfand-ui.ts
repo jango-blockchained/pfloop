@@ -69,11 +69,11 @@ export function minProgress(totalCents: number): number {
 /** Human hint under the total, e.g. near-minimum feedback. */
 export function minValueHint(totalCents: number): string {
 	if (totalCents <= 0) {
-		return `Mindest-Pfandwert: ${centsToEuroDe(MIN_PFAND_CENTS)} €`;
+		return `Mindestens ${centsToEuroDe(MIN_PFAND_CENTS)} € Pfand nötig`;
 	}
 	const rest = centsUntilMinimum(totalCents);
 	if (rest === 0) {
-		return `Mindestwert von ${centsToEuroDe(MIN_PFAND_CENTS)} € erreicht`;
+		return `Passt – Mindestwert von ${centsToEuroDe(MIN_PFAND_CENTS)} € ist drin`;
 	}
-	return `Noch ${centsToEuroDe(rest)} € bis zum Mindestwert (${centsToEuroDe(MIN_PFAND_CENTS)} €)`;
+	return `Noch ${centsToEuroDe(rest)} € bis zu den ${centsToEuroDe(MIN_PFAND_CENTS)} € Minimum`;
 }

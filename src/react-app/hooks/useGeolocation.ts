@@ -34,7 +34,7 @@ export function useGeolocation(): {
 
 		if (!navigator.geolocation) {
 			finishFallback(
-				"Standort nicht unterstützt — zeige Berlin",
+				"Standort geht hier nicht – wir zeigen Berlin",
 				"unsupported",
 			);
 			return;
@@ -65,16 +65,16 @@ export function useGeolocation(): {
 				setReady(true);
 			},
 			(err) => {
-				let message = "Standort nicht verfügbar — zeige Berlin";
+				let message = "Standort unklar – wir zeigen erstmal Berlin";
 				let perm: GeoPermission = "prompt";
 				if (err.code === err.PERMISSION_DENIED) {
 					message =
-						"Standortzugriff verweigert — zeige Berlin. Du kannst später freigeben oder suchen.";
+						"Standort blockiert – wir zeigen Berlin. Du kannst ihn später freigeben oder suchen.";
 					perm = "denied";
 				} else if (err.code === err.POSITION_UNAVAILABLE) {
-					message = "Standort nicht ermittelbar — zeige Berlin";
+					message = "Standort nicht gefunden – wir zeigen Berlin";
 				} else if (err.code === err.TIMEOUT) {
-					message = "Standort dauert zu lange — zeige Berlin";
+					message = "Standort dauert zu lange – wir zeigen Berlin";
 				}
 				finishFallback(message, perm);
 			},

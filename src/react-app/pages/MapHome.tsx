@@ -140,7 +140,7 @@ export function MapHome() {
 			setMapLoadedOnce(true);
 		} catch (e) {
 			if (ac.signal.aborted || gen !== fetchGenRef.current) return;
-			setError(e instanceof Error ? e.message : "Karte laden fehlgeschlagen");
+			setError(e instanceof Error ? e.message : "Karte laden hat nicht geklappt");
 		} finally {
 			if (gen === fetchGenRef.current) setMapLoading(false);
 		}
@@ -184,7 +184,7 @@ export function MapHome() {
 			await loadSide();
 			refreshMapPins();
 		} catch (e) {
-			setError(e instanceof Error ? e.message : "Melden fehlgeschlagen");
+			setError(e instanceof Error ? e.message : "Melden hat nicht geklappt");
 		} finally {
 			setBusyId(null);
 		}
@@ -193,7 +193,7 @@ export function MapHome() {
 	async function onConfirmHandover(offerId: string) {
 		if (
 			!confirm(
-				"Bestätigst du, dass der Abholer das Pfand erhalten hat?",
+				"Hat der Abholer das Pfand wirklich mitgenommen?",
 			)
 		) {
 			return;
@@ -204,7 +204,7 @@ export function MapHome() {
 			await loadSide();
 			refreshMapPins();
 		} catch (e) {
-			setError(e instanceof Error ? e.message : "Bestätigung fehlgeschlagen");
+			setError(e instanceof Error ? e.message : "Bestätigen hat nicht geklappt");
 		} finally {
 			setBusyId(null);
 		}
@@ -221,7 +221,7 @@ export function MapHome() {
 	const summaryBits = [
 		mapLoading && !mapLoadedOnce
 			? "Lade Angebote…"
-			: `${openCount + recurringCount} offen in Sicht`,
+			: `${openCount + recurringCount} offen in der Nähe`,
 		recurringCount ? `${recurringCount} wöchentlich` : null,
 		user ? `${mine.length + mineRecurring.length} eigene` : null,
 		unfinishedReservations.length
@@ -264,7 +264,7 @@ export function MapHome() {
 								className="btn btn-sm"
 								onClick={() => refreshMapPins()}
 							>
-								Erneut laden
+								Nochmal laden
 							</button>
 						)}
 					</p>
@@ -301,7 +301,7 @@ export function MapHome() {
 						</div>
 						{!mapLoadedOnce && mapLoading && (
 							<p className="muted" role="status">
-								Lade offene Angebote auf der Karte…
+								Lade offene Angebote…
 							</p>
 						)}
 						{mapLoadedOnce &&
@@ -310,10 +310,10 @@ export function MapHome() {
 							!mapLoading && (
 							<div className="empty-state">
 								<p className="muted">
-									Keine offenen Angebote im sichtbaren Kartenbereich.
+									Hier gerade nichts Offenes.
 								</p>
 								<p className="muted small">
-									Karte verschieben oder zoomen — oder selbst etwas anbieten.
+									Karte verschieben oder zoomen – oder selbst was einstellen.
 								</p>
 								{user ? (
 									<Link className="btn btn-primary btn-sm" to="/neu">
@@ -321,7 +321,7 @@ export function MapHome() {
 									</Link>
 								) : (
 									<Link className="btn btn-primary btn-sm" to="/login">
-										Anmelden zum Inserieren
+										Anmelden zum Einstellen
 									</Link>
 								)}
 							</div>
@@ -386,7 +386,7 @@ export function MapHome() {
 						{!authLoading && !user && (
 							<div className="empty-state">
 								<p className="muted">
-									Zum Inserieren bitte <Link to="/login">anmelden</Link>.
+									Zum Einstellen bitte <Link to="/login">anmelden</Link>.
 								</p>
 							</div>
 						)}
@@ -444,7 +444,7 @@ export function MapHome() {
 										)}
 										{o.status === "reserved" && (
 											<p className="muted small" style={{ marginTop: "0.35rem" }}>
-												Warte auf „Abgeholt“-Meldung des Abholers.
+												Warte, bis der Abholer „Abgeholt“ tippt.
 											</p>
 										)}
 									</li>
@@ -528,12 +528,12 @@ export function MapHome() {
 						{user && !sideLoading && unfinishedReservations.length === 0 && (
 							<div className="empty-state">
 								<p className="muted">
-									Keine offenen Abholungen. Du kannst nur ein Angebot gleichzeitig
-									bearbeiten — erst erledigt, dann das nächste.
+									Keine offenen Abholungen. Du kannst immer nur eins gleichzeitig
+									machen – erst fertig, dann das nächste.
 								</p>
 								{openCount > 0 && (
 									<p className="muted small">
-										Tippe auf einen Pin oder ein Angebot unter „In der Nähe“.
+										Tipp auf einen Pin oder ein Angebot unter „In der Nähe“.
 									</p>
 								)}
 							</div>
@@ -550,7 +550,7 @@ export function MapHome() {
 												{formatCountdown(r.deadline_at, now)}
 											</span>
 										) : (
-											<span className="badge badge-warn">wartet Bestätigung</span>
+											<span className="badge badge-warn">wartet auf Bestätigung</span>
 										)}
 									</div>
 									<div className="meta">
@@ -567,13 +567,13 @@ export function MapHome() {
 											disabled={busyId === r.offer_id}
 											onClick={() => void onMarkCollected(r.offer_id)}
 										>
-											{busyId === r.offer_id ? "…" : "Abgeholt melden"}
+											{busyId === r.offer_id ? "…" : "Abgeholt"}
 										</button>
 									)}
 									{r.reservation_status === "collected" && (
 										<p className="muted small" style={{ marginTop: "0.35rem" }}>
-											Inserenten bitten zu bestätigen — danach neues Angebot
-											möglich.
+											Bitte den Inserenten bestätigen – dann darfst du was Neues
+											annehmen.
 										</p>
 									)}
 								</li>
@@ -582,7 +582,7 @@ export function MapHome() {
 					</div>
 
 					<p className="footnote">
-						Kostenlos · 1 offene Abholung · Abholer meldet, Inserent bestätigt
+						Kostenlos · nur eine offene Abholung · Abholer meldet, Inserent bestätigt
 					</p>
 				</div>
 			</aside>

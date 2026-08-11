@@ -113,8 +113,8 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 	return (
 		<div className="pfand-form">
 			<p className="muted small">
-				Stückzahlen eingeben — der Pfandwert wird fest aus dem deutschen
-				Pfandsystem berechnet und lässt sich nicht manuell ändern.
+				Einfach die Stückzahlen eintippen. Den Pfandwert rechnen wir fest nach
+				deutschem Pfandsystem – den kannst du nicht frei ändern.
 			</p>
 			{renderGroup("Flaschen & Dosen", flaschen)}
 			{renderGroup("Kästen / Kisten", kaesten)}
@@ -122,7 +122,7 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 			<div className={`pfand-total ${meetsMin ? "ok" : "low"}`}>
 				<div>
 					<span className="label">
-						Berechneter Pfandwert
+						Pfandwert gesamt
 						{itemCount > 0 ? ` · ${itemCount} Stück` : ""}
 					</span>
 					<strong className="pfand-total-value">
@@ -135,7 +135,7 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 					aria-valuemin={0}
 					aria-valuemax={100}
 					aria-valuenow={Math.round(progress * 100)}
-					aria-label="Fortschritt zum Mindest-Pfandwert"
+					aria-label="Fortschritt zum Mindestwert"
 				>
 					<span style={{ width: `${Math.round(progress * 100)}%` }} />
 				</div>

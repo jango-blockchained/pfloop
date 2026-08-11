@@ -15,7 +15,7 @@ export const reservationsRoutes = new Hono<{
 reservationsRoutes.get("/mine", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const { results } = await c.env.DB.prepare(

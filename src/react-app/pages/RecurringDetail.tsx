@@ -40,7 +40,7 @@ export function RecurringDetail() {
 			setOffer(data.offer);
 			setLoadError(null);
 		} catch (e) {
-			setLoadError(getErrorMessage(e, "Laden fehlgeschlagen"));
+			setLoadError(getErrorMessage(e, "Laden hat nicht geklappt"));
 			setOffer(null);
 		} finally {
 			setLoading(false);
@@ -64,7 +64,7 @@ export function RecurringDetail() {
 			await applyToRecurring(id, applyMsg.trim() || undefined);
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Bewerbung fehlgeschlagen"));
+			setError(getErrorMessage(e, "Bewerbung hat nicht geklappt"));
 		} finally {
 			setBusy(null);
 		}
@@ -78,7 +78,7 @@ export function RecurringDetail() {
 			await withdrawRecurringApplication(id);
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Zurückziehen fehlgeschlagen"));
+			setError(getErrorMessage(e, "Zurückziehen hat nicht geklappt"));
 		} finally {
 			setBusy(null);
 		}
@@ -88,7 +88,7 @@ export function RecurringDetail() {
 		if (!id) return;
 		if (
 			!confirm(
-				"Diesen Abholer auswählen? Das Angebot wird dann für andere unsichtbar, bis du den Abholer freigibst.",
+				"Diesen Abholer nehmen? Danach ist das Angebot für andere weg, bis du ihn wieder freigibst.",
 			)
 		) {
 			return;
@@ -99,7 +99,7 @@ export function RecurringDetail() {
 			await selectRecurringApplicant(id, { applicant_id: applicantId });
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Auswahl fehlgeschlagen"));
+			setError(getErrorMessage(e, "Auswahl hat nicht geklappt"));
 		} finally {
 			setBusy(null);
 		}
@@ -109,7 +109,7 @@ export function RecurringDetail() {
 		if (!id) return;
 		if (
 			!confirm(
-				"Abholer freigeben? Das wöchentliche Angebot erscheint wieder auf der Karte und nimmt neue Bewerbungen an.",
+				"Abholer freigeben? Dann taucht das Angebot wieder auf der Karte auf und andere können sich bewerben.",
 			)
 		) {
 			return;
@@ -120,7 +120,7 @@ export function RecurringDetail() {
 			await unassignRecurringCollector(id);
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Freigabe fehlgeschlagen"));
+			setError(getErrorMessage(e, "Freigabe hat nicht geklappt"));
 		} finally {
 			setBusy(null);
 		}
@@ -135,7 +135,7 @@ export function RecurringDetail() {
 			await cancelRecurringOffer(id);
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Storno fehlgeschlagen"));
+			setError(getErrorMessage(e, "Stornieren hat nicht geklappt"));
 		} finally {
 			setBusy(null);
 		}
@@ -147,14 +147,14 @@ export function RecurringDetail() {
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
 		} catch {
-			setError("Kopieren nicht möglich");
+			setError("Kopieren hat nicht geklappt");
 		}
 	}
 
 	if (!id) {
 		return (
 			<div className="page">
-				<p className="banner error">Keine Angebots-ID</p>
+				<p className="banner error">Hier fehlt die Angebots-ID.</p>
 			</div>
 		);
 	}
@@ -165,7 +165,7 @@ export function RecurringDetail() {
 				<p className="back">
 					<Link to="/">← Karte</Link>
 				</p>
-				<p className="muted">Lade wöchentliches Angebot…</p>
+				<p className="muted">Wöchentliches Angebot wird geladen…</p>
 			</div>
 		);
 	}
@@ -177,7 +177,7 @@ export function RecurringDetail() {
 					<Link to="/">← Karte</Link>
 				</p>
 				<p className="banner error">
-					{loadError ?? "Angebot konnte nicht geladen werden."}
+					{loadError ?? "Das Angebot ließ sich nicht laden."}
 				</p>
 				<div className="actions">
 					<button
@@ -188,7 +188,7 @@ export function RecurringDetail() {
 							void load();
 						}}
 					>
-						Erneut versuchen
+						Nochmal versuchen
 					</button>
 					<Link className="btn" to="/">
 						Zur Karte
@@ -226,27 +226,27 @@ export function RecurringDetail() {
 			<div className="banner info handover-hint">
 				{offer.is_own && offer.status === "open" && (
 					<>
-						<strong>Nächster Schritt:</strong> Warte auf Bewerbungen und wähle
-						einen Abholer. Danach ist das Angebot unsichtbar.
+						<strong>Als Nächstes:</strong> Warte auf Bewerbungen und such dir
+						jemanden aus. Danach ist das Angebot von der Karte weg.
 					</>
 				)}
 				{offer.is_own && offer.status === "assigned" && (
 					<>
-						<strong>Abholer zugewiesen:</strong> Angebot ist für andere
-						verborgen. Freigeben, um wieder Bewerbungen zu erhalten.
+						<strong>Abholer steht fest:</strong> Andere sehen das Angebot nicht
+						mehr. Freigeben, wenn wieder Bewerbungen rein sollen.
 					</>
 				)}
 				{offer.is_assigned_collector && (
 					<>
-						<strong>Du bist der feste Abholer:</strong> Adresse ist für dich
-						sichtbar. Regel: {weekdayLabel(offer.weekday)}
+						<strong>Du holst regelmäßig ab:</strong> Die Adresse siehst du.
+						Termin: {weekdayLabel(offer.weekday)}
 						{offer.time_hint ? `, ${offer.time_hint}` : ""}.
 					</>
 				)}
 				{!offer.is_own && !offer.is_assigned_collector && offer.status === "open" && (
 					<>
-						<strong>Bewerben:</strong> Der Inserent wählt jemanden aus. Erst
-						danach siehst du die Adresse.
+						<strong>Bewerben:</strong> Der Inserent sucht jemanden aus. Die
+						Adresse siehst du erst, wenn du dran bist.
 					</>
 				)}
 			</div>
@@ -365,8 +365,8 @@ export function RecurringDetail() {
 											onClick={() => void onSelect(a.applicant_id)}
 										>
 											{busy === `select-${a.applicant_id}`
-												? "Wähle…"
-												: "Als Abholer wählen"}
+												? "Wird gewählt…"
+												: "Als Abholer nehmen"}
 										</button>
 									)}
 								</li>
@@ -380,13 +380,13 @@ export function RecurringDetail() {
 				{canApply && (
 					<>
 						<label>
-							Nachricht (optional)
+							Kurze Nachricht (optional)
 							<textarea
 								value={applyMsg}
 								onChange={(e) => setApplyMsg(e.target.value)}
 								rows={2}
 								maxLength={400}
-								placeholder="Kurze Vorstellung…"
+								placeholder="Kurz vorstellen…"
 							/>
 						</label>
 						<button
@@ -395,7 +395,7 @@ export function RecurringDetail() {
 							disabled={anyBusy}
 							onClick={() => void onApply()}
 						>
-							{busy === "apply" ? "Sende…" : "Bewerben"}
+							{busy === "apply" ? "Wird gesendet…" : "Bewerben"}
 						</button>
 					</>
 				)}

@@ -182,7 +182,7 @@ const OfferMarker = memo(function OfferMarker({ offer }: { offer: PublicOffer })
 						<div className="map-popup-hint muted small">Ungefähre Lage</div>
 					)}
 					<Link className="map-popup-link" to={`/angebot/${offer.id}`}>
-						Details & annehmen
+						Details ansehen
 					</Link>
 				</div>
 			</Popup>
@@ -275,12 +275,12 @@ function MapToolbar({
 			setOpen(true);
 			setActiveIdx(hits.length > 0 ? 0 : -1);
 			if (hits.length === 0) {
-				setMsg("Keine Adresse gefunden — anderen Suchbegriff versuchen");
+				setMsg("Nichts gefunden – versuch einen anderen Suchbegriff");
 				setMsgTone("info");
 			}
 		} catch (e) {
 			if ((e as Error).name === "AbortError") return;
-			setMsg(e instanceof Error ? e.message : "Suche fehlgeschlagen");
+			setMsg(e instanceof Error ? e.message : "Suche hat nicht geklappt");
 			setMsgTone("error");
 			setResults([]);
 			setOpen(false);
@@ -348,7 +348,7 @@ function MapToolbar({
 
 	function relocate() {
 		if (!navigator.geolocation) {
-			setMsg("Standort nicht verfügbar auf diesem Gerät");
+			setMsg("Standort geht auf diesem Gerät nicht");
 			setMsgTone("error");
 			return;
 		}
@@ -368,11 +368,11 @@ function MapToolbar({
 				let text = "Standort konnte nicht ermittelt werden";
 				if (err.code === err.PERMISSION_DENIED) {
 					text =
-						"Standortzugriff verweigert — in den Browser-Einstellungen erlauben";
+						"Standort blockiert – in den Browser-Einstellungen freigeben";
 				} else if (err.code === err.TIMEOUT) {
-					text = "Standort dauert zu lange — bitte erneut versuchen";
+					text = "Standort dauert zu lange – nochmal versuchen";
 				} else if (err.code === err.POSITION_UNAVAILABLE) {
-					text = "Standort vorübergehend nicht verfügbar";
+					text = "Standort gerade nicht verfügbar";
 				}
 				setMsg(text);
 				setMsgTone("error");
@@ -396,7 +396,7 @@ function MapToolbar({
 					id={inputId}
 					type="search"
 					className="map-search-input"
-					placeholder="Adresse suchen…"
+					placeholder="Adresse oder Ort suchen…"
 					value={query}
 					onChange={(e) => setQuery(e.target.value)}
 					onFocus={() => {

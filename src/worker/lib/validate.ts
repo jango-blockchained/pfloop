@@ -65,15 +65,15 @@ export function validateLatLng(
 		!Number.isFinite(lat) ||
 		!Number.isFinite(lng)
 	) {
-		return { ok: false, error: "Koordinaten (lat/lng) erforderlich" };
+		return { ok: false, error: "Bitte einen Standort auf der Karte setzen" };
 	}
 	if (lat < LAT_MIN || lat > LAT_MAX) {
-		return { ok: false, error: "Breitengrad (lat) muss zwischen -90 und 90 liegen" };
+		return { ok: false, error: "Der Breitengrad liegt außerhalb des gültigen Bereichs" };
 	}
 	if (lng < LNG_MIN || lng > LNG_MAX) {
 		return {
 			ok: false,
-			error: "Längengrad (lng) muss zwischen -180 und 180 liegen",
+			error: "Der Längengrad liegt außerhalb des gültigen Bereichs",
 		};
 	}
 	return { ok: true, lat, lng };
@@ -102,25 +102,25 @@ export function validateBbox(
 	if (![south, west, north, east].every(Number.isFinite)) {
 		return {
 			ok: false,
-			error: "bbox erforderlich: south, west, north, east",
+			error: "Kartenausschnitt fehlt oder ist ungültig",
 		};
 	}
 	if (south < LAT_MIN || south > LAT_MAX || north < LAT_MIN || north > LAT_MAX) {
-		return { ok: false, error: "bbox: lat außerhalb von -90…90" };
+		return { ok: false, error: "Kartenausschnitt: ungültige Breite" };
 	}
 	if (west < LNG_MIN || west > LNG_MAX || east < LNG_MIN || east > LNG_MAX) {
-		return { ok: false, error: "bbox: lng außerhalb von -180…180" };
+		return { ok: false, error: "Kartenausschnitt: ungültige Länge" };
 	}
 	if (south > north) {
-		return { ok: false, error: "bbox: south muss ≤ north sein" };
+		return { ok: false, error: "Kartenausschnitt ist ungültig" };
 	}
 	if (west > east) {
-		return { ok: false, error: "bbox: west muss ≤ east sein" };
+		return { ok: false, error: "Kartenausschnitt ist ungültig" };
 	}
 	if (north - south > MAX_BBOX_SPAN_DEG || east - west > MAX_BBOX_SPAN_DEG) {
 		return {
 			ok: false,
-			error: `bbox zu groß (max. ${MAX_BBOX_SPAN_DEG}° pro Achse)`,
+			error: "Der Kartenausschnitt ist zu groß – bitte näher ranzoomen",
 		};
 	}
 	return { ok: true, south, west, north, east };
@@ -148,7 +148,7 @@ export function validateOfferStrings(body: {
 	if (titleRaw !== undefined && titleRaw.length > MAX_TITLE_LEN) {
 		return {
 			ok: false,
-			error: `Titel zu lang (max. ${MAX_TITLE_LEN} Zeichen)`,
+			error: `Der Titel ist zu lang (höchstens ${MAX_TITLE_LEN} Zeichen)`,
 		};
 	}
 
@@ -162,19 +162,19 @@ export function validateOfferStrings(body: {
 	if (note.length > MAX_NOTE_LEN) {
 		return {
 			ok: false,
-			error: `Notiz zu lang (max. ${MAX_NOTE_LEN} Zeichen)`,
+			error: `Der Hinweis ist zu lang (höchstens ${MAX_NOTE_LEN} Zeichen)`,
 		};
 	}
 
 	const addressText =
 		typeof body.address_text === "string" ? body.address_text.trim() : "";
 	if (!addressText) {
-		return { ok: false, error: "Adresse erforderlich" };
+		return { ok: false, error: "Bitte die Adresse angeben" };
 	}
 	if (addressText.length > MAX_ADDRESS_TEXT_LEN) {
 		return {
 			ok: false,
-			error: `Adresse zu lang (max. ${MAX_ADDRESS_TEXT_LEN} Zeichen)`,
+			error: `Die Adresse ist zu lang (höchstens ${MAX_ADDRESS_TEXT_LEN} Zeichen)`,
 		};
 	}
 
@@ -183,7 +183,7 @@ export function validateOfferStrings(body: {
 	if (addressHint.length > MAX_ADDRESS_HINT_LEN) {
 		return {
 			ok: false,
-			error: `Ortshinweis zu lang (max. ${MAX_ADDRESS_HINT_LEN} Zeichen)`,
+			error: `Der Stadtteil-Hinweis ist zu lang (höchstens ${MAX_ADDRESS_HINT_LEN} Zeichen)`,
 		};
 	}
 
@@ -211,20 +211,20 @@ export async function readJsonBody<T>(
 	try {
 		text = await c.req.text();
 	} catch {
-		return { ok: false, error: "Request-Body konnte nicht gelesen werden", status: 400 };
+		return { ok: false, error: "Anfrage konnte nicht gelesen werden", status: 400 };
 	}
 
 	if (!text || !text.trim()) {
-		return { ok: false, error: "Leerer Request-Body", status: 400 };
+		return { ok: false, error: "Es fehlen Angaben", status: 400 };
 	}
 	if (text.length > MAX_JSON_BODY_BYTES) {
-		return { ok: false, error: "Request zu groß", status: 413 };
+		return { ok: false, error: "Die Anfrage ist zu groß", status: 413 };
 	}
 
 	try {
 		return { ok: true, data: JSON.parse(text) as T };
 	} catch {
-		return { ok: false, error: "Ungültiges JSON", status: 400 };
+		return { ok: false, error: "Ungültige Anfrage", status: 400 };
 	}
 }
 

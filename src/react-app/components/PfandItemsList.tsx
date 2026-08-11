@@ -10,7 +10,7 @@ type Props = {
 
 export function PfandItemsList({ items, showTotal = true }: Props) {
 	if (!items.length) {
-		return <p className="muted small">Keine Stückliste hinterlegt.</p>;
+		return <p className="muted small">Keine Stückliste angegeben.</p>;
 	}
 
 	const totalCents = items.reduce((sum, i) => sum + (i.line_cents || 0), 0);
@@ -42,7 +42,7 @@ export function PfandItemsList({ items, showTotal = true }: Props) {
 			</ul>
 			{showTotal && items.length > 1 && (
 				<p className="pfand-items-total muted small">
-					Summe Positionen:{" "}
+					Zusammen:{" "}
 					<strong>{centsToEuro(totalCents)} €</strong>
 				</p>
 			)}

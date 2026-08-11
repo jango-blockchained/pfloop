@@ -7,7 +7,7 @@ export function formatCountdown(deadlineIso: string, now = Date.now()): string {
 	if (Number.isNaN(end)) return "—";
 
 	const ms = end - now;
-	if (ms <= 0) return "abgelaufen";
+	if (ms <= 0) return "Zeit um";
 
 	const totalSec = Math.floor(ms / 1000);
 	if (totalSec < 60) return "unter 1 Min.";

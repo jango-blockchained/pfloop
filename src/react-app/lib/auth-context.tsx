@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			setError(
 				e instanceof Error && e.message
 					? e.message
-					: "Sitzung konnte nicht geladen werden",
+					: "Sitzung konnte nicht geladen werden – bist du online?",
 			);
 		} finally {
 			setLoading(false);

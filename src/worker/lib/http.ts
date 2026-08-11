@@ -31,7 +31,7 @@ export function jsonInternalError(
 		}),
 	);
 	return c.json(
-		{ error: "Interner Fehler — bitte später erneut versuchen" } satisfies ApiErrorBody,
+		{ error: "Da ist etwas schiefgelaufen. Versuch’s bitte gleich nochmal." } satisfies ApiErrorBody,
 		500,
 	);
 }

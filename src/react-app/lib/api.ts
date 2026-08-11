@@ -152,14 +152,14 @@ async function errorFromResponse(res: Response): Promise<string> {
 		"";
 	if (msg) return msg;
 
-	if (res.status === 401) return "Bitte anmelden.";
-	if (res.status === 403) return "Keine Berechtigung.";
+	if (res.status === 401) return "Bitte melde dich an.";
+	if (res.status === 403) return "Dafür hast du keine Berechtigung.";
 	if (res.status === 404) return "Nicht gefunden.";
-	if (res.status === 409) return "Konflikt — bitte Seite aktualisieren.";
-	if (res.status === 422) return "Angaben ungültig.";
-	if (res.status === 429) return "Zu viele Anfragen — bitte kurz warten.";
-	if (res.status >= 500) return "Serverfehler — bitte später erneut versuchen.";
-	return `Anfrage fehlgeschlagen (HTTP ${res.status})`;
+	if (res.status === 409) return "Hat sich gerade geändert – bitte Seite neu laden.";
+	if (res.status === 422) return "Die Angaben passen so nicht.";
+	if (res.status === 429) return "Zu viele Anfragen – warte kurz und versuch’s nochmal.";
+	if (res.status >= 500) return "Server-Problem – versuch’s gleich nochmal.";
+	return `Das hat nicht geklappt (Fehler ${res.status})`;
 }
 
 async function json<T>(res: Response): Promise<T> {

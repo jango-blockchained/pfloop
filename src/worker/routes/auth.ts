@@ -42,7 +42,7 @@ authRoutes.post("/magic-link", async (c) => {
 		.trim()
 		.toLowerCase();
 	if (!isValidEmail(email)) {
-		return jsonError(c, "Gültige E-Mail erforderlich", 400);
+		return jsonError(c, "Bitte eine gültige E-Mail angeben", 400);
 	}
 
 	const displayName = clampDisplayName(
@@ -64,13 +64,13 @@ authRoutes.post("/magic-link", async (c) => {
 			...(mode === "dev_log" ? { magic_link: link, dev: true } : {}),
 			message:
 				mode === "sent"
-					? "Login-Link per E-Mail gesendet."
-					: "Dev-Modus: Link unten (keine E-Mail konfiguriert).",
+					? "Login-Link ist unterwegs – schau in dein Postfach."
+					: "Dev-Modus: Kein E-Mail-Versand – Link siehst du unten.",
 		});
 	} catch (e) {
 		// Provider message is already sanitized in sendMagicLinkEmail.
 		const msg =
-			e instanceof Error ? e.message : "E-Mail-Versand fehlgeschlagen";
+			e instanceof Error ? e.message : "E-Mail konnte nicht gesendet werden";
 		console.error(
 			JSON.stringify({ event: "magic_link_route_error", message: msg }),
 		);
@@ -87,12 +87,12 @@ authRoutes.post("/verify", async (c) => {
 
 	const token = (asOptionalString(parsed.data.token) ?? "").trim();
 	if (!token) {
-		return jsonError(c, "Token fehlt", 400);
+		return jsonError(c, "Im Link fehlt etwas – öffne den kompletten Link aus der Mail", 400);
 	}
 	if (!isValidToken(token)) {
 		return jsonError(
 			c,
-			"Link ungültig oder abgelaufen. Bitte neu anfordern.",
+			"Der Link ist ungültig oder abgelaufen. Hol dir einfach einen neuen.",
 			400,
 		);
 	}
@@ -101,7 +101,7 @@ authRoutes.post("/verify", async (c) => {
 	if (!email) {
 		return jsonError(
 			c,
-			"Link ungültig oder abgelaufen. Bitte neu anfordern.",
+			"Der Link ist ungültig oder abgelaufen. Hol dir einfach einen neuen.",
 			400,
 		);
 	}

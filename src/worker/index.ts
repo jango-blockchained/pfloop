@@ -42,7 +42,7 @@ app.onError((err, c) => {
 	return jsonInternalError(c, err, "hono_on_error");
 });
 
-app.notFound((c) => c.json({ error: "Nicht gefunden" }, 404));
+app.notFound((c) => c.json({ error: "Gibt’s hier nicht" }, 404));
 
 app.get("/api/health", (c) =>
 	c.json({

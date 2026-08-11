@@ -19,7 +19,7 @@ export function centsToEuroString(cents: number): string {
 
 export function assertMinPfand(cents: number): string | null {
 	if (cents < MIN_PFAND_CENTS) {
-		return `Mindest-Pfandwert ist ${centsToEuroString(MIN_PFAND_CENTS)} €`;
+		return `Mindestens ${centsToEuroString(MIN_PFAND_CENTS)} € Pfand nötig`;
 	}
 	return null;
 }

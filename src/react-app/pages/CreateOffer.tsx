@@ -51,13 +51,13 @@ export function CreateOffer() {
 	const restToMin = centsUntilMinimum(totalCents);
 
 	const publishBlockedReason = useMemo(() => {
-		if (saving) return "Wird veröffentlicht…";
-		if (missingItems) return "Bitte Stückzahlen angeben";
+		if (saving) return "Wird gerade veröffentlicht…";
+		if (missingItems) return "Bitte Stückzahlen eintragen";
 		if (belowMin) {
-			return `Noch ${centsToEuroDe(restToMin)} € bis ${centsToEuroDe(MIN_PFAND_CENTS)} € Mindestwert`;
+			return `Noch ${centsToEuroDe(restToMin)} € bis zu den ${centsToEuroDe(MIN_PFAND_CENTS)} € Minimum`;
 		}
-		if (missingAddress) return "Volle Adresse fehlt";
-		if (missingPin) return "Bitte Standort auf der Karte setzen";
+		if (missingAddress) return "Die Adresse fehlt noch";
+		if (missingPin) return "Setz bitte noch einen Punkt auf der Karte";
 		return null;
 	}, [
 		saving,
@@ -77,29 +77,29 @@ export function CreateOffer() {
 		setError(null);
 
 		if (!user) {
-			setError("Bitte zuerst anmelden.");
+			setError("Bitte melde dich zuerst an.");
 			return;
 		}
 		if (missingItems) {
-			setError("Bitte Stückzahlen für Flaschen und/oder Kästen angeben.");
+			setError("Trag bitte ein, wie viele Flaschen oder Kästen du hast.");
 			return;
 		}
 		if (belowMin) {
 			setError(
-				`Mindest-Pfandwert ist ${centsToEuroDe(MIN_PFAND_CENTS)} € (aktuell ${centsToEuroDe(totalCents)} €).`,
+				`Mindestens ${centsToEuroDe(MIN_PFAND_CENTS)} € Pfand – du hast gerade ${centsToEuroDe(totalCents)} €.`,
 			);
 			return;
 		}
 		if (missingAddress) {
 			setError(
 				mode === "recurring"
-					? "Bitte die volle Adresse angeben (nur für den gewählten Abholer sichtbar)."
-					: "Bitte die volle Adresse angeben (nur nach Annahme sichtbar).",
+					? "Bitte die volle Adresse – die sieht nur der gewählte Abholer."
+					: "Bitte die volle Adresse – die sieht man erst nach der Annahme.",
 			);
 			return;
 		}
 		if (!pick) {
-			setError("Bitte einen Punkt auf der Karte setzen.");
+			setError("Setz bitte noch einen Punkt auf der Karte.");
 			return;
 		}
 
@@ -129,7 +129,7 @@ export function CreateOffer() {
 				navigate(`/angebot/${id}`);
 			}
 		} catch (err) {
-			setError(getErrorMessage(err, "Speichern fehlgeschlagen"));
+			setError(getErrorMessage(err, "Speichern hat nicht geklappt"));
 		} finally {
 			setSaving(false);
 		}
@@ -148,8 +148,8 @@ export function CreateOffer() {
 			<div className="page">
 				<h1>Angebot erstellen</h1>
 				<p className="muted">
-					Bitte <Link to="/login">anmelden</Link>, um ein Angebot zu
-					inserieren.
+					Bitte <Link to="/login">anmelden</Link>, dann kannst du ein Angebot
+					einstellen.
 				</p>
 			</div>
 		);
@@ -160,8 +160,8 @@ export function CreateOffer() {
 			<h1>Angebot erstellen</h1>
 			<p className="muted">
 				Stückzahlen nach deutschem Pfandsystem (mind.{" "}
-				{centsToEuroDe(MIN_PFAND_CENTS)} €). Adresse bleibt privat, bis jemand
-				annimmt bzw. als wöchentlicher Abholer gewählt wird.
+				{centsToEuroDe(MIN_PFAND_CENTS)} €). Die genaue Adresse bleibt privat,
+				bis jemand annimmt – oder bis du beim Wöchentlichen jemanden auswählst.
 			</p>
 
 			<form className="form" onSubmit={onSubmit} noValidate>
@@ -178,7 +178,7 @@ export function CreateOffer() {
 							<span>
 								<strong>Einmalig</strong>
 								<span className="muted small">
-									Abholer nimmt an → 6h-Fenster
+									Jemand nimmt an und hat 6 Stunden Zeit
 								</span>
 							</span>
 						</label>
@@ -194,16 +194,17 @@ export function CreateOffer() {
 							<span>
 								<strong>Wöchentlich</strong>
 								<span className="muted small">
-									Bis 2 Stück · Bewerben → du wählst
+									Bis 2 Stück · Leute bewerben sich, du wählst
 								</span>
 							</span>
 						</label>
 					</div>
 					{mode === "recurring" && (
 						<div className="banner info handover-hint">
-							<strong>Wiederkehrend:</strong> Andere melden sich. Du wählst
-							einen Abholer — danach ist das Angebot unsichtbar, bis du den
-							Abholer wieder freigibst. Max. 2 aktive wöchentliche Angebote.
+							<strong>So läuft’s wöchentlich:</strong> Andere können sich
+							bewerben. Du suchst jemanden aus – danach ist das Angebot von der
+							Karte weg, bis du den Abholer wieder freigibst. Maximal zwei
+							aktive wöchentliche Angebote.
 						</div>
 					)}
 				</section>
@@ -217,12 +218,12 @@ export function CreateOffer() {
 					/>
 					{attempted && missingItems && (
 						<p className="banner error">
-							Mindestens eine Stückzahl größer als 0 angeben.
+							Mindestens bei einer Sorte etwas eintragen.
 						</p>
 					)}
 					{lines.length > 0 && (
 						<p className="muted small">
-							Vorschau:{" "}
+							So sieht’s aus:{" "}
 							{lines.map((l) => `${l.quantity}× ${l.label}`).join(", ")}
 						</p>
 					)}
@@ -230,7 +231,7 @@ export function CreateOffer() {
 
 				{mode === "recurring" && (
 					<section className="form-section">
-						<h2 className="form-section-title">Wochentag & Zeit</h2>
+						<h2 className="form-section-title">Wann soll abgeholt werden?</h2>
 						<label>
 							Wochentag
 							<select
@@ -247,11 +248,11 @@ export function CreateOffer() {
 							</select>
 						</label>
 						<label>
-							Zeit-Hinweis (optional)
+							Uhrzeit / Hinweis (optional)
 							<input
 								value={timeHint}
 								onChange={(e) => setTimeHint(e.target.value)}
-								placeholder="z. B. ab 18 Uhr, vormittags…"
+								placeholder="z. B. ab 18 Uhr oder vormittags…"
 								maxLength={80}
 							/>
 						</label>
@@ -263,7 +264,7 @@ export function CreateOffer() {
 						{mode === "recurring" ? "Hinweise & Adresse" : "2. Hinweise & Adresse"}
 					</h2>
 					<label>
-						Hinweis für Abholer (optional)
+						Hinweis für den Abholer (optional)
 						<textarea
 							value={note}
 							onChange={(e) => setNote(e.target.value)}
@@ -275,7 +276,7 @@ export function CreateOffer() {
 
 					<label>
 						{mode === "recurring"
-							? "Volle Adresse (nur gewählter Abholer)"
+							? "Volle Adresse (nur für den gewählten Abholer)"
 							: "Volle Adresse (privat bis zur Annahme)"}
 						<input
 							value={addressText}
@@ -290,7 +291,7 @@ export function CreateOffer() {
 						)}
 					</label>
 					<label>
-						Öffentlicher Hinweis (Stadtteil / Gebiet)
+						Stadtteil / Gegend (öffentlich)
 						<input
 							value={addressHint}
 							onChange={(e) => setAddressHint(e.target.value)}
@@ -304,7 +305,7 @@ export function CreateOffer() {
 					<h2 className="form-section-title">Standort auf der Karte</h2>
 					<div className="form-map">
 						<p className="label">
-							Adresse suchen, Karte tippen oder ◎ für deinen Standort
+							Adresse suchen, auf die Karte tippen oder ◎ für deinen Standort
 						</p>
 						<div className="form-map-inner">
 							<OfferMap
@@ -328,7 +329,7 @@ export function CreateOffer() {
 						</div>
 						{pick ? (
 							<p className="muted small">
-								Pin gesetzt: {pick[0].toFixed(5)}, {pick[1].toFixed(5)}
+								Standort: {pick[0].toFixed(5)}, {pick[1].toFixed(5)}
 							</p>
 						) : (
 							<p
@@ -337,8 +338,8 @@ export function CreateOffer() {
 								}
 							>
 								{attempted && missingPin
-									? "Bitte einen Punkt auf der Karte setzen."
-									: "Noch kein Kartenpunkt."}
+									? "Setz bitte noch einen Punkt auf der Karte."
+									: "Noch kein Punkt auf der Karte."}
 							</p>
 						)}
 					</div>
@@ -354,10 +355,10 @@ export function CreateOffer() {
 						title={publishBlockedReason ?? undefined}
 					>
 						{saving
-							? "Veröffentliche…"
+							? "Wird veröffentlicht…"
 							: mode === "recurring"
-								? `Wöchentlich veröffentlichen (${centsToEuroDe(totalCents)} € · ${weekdayLabel(weekday)})`
-								: `Angebot veröffentlichen (${centsToEuroDe(totalCents)} €)`}
+								? `Wöchentlich online stellen (${centsToEuroDe(totalCents)} € · ${weekdayLabel(weekday)})`
+								: `Angebot online stellen (${centsToEuroDe(totalCents)} €)`}
 					</button>
 					{!canPublish && !saving && (
 						<p className="muted small publish-hint">{publishBlockedReason}</p>

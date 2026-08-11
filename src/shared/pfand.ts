@@ -29,21 +29,21 @@ export type PfandCatalogEntry = {
 export const PFAND_CATALOG: readonly PfandCatalogEntry[] = [
 	{
 		type: "einweg_025",
-		label: "Einweg Flasche / Dose",
-		hint: "PET, Alu-Dose — 0,25 €",
+		label: "Einweg-Flasche / Dose",
+		hint: "PET oder Dose — 0,25 € pro Stück",
 		category: "flasche",
 		unit_cents: 25,
 	},
 	{
 		type: "mehrweg_015",
 		label: "Mehrweg-Flasche",
-		hint: "z. B. Bier, Wasser — 0,15 €",
+		hint: "z. B. Bier oder Wasser — 0,15 €",
 		category: "flasche",
 		unit_cents: 15,
 	},
 	{
 		type: "mehrweg_008",
-		label: "Mehrweg-Flasche (klein)",
+		label: "Kleine Mehrweg-Flasche",
 		hint: "manche Glasflaschen — 0,08 €",
 		category: "flasche",
 		unit_cents: 8,
@@ -51,17 +51,17 @@ export const PFAND_CATALOG: readonly PfandCatalogEntry[] = [
 	{
 		type: "kasten_150",
 		label: "Kasten / Kiste",
-		hint: "typ. Bierkasten — 1,50 € (nur Kasten, Flaschen extra)",
+		hint: "typischer Bierkasten — 1,50 € (nur der Kasten, Flaschen extra)",
 		category: "kasten",
 		unit_cents: 150,
 	},
 	{
 		type: "kasten_300",
-		label: "Kasten (Kunststoff / groß)",
-		hint: "manche Kästen — 3,00 € (nur Kasten)",
+		label: "Großer Kunststoffkasten",
+		hint: "manche Kästen — 3,00 € (nur der Kasten)",
 		category: "kasten",
 		unit_cents: 300,
-	},
+	}
 ] as const;
 
 const byType = new Map(PFAND_CATALOG.map((e) => [e.type, e]));
@@ -98,7 +98,7 @@ export function computePfandFromItems(
 	if (!Array.isArray(raw) || raw.length === 0) {
 		return {
 			ok: false,
-			error: "Bitte Stückzahlen für Flaschen und/oder Kästen angeben",
+			error: "Trag bitte an, wie viele Flaschen oder Kästen du hast",
 		};
 	}
 
@@ -107,18 +107,18 @@ export function computePfandFromItems(
 	for (const row of raw) {
 		const type = row.type;
 		if (!type || !isPfandItemType(type)) {
-			return { ok: false, error: `Ungültiger Pfand-Typ: ${String(type)}` };
+			return { ok: false, error: `Unbekannte Pfand-Art: ${String(type)}` };
 		}
 		const q = row.quantity;
 		if (typeof q !== "number" || !Number.isInteger(q) || q < 0) {
 			return {
 				ok: false,
-				error: `Ungültige Stückzahl für ${getPfandEntry(type).label}`,
+				error: `Komische Stückzahl bei ${getPfandEntry(type).label}`,
 			};
 		}
 		if (q === 0) continue;
 		if (q > 10_000) {
-			return { ok: false, error: "Stückzahl zu groß (max. 10.000 pro Typ)" };
+			return { ok: false, error: "Maximal 10.000 Stück pro Sorte" };
 		}
 		merged.set(type, (merged.get(type) ?? 0) + q);
 	}
@@ -126,7 +126,7 @@ export function computePfandFromItems(
 	if (merged.size === 0) {
 		return {
 			ok: false,
-			error: "Mindestens eine Flasche oder einen Kasten angeben",
+			error: "Mindestens eine Flasche oder einen Kasten eintragen",
 		};
 	}
 

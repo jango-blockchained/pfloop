@@ -1,12 +1,12 @@
 /** German UI labels for offer / reservation status. */
 
 const OFFER: Record<string, string> = {
-	open: "Offen",
+	open: "Frei",
 	reserved: "Reserviert",
-	collected: "Abgeholt — wartet auf Bestätigung",
-	completed: "Erledigt",
+	collected: "Abgeholt – wartet auf dich",
+	completed: "Fertig",
 	cancelled: "Storniert",
-	assigned: "Abholer zugewiesen",
+	assigned: "Abholer fest",
 };
 
 const WEEKDAY_LABELS: Record<number, string> = {
@@ -20,9 +20,9 @@ const WEEKDAY_LABELS: Record<number, string> = {
 };
 
 const RECURRING_APP: Record<string, string> = {
-	pending: "Beworben",
+	pending: "Offen",
 	selected: "Ausgewählt",
-	rejected: "Abgelehnt",
+	rejected: "Nicht genommen",
 	withdrawn: "Zurückgezogen",
 };
 
@@ -36,25 +36,25 @@ export function recurringAppStatusLabel(status: string): string {
 
 export function recurringStatusLabel(status: string): string {
 	if (status === "open") return "Sucht Abholer";
-	if (status === "assigned") return "Abholer zugewiesen";
+	if (status === "assigned") return "Abholer fest";
 	if (status === "cancelled") return "Storniert";
 	return OFFER[status] ?? status;
 }
 
 const RESERVATION: Record<string, string> = {
-	active: "Unterwegs (6h-Fenster)",
-	collected: "Abgeholt — wartet auf Bestätigung",
-	completed: "Erledigt",
+	active: "Unterwegs (noch 6 Std.)",
+	collected: "Abgeholt – wartet auf Bestätigung",
+	completed: "Fertig",
 	released: "Freigegeben",
 };
 
 /** Short helper texts for status badges / lists. */
 const OFFER_HINT: Record<string, string> = {
-	open: "Frei zur Annahme — Adresse erst danach sichtbar.",
-	reserved: "Reserviert — Abholung innerhalb von 6 Stunden.",
-	collected: "Abholer hat gemeldet — Inserent muss bestätigen.",
-	completed: "Zwei-Schritt-Übergabe abgeschlossen.",
-	cancelled: "Angebot wurde storniert.",
+	open: "Kann angenommen werden. Die Adresse siehst du erst danach.",
+	reserved: "Jemand holt ab – innerhalb von 6 Stunden.",
+	collected: "Der Abholer war da. Du musst die Übergabe nur noch bestätigen.",
+	completed: "Alles erledigt.",
+	cancelled: "Wurde storniert.",
 };
 
 export function offerStatusLabel(status: string): string {
@@ -89,36 +89,36 @@ export function offerNextStep(
 ): string | null {
 	if (status === "open") {
 		if (role === "own") {
-			return "Dein Angebot ist sichtbar. Warte auf einen Abholer.";
+			return "Dein Angebot ist online. Warte einfach, bis sich jemand meldet.";
 		}
 		if (role === "public") {
-			return "Annehmen, um die Adresse zu sehen und innerhalb von 6 Stunden abzuholen.";
+			return "Nimm es an – dann siehst du die Adresse und hast 6 Stunden zum Abholen.";
 		}
 		return null;
 	}
 	if (status === "reserved") {
 		if (role === "collector") {
-			return "Schritt 1/2: Hole das Pfand ab und melde es hier als „Abgeholt“.";
+			return "Hol das Pfand ab und tipp danach auf „Abgeholt“.";
 		}
 		if (role === "own") {
-			return "Ein Abholer ist unterwegs. Warte auf die Meldung „Abgeholt“.";
+			return "Jemand ist unterwegs. Warte, bis er oder sie „Abgeholt“ tippt.";
 		}
-		return "Derzeit reserviert.";
+		return "Gerade reserviert.";
 	}
 	if (status === "collected") {
 		if (role === "own") {
-			return "Schritt 2/2: Bitte bestätige die Übergabe — erst dann ist alles erledigt.";
+			return "Bitte bestätige die Übergabe – dann ist alles erledigt.";
 		}
 		if (role === "collector") {
-			return "Warte auf die Bestätigung des Inserenten. Bis dahin kein neues Angebot.";
+			return "Fast geschafft. Der Inserent muss nur noch bestätigen. Bis dahin kein neues Angebot.";
 		}
-		return "Übergabe wartet auf Bestätigung.";
+		return "Wartet noch auf die Bestätigung.";
 	}
 	if (status === "completed") {
-		return "Übergabe bestätigt — Abholung erledigt.";
+		return "Passt – Abholung erledigt.";
 	}
 	if (status === "cancelled") {
-		return "Dieses Angebot wurde storniert.";
+		return "Das Angebot wurde storniert.";
 	}
 	return null;
 }

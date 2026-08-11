@@ -11,10 +11,10 @@ export default defineConfig({
 			registerType: "autoUpdate",
 			includeAssets: ["favicon.svg", "apple-touch-icon.png"],
 			manifest: {
-				name: "GrabMe — Pfand abholen",
+				name: "GrabMe – Pfand abholen",
 				short_name: "GrabMe",
 				description:
-					"Angebote zum Abholen von Flaschenpfand finden und inserieren",
+					"Pfand-Angebote in der Nähe finden und selbst einstellen",
 				theme_color: "#0f766e",
 				background_color: "#0f172a",
 				display: "standalone",

@@ -118,7 +118,7 @@ recurringRoutes.get("/", async (c) => {
 recurringRoutes.get("/mine", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const { results } = await c.env.DB.prepare(
@@ -178,7 +178,7 @@ recurringRoutes.get("/mine", async (c) => {
 recurringRoutes.get("/applications/mine", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const { results } = await c.env.DB.prepare(
@@ -241,7 +241,7 @@ recurringRoutes.get("/applications/mine", async (c) => {
 recurringRoutes.get("/:id", async (c) => {
 	const id = c.req.param("id");
 	if (!isUuid(id)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const userId = c.get("userId");
@@ -252,7 +252,7 @@ recurringRoutes.get("/:id", async (c) => {
 		.first<RecurringRow>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const isOwn = userId === offer.poster_id;
@@ -262,10 +262,10 @@ recurringRoutes.get("/:id", async (c) => {
 		offer.assigned_collector_id === userId;
 
 	if (offer.status === "assigned" && !isOwn && !isAssignedCollector) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 	if (offer.status === "cancelled" && !isOwn) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const items = await loadRecurringOfferItems(c.env.DB, id);
@@ -358,7 +358,7 @@ recurringRoutes.get("/:id", async (c) => {
 recurringRoutes.post("/", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const activeCount = await c.env.DB.prepare(
@@ -371,7 +371,7 @@ recurringRoutes.post("/", async (c) => {
 	if ((activeCount?.n ?? 0) >= MAX_RECURRING_OFFERS_PER_USER) {
 		return jsonError(
 			c,
-			`Maximal ${MAX_RECURRING_OFFERS_PER_USER} wiederkehrende Angebote gleichzeitig. Bitte zuerst eines stornieren.`,
+			`Maximal ${MAX_RECURRING_OFFERS_PER_USER} wöchentliche Angebote gleichzeitig. Storniere oder gib zuerst eines frei.`,
 			400,
 		);
 	}
@@ -395,14 +395,14 @@ recurringRoutes.post("/", async (c) => {
 
 	const weekday = parseWeekday(body.weekday);
 	if (weekday == null) {
-		return jsonError(c, "Wochentag erforderlich (1=Montag … 7=Sonntag)", 400);
+		return jsonError(c, "Bitte einen Wochentag wählen", 400);
 	}
 
 	const itemsRaw = Array.isArray(body.items)
 		? (body.items as Array<{ type?: string; quantity?: number }>)
 		: [];
 	if (itemsRaw.length > 20) {
-		return jsonError(c, "Zu viele Einträge in items", 400);
+		return jsonError(c, "Zu viele Einträge in der Stückliste", 400);
 	}
 
 	const computed = computePfandFromItems(itemsRaw);
@@ -478,12 +478,12 @@ recurringRoutes.post("/", async (c) => {
 recurringRoutes.post("/:id/apply", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const offerId = c.req.param("id");
 	if (!isUuid(offerId)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	let message = "";
@@ -503,19 +503,19 @@ recurringRoutes.post("/:id/apply", async (c) => {
 		.first<{ id: string; poster_id: string; status: string }>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 	if (offer.poster_id === userId) {
 		return jsonError(
 			c,
-			"Auf eigenes Angebot kann man sich nicht bewerben",
+			"Auf dein eigenes Angebot kannst du dich nicht bewerben",
 			400,
 		);
 	}
 	if (offer.status !== "open") {
 		return jsonError(
 			c,
-			"Dieses wiederkehrende Angebot nimmt keine Bewerbungen mehr an",
+			"Hier kannst du dich gerade nicht bewerben",
 			409,
 		);
 	}
@@ -531,10 +531,10 @@ recurringRoutes.post("/:id/apply", async (c) => {
 
 	if (existing) {
 		if (existing.status === "pending") {
-			return jsonError(c, "Du hast dich bereits beworben", 409);
+			return jsonError(c, "Du hast dich schon beworben", 409);
 		}
 		if (existing.status === "selected") {
-			return jsonError(c, "Du bist bereits als Abholer ausgewählt", 409);
+			return jsonError(c, "Du bist schon als Abholer ausgewählt", 409);
 		}
 		await c.env.DB.prepare(
 			`UPDATE recurring_applications
@@ -562,7 +562,7 @@ recurringRoutes.post("/:id/apply", async (c) => {
 	} catch {
 		return jsonError(
 			c,
-			"Bewerbung fehlgeschlagen — bitte erneut versuchen",
+			"Bewerbung hat nicht geklappt – versuch’s nochmal",
 			409,
 		);
 	}
@@ -577,12 +577,12 @@ recurringRoutes.post("/:id/apply", async (c) => {
 recurringRoutes.post("/:id/select", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const offerId = c.req.param("id");
 	if (!isUuid(offerId)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const parsed = await readJsonBody<{
@@ -606,7 +606,7 @@ recurringRoutes.post("/:id/select", async (c) => {
 		(!applicantId || !isUuid(applicantId)) &&
 		(!applicationId || !isUuid(applicationId))
 	) {
-		return jsonError(c, "applicant_id oder application_id erforderlich", 400);
+		return jsonError(c, "Es fehlt, wen du auswählen willst", 400);
 	}
 
 	const offer = await c.env.DB.prepare(
@@ -616,17 +616,17 @@ recurringRoutes.post("/:id/select", async (c) => {
 		.first<{ id: string; poster_id: string; status: string }>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 	if (offer.poster_id !== userId) {
-		return jsonError(c, "Nur der Inserent kann einen Abholer auswählen", 403);
+		return jsonError(c, "Nur du als Inserent kannst jemanden auswählen", 403);
 	}
 	if (offer.status !== "open") {
 		return jsonError(
 			c,
 			offer.status === "assigned"
-				? "Bereits ein Abholer zugewiesen — zuerst freigeben"
-				: "Angebot ist nicht mehr offen",
+				? "Da ist schon jemand dran – gib den Abholer erst frei"
+				: "Das Angebot ist nicht mehr offen",
 			400,
 		);
 	}
@@ -648,7 +648,7 @@ recurringRoutes.post("/:id/select", async (c) => {
 	if (!app || app.status !== "pending") {
 		return jsonError(
 			c,
-			"Keine offene Bewerbung für diese Person gefunden",
+			"Zu der Person gibt’s keine offene Bewerbung",
 			404,
 		);
 	}
@@ -677,7 +677,7 @@ recurringRoutes.post("/:id/select", async (c) => {
 	]);
 
 	if ((results[0]?.meta?.changes ?? 0) === 0) {
-		return jsonError(c, "Auswahl fehlgeschlagen — bitte neu laden", 409);
+		return jsonError(c, "Auswahl hat nicht geklappt – bitte neu laden", 409);
 	}
 
 	return c.json({
@@ -694,12 +694,12 @@ recurringRoutes.post("/:id/select", async (c) => {
 recurringRoutes.post("/:id/unassign", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const offerId = c.req.param("id");
 	if (!isUuid(offerId)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const offer = await c.env.DB.prepare(
@@ -715,13 +715,13 @@ recurringRoutes.post("/:id/unassign", async (c) => {
 		}>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 	if (offer.poster_id !== userId) {
-		return jsonError(c, "Nur der Inserent kann den Abholer freigeben", 403);
+		return jsonError(c, "Nur du als Inserent kannst den Abholer freigeben", 403);
 	}
 	if (offer.status !== "assigned") {
-		return jsonError(c, "Kein Abholer zugewiesen", 400);
+		return jsonError(c, "Es ist gerade niemand als Abholer eingetragen", 400);
 	}
 
 	const now = nowIso();
@@ -743,7 +743,7 @@ recurringRoutes.post("/:id/unassign", async (c) => {
 	]);
 
 	if ((results[0]?.meta?.changes ?? 0) === 0) {
-		return jsonError(c, "Freigabe fehlgeschlagen — bitte neu laden", 409);
+		return jsonError(c, "Freigabe hat nicht geklappt – bitte neu laden", 409);
 	}
 
 	return c.json({ ok: true, status: "open" });
@@ -753,12 +753,12 @@ recurringRoutes.post("/:id/unassign", async (c) => {
 recurringRoutes.post("/:id/withdraw", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const offerId = c.req.param("id");
 	if (!isUuid(offerId)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const now = nowIso();
@@ -771,7 +771,7 @@ recurringRoutes.post("/:id/withdraw", async (c) => {
 		.run();
 
 	if ((result.meta?.changes ?? 0) === 0) {
-		return jsonError(c, "Keine offene Bewerbung zum Zurückziehen", 404);
+		return jsonError(c, "Du hast hier keine offene Bewerbung", 404);
 	}
 
 	return c.json({ ok: true });
@@ -781,12 +781,12 @@ recurringRoutes.post("/:id/withdraw", async (c) => {
 recurringRoutes.post("/:id/cancel", async (c) => {
 	const userId = c.get("userId");
 	if (!userId) {
-		return jsonError(c, "Anmeldung erforderlich", 401);
+		return jsonError(c, "Bitte melde dich an", 401);
 	}
 
 	const offerId = c.req.param("id");
 	if (!isUuid(offerId)) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 
 	const offer = await c.env.DB.prepare(
@@ -796,13 +796,13 @@ recurringRoutes.post("/:id/cancel", async (c) => {
 		.first<{ poster_id: string; status: string }>();
 
 	if (!offer) {
-		return jsonError(c, "Angebot nicht gefunden", 404);
+		return jsonError(c, "Das Angebot gibt’s nicht (mehr)", 404);
 	}
 	if (offer.poster_id !== userId) {
-		return jsonError(c, "Nur der Inserent kann stornieren", 403);
+		return jsonError(c, "Nur du als Inserent kannst stornieren", 403);
 	}
 	if (offer.status === "cancelled") {
-		return jsonError(c, "Bereits storniert", 400);
+		return jsonError(c, "Schon storniert", 400);
 	}
 
 	const now = nowIso();
@@ -828,7 +828,7 @@ recurringRoutes.post("/:id/cancel", async (c) => {
 	]);
 
 	if ((results[0]?.meta?.changes ?? 0) === 0) {
-		return jsonError(c, "Storno fehlgeschlagen", 400);
+		return jsonError(c, "Stornieren hat nicht geklappt", 400);
 	}
 
 	return c.json({ ok: true });

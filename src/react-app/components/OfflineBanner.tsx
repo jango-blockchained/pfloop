@@ -29,7 +29,8 @@ export function OfflineBanner() {
 				!
 			</span>
 			<span className="offline-banner-text">
-				Offline — Karte und API brauchen Internet. Die App-Shell bleibt nutzbar.
+				Du bist offline. Karte und Angebote brauchen Internet – die App selbst
+				bleibt offen.
 			</span>
 		</div>
 	);
