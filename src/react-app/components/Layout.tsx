@@ -16,9 +16,14 @@ export function Layout() {
 			<OfflineBanner />
 			<header className="topbar">
 				<Link to="/" className="brand" aria-label="GrabMe Startseite">
-					<span className="brand-mark" aria-hidden="true">
-						G
-					</span>
+					<img
+						className="brand-mark"
+						src="/logo-mark.svg"
+						width={32}
+						height={32}
+						alt=""
+						decoding="async"
+					/>
 					<span className="brand-text">
 						<span className="brand-name">GrabMe</span>
 					</span>

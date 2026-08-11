@@ -9,7 +9,13 @@ export default defineConfig({
 		cloudflare(),
 		VitePWA({
 			registerType: "autoUpdate",
-			includeAssets: ["favicon.svg", "apple-touch-icon.png"],
+			includeAssets: [
+				"favicon.svg",
+				"favicon-32.png",
+				"logo-mark.svg",
+				"logo.svg",
+				"apple-touch-icon.png",
+			],
 			manifest: {
 				name: "GrabMe – Pfand abholen",
 				short_name: "GrabMe",

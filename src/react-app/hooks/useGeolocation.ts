@@ -55,9 +55,21 @@ export function useGeolocation(): {
 				});
 		}
 
+		// maximumAge: 0 — avoid a stale/coarse network location (wrong city)
+		// as the first map center. Prefer a quick GPS-ish fix; fall back to Berlin.
 		navigator.geolocation.getCurrentPosition(
 			(pos) => {
 				if (cancelled) return;
+				// Extremely coarse first fix (often ISP city) → keep Berlin + banner
+				// so the user isn't teleported to a random city; ◎ can refine.
+				const acc = pos.coords.accuracy;
+				if (Number.isFinite(acc) && acc > 25_000) {
+					finishFallback(
+						"Standort nur grob erkannt – Karte zeigt Berlin. Tippe ◎ für deinen Standort.",
+						"granted",
+					);
+					return;
+				}
 				setCenter([pos.coords.latitude, pos.coords.longitude]);
 				setFromUser(true);
 				setPermission("granted");
@@ -78,7 +90,7 @@ export function useGeolocation(): {
 				}
 				finishFallback(message, perm);
 			},
-			{ enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 },
+			{ enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 },
 		);
 
 		return () => {

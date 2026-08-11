@@ -233,20 +233,16 @@ select {
 }
 
 .brand-mark {
-	display: inline-grid;
-	place-items: center;
+	display: block;
 	width: 1.9rem;
 	height: 1.9rem;
 	border-radius: var(--radius);
-	background: var(--brand-gradient);
-	color: var(--text-on-brand);
-	font-size: 0.9rem;
-	font-weight: 800;
-	letter-spacing: -0.02em;
+	flex-shrink: 0;
+	object-fit: contain;
+	/* SVG already has tile + shadow; light ring for dark topbar */
 	box-shadow:
-		0 0 0 1px rgba(255, 255, 255, 0.12) inset,
-		0 0 0 1px rgba(15, 118, 110, 0.25),
-		0 3px 10px rgba(15, 118, 110, 0.4);
+		0 0 0 1px rgba(255, 255, 255, 0.1),
+		0 2px 8px rgba(15, 118, 110, 0.35);
 }
 
 .brand-name {
@@ -269,7 +265,7 @@ select {
 	min-height: var(--touch-min);
 	display: inline-flex;
 	align-items: center;
-	border-radius: var(--radius-pill);
+	border-radius: var(--radius-sm);
 	text-decoration: none;
 	letter-spacing: 0.01em;
 	transition:
@@ -336,7 +332,8 @@ select {
 	flex: 1;
 }
 
-/* Search + relocate overlay — light glassmorphism */
+/* Search + relocate overlay — light glassmorphism
+   Zoom is bottom-right so toolbar can use full top width. */
 .map-toolbar {
 	position: absolute;
 	top: 0.65rem;
@@ -350,6 +347,12 @@ select {
 	pointer-events: none;
 	border: 0 !important;
 	box-shadow: none !important;
+}
+
+/* form maps are smaller — keep zoom bottom-right, slightly tighter toolbar */
+.form-map-inner .leaflet-bottom.leaflet-right {
+	bottom: 0.25rem;
+	right: 0.25rem;
 }
 
 .map-toolbar > * {
@@ -1255,16 +1258,70 @@ select {
 	border-color: #a7f3d0;
 }
 
+/* Geo / error banners: under the search toolbar, not on the bottom sheet edge */
 .map-panel .banner {
 	position: absolute;
-	left: 0.75rem;
-	right: 0.75rem;
-	bottom: max(0.75rem, env(safe-area-inset-bottom));
-	z-index: 500;
+	left: 0.65rem;
+	right: 0.65rem;
+	top: 3.85rem;
+	bottom: auto;
+	z-index: 900;
 	margin: 0;
 	box-shadow: var(--shadow-md);
 	backdrop-filter: blur(8px);
 	-webkit-backdrop-filter: blur(8px);
+	max-height: 30%;
+	overflow: auto;
+}
+
+/* Leaflet zoom (bottom-right) — clear of bottom sheet + install prompt */
+@media (max-width: 800px) {
+	.home .leaflet-bottom.leaflet-right {
+		bottom: 0.35rem;
+		right: 0.35rem;
+		margin-bottom: 0;
+	}
+
+	/* Room for collapsed bottom sheet so zoom isn't buried under it */
+	.home .leaflet-control-zoom {
+		margin-bottom: 0.25rem !important;
+	}
+
+	/* Install prompt sits above the sheet, not on top of list content */
+	.app-shell:has(.home):has(.install-banner) .install-banner {
+		bottom: calc(38vh + 0.55rem);
+		max-width: min(28rem, calc(100% - 1.5rem));
+	}
+
+	.app-shell:has(.home-sheet-expanded):has(.install-banner) .install-banner {
+		/* Expanded sheet: tuck install to a slim bar so it doesn't float mid-screen */
+		bottom: max(0.65rem, env(safe-area-inset-bottom));
+		opacity: 0.97;
+	}
+
+	/* Keep sheet body scrollable above fixed install when expanded */
+	.app-shell:has(.home-sheet-expanded):has(.install-banner) .side-panel-body {
+		padding-bottom: 6.75rem;
+	}
+
+	/* Zoom control clear of install when sheet collapsed (install is mid-screen) */
+	.app-shell:has(.home):has(.install-banner) .leaflet-bottom.leaflet-right {
+		bottom: 0.35rem;
+	}
+}
+
+/* Non-home pages: leave bottom padding so install doesn't cover sticky CTAs */
+.app-shell:has(.install-banner):not(:has(.home)) .page {
+	padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+}
+
+/* Attribution: keep readable, not under install when possible */
+.leaflet-control-attribution {
+	font-size: 0.65rem !important;
+	max-width: min(55vw, 14rem);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 code {

@@ -3,6 +3,7 @@ import {
 	TileLayer,
 	Marker,
 	Popup,
+	ZoomControl,
 	useMap,
 	useMapEvents,
 } from "react-leaflet";
@@ -359,30 +360,133 @@ function MapToolbar({
 		setLocating(true);
 		setMsg("Standort wird ermittelt…");
 		setMsgTone("info");
+
+		/**
+		 * First click often returns a coarse/cached network location (ISP city,
+		 * e.g. far away). Never use maximumAge cache; if accuracy is poor, refine
+		 * briefly via watchPosition before finishing.
+		 */
+		const GOOD_ACCURACY_M = 120;
+		const ACCEPTABLE_ACCURACY_M = 800;
+		const REFINE_MS = 5_000;
+
+		let watchId: number | null = null;
+		let finished = false;
+		let best: GeolocationPosition | null = null;
+
+		const cleanup = () => {
+			if (watchId != null) {
+				navigator.geolocation.clearWatch(watchId);
+				watchId = null;
+			}
+		};
+
+		const apply = (pos: GeolocationPosition) => {
+			const lat = pos.coords.latitude;
+			const lng = pos.coords.longitude;
+			// Higher zoom when we trust the fix more
+			const acc = pos.coords.accuracy;
+			const zoom = acc <= GOOD_ACCURACY_M ? 16 : acc <= ACCEPTABLE_ACCURACY_M ? 15 : 13;
+			onFly({ lat, lng, zoom, key: Date.now() });
+			onLocationResolved?.({ lat, lng, label: "Mein Standort" });
+		};
+
+		const doneOk = () => {
+			if (finished) return;
+			finished = true;
+			cleanup();
+			setLocating(false);
+			setMsg(null);
+		};
+
+		const doneErr = (err: GeolocationPositionError) => {
+			if (finished) return;
+			finished = true;
+			cleanup();
+			let text = "Standort konnte nicht ermittelt werden";
+			if (err.code === err.PERMISSION_DENIED) {
+				text =
+					"Standort blockiert – in den Browser-Einstellungen freigeben";
+			} else if (err.code === err.TIMEOUT) {
+				text = "Standort dauert zu lange – nochmal versuchen";
+			} else if (err.code === err.POSITION_UNAVAILABLE) {
+				text = "Standort gerade nicht verfügbar";
+			}
+			setMsg(text);
+			setMsgTone("error");
+			setLocating(false);
+		};
+
+		const consider = (pos: GeolocationPosition) => {
+			if (
+				!best ||
+				pos.coords.accuracy < best.coords.accuracy ||
+				// Prefer any newer fix if accuracy is similar
+				(pos.coords.accuracy <= best.coords.accuracy * 1.15 &&
+					pos.timestamp >= best.timestamp)
+			) {
+				best = pos;
+				apply(pos);
+			}
+			if (pos.coords.accuracy <= GOOD_ACCURACY_M) {
+				doneOk();
+			}
+		};
+
+		// Fresh fix only — never reuse a stale/coarse cached position
 		navigator.geolocation.getCurrentPosition(
 			(pos) => {
-				const lat = pos.coords.latitude;
-				const lng = pos.coords.longitude;
-				onFly({ lat, lng, zoom: 15, key: Date.now() });
-				onLocationResolved?.({ lat, lng, label: "Mein Standort" });
-				setLocating(false);
-				setMsg(null);
-			},
-			(err) => {
-				let text = "Standort konnte nicht ermittelt werden";
-				if (err.code === err.PERMISSION_DENIED) {
-					text =
-						"Standort blockiert – in den Browser-Einstellungen freigeben";
-				} else if (err.code === err.TIMEOUT) {
-					text = "Standort dauert zu lange – nochmal versuchen";
-				} else if (err.code === err.POSITION_UNAVAILABLE) {
-					text = "Standort gerade nicht verfügbar";
+				consider(pos);
+				if (finished) return;
+
+				// Coarse first fix (common on first click) → refine a few seconds
+				if (pos.coords.accuracy > GOOD_ACCURACY_M) {
+					setMsg("Standort wird verfeinert…");
+					watchId = navigator.geolocation.watchPosition(
+						(better) => {
+							consider(better);
+						},
+						() => {
+							// Keep best we have if refine fails
+							if (best) doneOk();
+							else doneErr({
+								code: 2,
+								message: "unavailable",
+								PERMISSION_DENIED: 1,
+								POSITION_UNAVAILABLE: 2,
+								TIMEOUT: 3,
+							} as GeolocationPositionError);
+						},
+						{
+							enableHighAccuracy: true,
+							maximumAge: 0,
+							timeout: REFINE_MS,
+						},
+					);
+					window.setTimeout(() => {
+						if (!finished) {
+							if (best) doneOk();
+							else
+								doneErr({
+									code: 3,
+									message: "timeout",
+									PERMISSION_DENIED: 1,
+									POSITION_UNAVAILABLE: 2,
+									TIMEOUT: 3,
+								} as GeolocationPositionError);
+						}
+					}, REFINE_MS);
+				} else {
+					doneOk();
 				}
-				setMsg(text);
-				setMsgTone("error");
-				setLocating(false);
 			},
-			{ enableHighAccuracy: true, timeout: 12_000, maximumAge: 10_000 },
+			doneErr,
+			{
+				enableHighAccuracy: true,
+				timeout: 15_000,
+				// Critical: 0 prevents first-click jump to a wrong cached city
+				maximumAge: 0,
+			},
 		);
 	}
 
@@ -536,7 +640,11 @@ export function OfferMap({
 				zoom={12}
 				className={className}
 				scrollWheelZoom
+				// Default zoom sits top-left and collides with search toolbar
+				zoomControl={false}
 			>
+				{/* Bottom-right keeps zoom free of search + locate chrome */}
+				<ZoomControl position="bottomright" />
 				<TileLayer
 					attribution='&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'
 					url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
