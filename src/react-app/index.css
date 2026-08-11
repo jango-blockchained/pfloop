@@ -3,9 +3,11 @@
 	/* Surfaces */
 	--bg: #0f172a;
 	--bg-elevated: #1e293b;
-	--bg-app: #f0f2f5;
+	--bg-app: #f4f5f7;
 	--bg-pattern: url("/bg-pattern.jpg");
-	--bg-pattern-size: 380px;
+	--bg-pattern-size: 400px;
+	/* White wash over doodles — higher = lighter / less contrast */
+	--bg-pattern-wash: 0.62;
 	--panel: #f8fafc;
 	--panel-dark: #1e293b;
 	--surface: #ffffff;
@@ -177,9 +179,14 @@ select {
 	height: 100%;
 	/* WhatsApp-style Pfand doodle tile (cans, bottles, crates) */
 	background-color: var(--bg-app);
-	background-image: var(--bg-pattern);
+	background-image:
+		linear-gradient(
+			rgba(244, 245, 247, var(--bg-pattern-wash)),
+			rgba(244, 245, 247, var(--bg-pattern-wash))
+		),
+		var(--bg-pattern);
 	background-repeat: repeat;
-	background-size: var(--bg-pattern-size) var(--bg-pattern-size);
+	background-size: auto, var(--bg-pattern-size) var(--bg-pattern-size);
 	background-attachment: local;
 	color: var(--text);
 }
