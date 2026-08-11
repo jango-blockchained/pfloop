@@ -24,7 +24,11 @@ import {
 } from "../lib/pfand-ui";
 import { AreaSelect } from "../components/AreaSelect";
 import { WeeklyTips } from "../components/WeeklyTips";
-import { isPublicArea, suggestPublicArea } from "../../shared/areas";
+import {
+	canonicalizePublicArea,
+	isPublicArea,
+	suggestPublicArea,
+} from "../../shared/areas";
 import { centsToEuroDe } from "../../shared/pfand";
 
 const WEEKDAYS: Weekday[] = [1, 2, 3, 4, 5, 6, 7];
@@ -84,7 +88,7 @@ export function CreateOffer() {
 		// Only apply catalog areas (legacy free-text hints may not match)
 		setAddressHint(
 			isPublicArea(a.address_hint)
-				? a.address_hint
+				? canonicalizePublicArea(a.address_hint)
 				: (suggestPublicArea(a.address_hint || a.address_text) ?? ""),
 		);
 		setPick([a.lat, a.lng]);
@@ -446,7 +450,8 @@ export function CreateOffer() {
 							}}
 						/>
 						<span className="muted small">
-							Auf der Karte sichtbar – bitte aus der Liste wählen.
+							Auf der Karte sichtbar – tippen zum Suchen, z. B. „Linden“
+							oder „Hannover“.
 						</span>
 						{attempted && missingArea && (
 							<span className="field-error">

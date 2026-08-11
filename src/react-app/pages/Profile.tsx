@@ -12,7 +12,11 @@ import {
 	type SavedAddress,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
-import { isPublicArea, suggestPublicArea } from "../../shared/areas";
+import {
+	canonicalizePublicArea,
+	isPublicArea,
+	suggestPublicArea,
+} from "../../shared/areas";
 
 const emptyForm = {
 	label: "",
@@ -66,7 +70,7 @@ export function Profile() {
 			label: a.label,
 			address_text: a.address_text,
 			address_hint: isPublicArea(a.address_hint)
-				? a.address_hint
+				? canonicalizePublicArea(a.address_hint)
 				: (suggestPublicArea(a.address_hint || a.address_text) ?? ""),
 			lat: a.lat,
 			lng: a.lng,
