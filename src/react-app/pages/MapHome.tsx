@@ -582,7 +582,8 @@ export function MapHome() {
 					</div>
 
 					<p className="footnote">
-						Kostenlos · nur eine offene Abholung · Abholer meldet, Inserent bestätigt
+						Kostenlos · nur eine offene Abholung · Abholer meldet, Inserent
+						bestätigt · wöchentlich: feste Zeit hält den Aufwand klein
 					</p>
 				</div>
 			</aside>

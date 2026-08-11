@@ -20,6 +20,7 @@ import {
 	weekdayLabel,
 } from "../lib/labels";
 import { PfandItemsList } from "../components/PfandItemsList";
+import { WeeklyTips } from "../components/WeeklyTips";
 
 export function RecurringDetail() {
 	const { id } = useParams<{ id: string }>();
@@ -233,14 +234,17 @@ export function RecurringDetail() {
 				{offer.is_own && offer.status === "assigned" && (
 					<>
 						<strong>Abholer steht fest:</strong> Andere sehen das Angebot nicht
-						mehr. Freigeben, wenn wieder Bewerbungen rein sollen.
+						mehr. Freigeben, wenn wieder Bewerbungen rein sollen. Stell das
+						Pfand bitte immer zur vereinbarten Zeit bereit.
 					</>
 				)}
 				{offer.is_assigned_collector && (
 					<>
 						<strong>Du holst regelmäßig ab:</strong> Die Adresse siehst du.
 						Termin: {weekdayLabel(offer.weekday)}
-						{offer.time_hint ? `, ${offer.time_hint}` : ""}.
+						{offer.time_hint ? `, ${offer.time_hint}` : ""}. Melde die Abholung
+						bitte selbst in der App – sonst blockiert eine offene Abholung neue
+						Angebote.
 					</>
 				)}
 				{!offer.is_own && !offer.is_assigned_collector && offer.status === "open" && (
@@ -250,6 +254,12 @@ export function RecurringDetail() {
 					</>
 				)}
 			</div>
+
+			{offer.is_own && <WeeklyTips variant="poster" />}
+			{offer.is_assigned_collector && <WeeklyTips variant="collector" />}
+			{!offer.is_own &&
+				!offer.is_assigned_collector &&
+				offer.status === "open" && <WeeklyTips variant="applicant" compact />}
 
 			<div className="detail-card">
 				<div className="detail-row">

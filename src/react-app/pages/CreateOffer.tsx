@@ -19,6 +19,7 @@ import {
 	quantitiesToItems,
 	totalFromQuantities,
 } from "../lib/pfand-ui";
+import { WeeklyTips } from "../components/WeeklyTips";
 import { centsToEuroDe } from "../../shared/pfand";
 
 const WEEKDAYS: Weekday[] = [1, 2, 3, 4, 5, 6, 7];
@@ -200,12 +201,15 @@ export function CreateOffer() {
 						</label>
 					</div>
 					{mode === "recurring" && (
-						<div className="banner info handover-hint">
-							<strong>So läuft’s wöchentlich:</strong> Andere können sich
-							bewerben. Du suchst jemanden aus – danach ist das Angebot von der
-							Karte weg, bis du den Abholer wieder freigibst. Maximal zwei
-							aktive wöchentliche Angebote.
-						</div>
+						<>
+							<div className="banner info handover-hint">
+								<strong>So läuft’s wöchentlich:</strong> Andere können sich
+								bewerben. Du suchst jemanden aus – danach ist das Angebot von der
+								Karte weg, bis du den Abholer wieder freigibst. Maximal zwei
+								aktive wöchentliche Angebote.
+							</div>
+							<WeeklyTips variant="create" />
+						</>
 					)}
 				</section>
 
@@ -252,9 +256,13 @@ export function CreateOffer() {
 							<input
 								value={timeHint}
 								onChange={(e) => setTimeHint(e.target.value)}
-								placeholder="z. B. ab 18 Uhr oder vormittags…"
+								placeholder="z. B. ab 18 Uhr im Hof, vormittags bei den Tonnen…"
 								maxLength={80}
 							/>
+							<span className="muted small">
+								Feste Zeit und kurzer Ortshinweis machen die Abholung für beide
+								entspannt und schnell.
+							</span>
 						</label>
 					</section>
 				)}
