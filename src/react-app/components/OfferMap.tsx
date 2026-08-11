@@ -171,17 +171,18 @@ const OfferMarker = memo(function OfferMarker({ offer }: { offer: PublicOffer })
 		<Marker position={[offer.lat, offer.lng]}>
 			<Popup>
 				<div className="map-popup">
-					<div className="map-popup-value">{pfand} € Pfand</div>
+					<div className="map-popup-head">
+						<div className="map-popup-value">{pfand} €</div>
+						<span className="map-popup-kind muted small">Pfand</span>
+					</div>
 					<strong className="map-popup-title">{title}</strong>
 					{items && offer.title?.trim() ? (
 						<div className="map-popup-items muted small">{items}</div>
 					) : null}
-					{offer.address_hint ? (
-						<div className="map-popup-hint muted small">{offer.address_hint}</div>
-					) : (
-						<div className="map-popup-hint muted small">Ungefähre Lage</div>
-					)}
-					<Link className="map-popup-link" to={`/angebot/${offer.id}`}>
+					<div className="map-popup-hint muted small">
+						{offer.address_hint || "Ungefähre Lage"}
+					</div>
+					<Link className="map-popup-link btn btn-sm btn-primary" to={`/angebot/${offer.id}`}>
 						Details ansehen
 					</Link>
 				</div>
@@ -203,8 +204,11 @@ const RecurringMarker = memo(function RecurringMarker({
 	return (
 		<Marker position={[offer.lat, offer.lng]} icon={recurringIcon}>
 			<Popup>
-				<div className="map-popup">
-					<div className="map-popup-value">{pfand} € · wöchentlich</div>
+				<div className="map-popup map-popup-recurring">
+					<div className="map-popup-head">
+						<div className="map-popup-value">{pfand} €</div>
+						<span className="map-popup-kind badge">Wöchentlich</span>
+					</div>
 					<strong className="map-popup-title">{title}</strong>
 					<div className="map-popup-items muted small">
 						{day}
@@ -213,7 +217,7 @@ const RecurringMarker = memo(function RecurringMarker({
 					{offer.address_hint ? (
 						<div className="map-popup-hint muted small">{offer.address_hint}</div>
 					) : null}
-					<Link className="map-popup-link" to={`/woche/${offer.id}`}>
+					<Link className="map-popup-link btn btn-sm btn-primary" to={`/woche/${offer.id}`}>
 						Details & bewerben
 					</Link>
 				</div>
@@ -391,66 +395,86 @@ function MapToolbar({
 
 	return (
 		<div className="map-toolbar leaflet-bar" ref={wrapRef}>
-			<form className="map-search" onSubmit={onSubmit} autoComplete="off" role="search">
-				<input
-					id={inputId}
-					type="search"
-					className="map-search-input"
-					placeholder="Adresse oder Ort suchen…"
-					value={query}
-					onChange={(e) => setQuery(e.target.value)}
-					onFocus={() => {
-						if (results.length > 0 || msg) setOpen(true);
-					}}
-					onKeyDown={onKeyDown}
+			<div className="map-toolbar-row">
+				<form
+					className="map-search"
+					onSubmit={onSubmit}
+					autoComplete="off"
+					role="search"
 					aria-label="Adresse suchen"
-					aria-autocomplete="list"
-					aria-controls={listId}
-					aria-expanded={showResultsPanel}
-					aria-activedescendant={activeOptionId}
-					aria-describedby={msg ? statusId : undefined}
-					aria-busy={searching}
-				/>
-				{searching && (
-					<span className="map-search-status" aria-live="polite">
-						Suche…
-					</span>
-				)}
-				{showResultsPanel && results.length > 0 && (
-					<ul id={listId} className="map-search-results" role="listbox" aria-label="Suchergebnisse">
-						{results.map((r, idx) => (
-							<li key={`${r.lat}-${r.lng}-${r.label}`} role="presentation">
-								<button
-									type="button"
-									id={`${listId}-opt-${idx}`}
-									role="option"
-									aria-selected={idx === activeIdx}
-									className={
-										idx === activeIdx
-											? "map-search-hit map-search-hit-active"
-											: "map-search-hit"
-									}
-									onMouseEnter={() => setActiveIdx(idx)}
-									onClick={() => selectResult(r)}
+				>
+					<input
+						id={inputId}
+						type="search"
+						className="map-search-input"
+						placeholder="Adresse oder Ort suchen…"
+						value={query}
+						onChange={(e) => setQuery(e.target.value)}
+						onFocus={() => {
+							if (results.length > 0 || msg) setOpen(true);
+						}}
+						onKeyDown={onKeyDown}
+						aria-label="Adresse suchen"
+						aria-autocomplete="list"
+						aria-controls={listId}
+						aria-expanded={showResultsPanel}
+						aria-activedescendant={activeOptionId}
+						aria-describedby={msg ? statusId : undefined}
+						aria-busy={searching}
+					/>
+					{searching && (
+						<span className="map-search-status" aria-live="polite">
+							Suche…
+						</span>
+					)}
+					{showResultsPanel && results.length > 0 && (
+						<ul
+							id={listId}
+							className="map-search-results"
+							role="listbox"
+							aria-label="Suchergebnisse"
+						>
+							{results.map((r, idx) => (
+								<li
+									key={`${r.lat}-${r.lng}-${r.label}`}
+									role="presentation"
 								>
-									{r.label}
-								</button>
-							</li>
-						))}
-					</ul>
-				)}
-			</form>
-			<button
-				type="button"
-				className="map-locate-btn"
-				onClick={relocate}
-				disabled={locating}
-				title="Zu meinem Standort"
-				aria-label={locating ? "Standort wird ermittelt" : "Zu meinem Standort"}
-				aria-busy={locating}
-			>
-				{locating ? "…" : "◎"}
-			</button>
+									<button
+										type="button"
+										id={`${listId}-opt-${idx}`}
+										role="option"
+										aria-selected={idx === activeIdx}
+										className={
+											idx === activeIdx
+												? "map-search-hit map-search-hit-active"
+												: "map-search-hit"
+										}
+										onMouseEnter={() => setActiveIdx(idx)}
+										onClick={() => selectResult(r)}
+									>
+										{r.label}
+									</button>
+								</li>
+							))}
+						</ul>
+					)}
+				</form>
+				<button
+					type="button"
+					className="map-locate-btn"
+					onClick={relocate}
+					disabled={locating}
+					title="Zu meinem Standort"
+					aria-label={
+						locating ? "Standort wird ermittelt" : "Zu meinem Standort"
+					}
+					aria-busy={locating}
+				>
+					<span className="map-locate-icon" aria-hidden>
+						{locating ? "…" : "◎"}
+					</span>
+				</button>
+			</div>
 			{msg && (
 				<p
 					id={statusId}

@@ -202,32 +202,44 @@ export function CreateOffer() {
 
 	if (loading) {
 		return (
-			<div className="page">
-				<p className="muted">Lade Sitzung…</p>
+			<div className="page create-page">
+				<p className="muted" role="status">
+					Lade Sitzung…
+				</p>
 			</div>
 		);
 	}
 
 	if (!user) {
 		return (
-			<div className="page">
-				<h1>Angebot erstellen</h1>
-				<p className="muted">
-					Bitte <Link to="/login">anmelden</Link>, dann kannst du ein Angebot
-					einstellen.
-				</p>
+			<div className="page create-page">
+				<header className="page-header">
+					<h1>Angebot erstellen</h1>
+				</header>
+				<div className="empty-state">
+					<span className="empty-state-icon" aria-hidden>
+						🔐
+					</span>
+					<p className="empty-state-title">Anmeldung nötig</p>
+					<p className="empty-state-text">
+						Bitte <Link to="/login">anmelden</Link>, dann kannst du ein Angebot
+						einstellen.
+					</p>
+				</div>
 			</div>
 		);
 	}
 
 	return (
 		<div className="page create-page">
-			<h1>Angebot erstellen</h1>
-			<p className="muted">
-				Stückzahlen nach deutschem Pfandsystem (mind.{" "}
-				{centsToEuroDe(MIN_PFAND_CENTS)} €). Die genaue Adresse bleibt privat,
-				bis jemand annimmt – oder bis du beim Wöchentlichen jemanden auswählst.
-			</p>
+			<header className="page-header">
+				<h1>Angebot erstellen</h1>
+				<p className="page-lede muted">
+					Stückzahlen nach deutschem Pfandsystem (mind.{" "}
+					{centsToEuroDe(MIN_PFAND_CENTS)} €). Die genaue Adresse bleibt privat,
+					bis jemand annimmt – oder bis du beim Wöchentlichen jemanden auswählst.
+				</p>
+			</header>
 
 			<form className="form" onSubmit={onSubmit} noValidate>
 				<section className="form-section">
@@ -279,6 +291,9 @@ export function CreateOffer() {
 
 				<section className="form-section">
 					<h2 className="form-section-title">1. Pfand-Stückliste</h2>
+					<p className="muted small form-section-hint">
+						Mengen eintragen – der Pfandwert berechnet sich automatisch.
+					</p>
 					<PfandQuantityForm
 						quantities={quantities}
 						onChange={setQuantities}
@@ -290,7 +305,7 @@ export function CreateOffer() {
 						</p>
 					)}
 					{lines.length > 0 && (
-						<p className="muted small">
+						<p className="muted small form-preview">
 							So sieht’s aus:{" "}
 							{lines.map((l) => `${l.quantity}× ${l.label}`).join(", ")}
 						</p>
@@ -299,7 +314,7 @@ export function CreateOffer() {
 
 				{mode === "recurring" && (
 					<section className="form-section">
-						<h2 className="form-section-title">Wann soll abgeholt werden?</h2>
+						<h2 className="form-section-title">2. Abholzeit</h2>
 						<label>
 							Wochentag
 							<select
@@ -333,7 +348,7 @@ export function CreateOffer() {
 
 				<section className="form-section">
 					<h2 className="form-section-title">
-						{mode === "recurring" ? "Hinweise & Adresse" : "2. Hinweise & Adresse"}
+						{mode === "recurring" ? "3. Hinweise" : "2. Hinweise"}
 					</h2>
 					<label>
 						Hinweis für den Abholer (optional)
@@ -345,6 +360,17 @@ export function CreateOffer() {
 							maxLength={500}
 						/>
 					</label>
+				</section>
+
+				<section className="form-section address-picker-section">
+					<h2 className="form-section-title">
+						{mode === "recurring" ? "4. Adresse" : "3. Adresse"}
+					</h2>
+					<p className="muted small form-section-hint">
+						{mode === "recurring"
+							? "Volle Adresse sieht nur der gewählte Abholer. Stadtteil ist öffentlich."
+							: "Volle Adresse bleibt privat bis zur Annahme. Stadtteil ist öffentlich."}
+					</p>
 
 					{savedAddresses.length > 0 && (
 						<label>
@@ -369,7 +395,7 @@ export function CreateOffer() {
 					)}
 
 					{savedAddresses.length === 0 && (
-						<p className="muted small">
+						<p className="muted small address-picker-tip">
 							Tipp: Adressen im{" "}
 							<Link to="/profil">Konto</Link> speichern – dann sind sie hier
 							per Klick wählbar und die Standardadresse wird vorausgefüllt.
@@ -418,7 +444,9 @@ export function CreateOffer() {
 				</section>
 
 				<section className="form-section">
-					<h2 className="form-section-title">Standort auf der Karte</h2>
+					<h2 className="form-section-title">
+						{mode === "recurring" ? "5. Standort auf der Karte" : "4. Standort auf der Karte"}
+					</h2>
 					<div className="form-map">
 						<p className="label">
 							Adresse suchen, auf die Karte tippen oder ◎ für deinen Standort
@@ -449,13 +477,15 @@ export function CreateOffer() {
 							/>
 						</div>
 						{pick ? (
-							<p className="muted small">
+							<p className="muted small map-pin-status">
 								Standort: {pick[0].toFixed(5)}, {pick[1].toFixed(5)}
 							</p>
 						) : (
 							<p
 								className={
-									attempted && missingPin ? "banner error" : "muted small"
+									attempted && missingPin
+										? "banner error map-pin-status"
+										: "muted small map-pin-status"
 								}
 							>
 								{attempted && missingPin
@@ -468,7 +498,7 @@ export function CreateOffer() {
 
 				{error && <p className="banner error">{error}</p>}
 
-				<div className="form-submit">
+				<div className="form-submit sticky-actions">
 					<button
 						className="btn btn-primary"
 						type="submit"

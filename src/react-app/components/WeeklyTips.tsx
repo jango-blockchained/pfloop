@@ -21,27 +21,37 @@ export function WeeklyTips({ variant = "public", compact = false }: Props) {
 	const items = tipsFor(variant);
 
 	if (compact) {
+		const [lead, ...rest] = items;
 		return (
 			<div className="banner info handover-hint weekly-tips weekly-tips-compact">
-				<strong>{title}</strong>
-				<p className="muted small" style={{ margin: "0.35rem 0 0" }}>
-					{items[0]}
-				</p>
-				<ul className="weekly-tips-list">
-					{items.slice(1).map((t) => (
-						<li key={t}>{t}</li>
-					))}
-				</ul>
+				<strong className="weekly-tips-title">{title}</strong>
+				<p className="weekly-tips-lead muted small">{lead}</p>
+				{rest.length > 0 && (
+					<details className="weekly-tips-more">
+						<summary className="weekly-tips-more-summary">
+							Weitere Tipps
+						</summary>
+						<ul className="weekly-tips-list">
+							{rest.map((t) => (
+								<li key={t} className="weekly-tips-item">
+									{t}
+								</li>
+							))}
+						</ul>
+					</details>
+				)}
 			</div>
 		);
 	}
 
 	return (
 		<div className="banner info handover-hint weekly-tips">
-			<strong>{title}</strong>
+			<strong className="weekly-tips-title">{title}</strong>
 			<ul className="weekly-tips-list">
 				{items.map((t) => (
-					<li key={t}>{t}</li>
+					<li key={t} className="weekly-tips-item">
+						{t}
+					</li>
 				))}
 			</ul>
 		</div>

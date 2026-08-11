@@ -281,7 +281,16 @@ export function MapHome() {
 					onClick={() => setSheetExpanded((v) => !v)}
 				>
 					<span className="sheet-grip" aria-hidden />
-					<span className="sheet-summary">{summaryBits.join(" · ")}</span>
+					<span className="sheet-summary">
+						<span className="sheet-summary-main">
+							{summaryBits[0] ?? "Angebote in der Nähe"}
+						</span>
+						{summaryBits.length > 1 && (
+							<span className="sheet-summary-extra muted small">
+								{summaryBits.slice(1).join(" · ")}
+							</span>
+						)}
+					</span>
 					<span className="sheet-expand-hint muted small" aria-hidden>
 						{sheetExpanded ? "Einklappen" : "Mehr anzeigen"}
 					</span>
@@ -289,11 +298,11 @@ export function MapHome() {
 
 				<div id="side-panel-body" className="side-panel-body">
 					{/* Nearby open offers */}
-					<div className="panel-block">
+					<section className="panel-block panel-section">
 						<div className="panel-head">
 							<h2>In der Nähe</h2>
 							{mapLoadedOnce && (
-								<span className="muted small">
+								<span className="muted small panel-head-meta">
 									{openCount} einmalig
 									{recurringCount ? ` · ${recurringCount} wöchentlich` : ""}
 								</span>
@@ -309,10 +318,11 @@ export function MapHome() {
 							recurringCount === 0 &&
 							!mapLoading && (
 							<div className="empty-state">
-								<p className="muted">
-									Hier gerade nichts Offenes.
-								</p>
-								<p className="muted small">
+								<span className="empty-state-icon" aria-hidden>
+									📍
+								</span>
+								<p className="empty-state-title">Hier gerade nichts Offenes</p>
+								<p className="empty-state-text">
 									Karte verschieben oder zoomen – oder selbst was einstellen.
 								</p>
 								{user ? (
@@ -332,8 +342,11 @@ export function MapHome() {
 									const items = formatItemsShort(o.items);
 									return (
 										<li key={o.id} className="list-item">
-											<div>
-												<Link to={`/angebot/${o.id}`}>
+											<div className="list-item-main">
+												<Link
+													className="list-item-title"
+													to={`/angebot/${o.id}`}
+												>
 													<strong>
 														{o.title?.trim() || items || "Pfand-Angebot"}
 													</strong>
@@ -342,7 +355,7 @@ export function MapHome() {
 													{centsToEuro(o.pfand_value_cents)} €
 												</span>
 											</div>
-											<div className="meta">
+											<div className="meta list-item-meta">
 												{items ? `${items} · ` : null}
 												{o.address_hint || "Ungefähre Lage"}
 											</div>
@@ -352,18 +365,24 @@ export function MapHome() {
 								{recurring.slice(0, 6).map((o) => {
 									const items = formatItemsShort(o.items);
 									return (
-										<li key={`r-${o.id}`} className="list-item">
-											<div>
-												<Link to={`/woche/${o.id}`}>
+										<li key={`r-${o.id}`} className="list-item list-item-recurring">
+											<div className="list-item-main">
+												<Link
+													className="list-item-title"
+													to={`/woche/${o.id}`}
+												>
 													<strong>
-														↻ {o.title?.trim() || items || "Wöchentlich"}
+														<span className="list-item-badge" aria-hidden>
+															↻
+														</span>{" "}
+														{o.title?.trim() || items || "Wöchentlich"}
 													</strong>
 												</Link>
 												<span className="list-pfand">
 													{centsToEuro(o.pfand_value_cents)} €
 												</span>
 											</div>
-											<div className="meta">
+											<div className="meta list-item-meta">
 												{weekdayLabel(o.weekday)}
 												{o.time_hint ? ` · ${o.time_hint}` : ""}
 												{" · "}
@@ -374,9 +393,9 @@ export function MapHome() {
 								})}
 							</ul>
 						)}
-					</div>
+					</section>
 
-					<div className="panel-block">
+					<section className="panel-block panel-section">
 						<div className="panel-head">
 							<h2>Meine Angebote</h2>
 							<Link className="btn btn-primary btn-sm" to="/neu">
@@ -385,7 +404,11 @@ export function MapHome() {
 						</div>
 						{!authLoading && !user && (
 							<div className="empty-state">
-								<p className="muted">
+								<span className="empty-state-icon" aria-hidden>
+									🔐
+								</span>
+								<p className="empty-state-title">Anmeldung nötig</p>
+								<p className="empty-state-text">
 									Zum Einstellen bitte <Link to="/login">anmelden</Link>.
 								</p>
 							</div>
@@ -403,101 +426,127 @@ export function MapHome() {
 							mine.length === 0 &&
 							mineRecurring.length === 0 && (
 							<div className="empty-state">
-								<p className="muted">Noch keine eigenen Angebote.</p>
+								<span className="empty-state-icon" aria-hidden>
+									📦
+								</span>
+								<p className="empty-state-title">Noch keine eigenen Angebote</p>
+								<p className="empty-state-text">
+									Stell dein erstes Pfand ein – in der Nähe sieht man es sofort.
+								</p>
 								<Link className="btn btn-primary btn-sm" to="/neu">
 									Erstes Angebot erstellen
 								</Link>
 							</div>
 						)}
-						<ul className="list">
-							{mine.map((o) => {
-								const items = formatItemsShort(o.items);
-								return (
-									<li key={o.id} className="list-item">
-										<div>
-											<Link to={`/angebot/${o.id}`}>
+						{(mine.length > 0 || mineRecurring.length > 0) && (
+							<ul className="list">
+								{mine.map((o) => {
+									const items = formatItemsShort(o.items);
+									return (
+										<li key={o.id} className="list-item">
+											<div className="list-item-main">
+												<Link
+													className="list-item-title"
+													to={`/angebot/${o.id}`}
+												>
+													<strong>
+														{o.title?.trim() || items || "Pfand-Angebot"}
+													</strong>
+												</Link>
+												<span className={offerStatusClass(o.status)}>
+													{offerStatusLabel(o.status)}
+												</span>
+											</div>
+											<div className="meta list-item-meta">
+												<span className="list-pfand-inline">
+													{centsToEuro(o.pfand_value_cents)} €
+												</span>
+												{" · "}
+												{items ? `${items} · ` : null}
+												{o.address_hint || o.address_text}
+											</div>
+											{o.status === "collected" && (
+												<div className="list-item-actions">
+													<button
+														type="button"
+														className="btn btn-sm btn-primary"
+														disabled={busyId === o.id}
+														onClick={() => void onConfirmHandover(o.id)}
+													>
+														{busyId === o.id ? "…" : "Übergabe bestätigen"}
+													</button>
+												</div>
+											)}
+											{o.status === "reserved" && (
+												<p className="muted small list-item-hint">
+													Warte, bis der Abholer „Abgeholt“ tippt.
+												</p>
+											)}
+										</li>
+									);
+								})}
+								{mineRecurring.map((o) => (
+									<li key={`mr-${o.id}`} className="list-item list-item-recurring">
+										<div className="list-item-main">
+											<Link
+												className="list-item-title"
+												to={`/woche/${o.id}`}
+											>
 												<strong>
-													{o.title?.trim() || items || "Pfand-Angebot"}
+													<span className="list-item-badge" aria-hidden>
+														↻
+													</span>{" "}
+													{o.title?.trim() || "Wöchentlich"}
 												</strong>
 											</Link>
 											<span className={offerStatusClass(o.status)}>
-												{offerStatusLabel(o.status)}
+												{recurringStatusLabel(o.status)}
 											</span>
 										</div>
-										<div className="meta">
+										<div className="meta list-item-meta">
 											<span className="list-pfand-inline">
 												{centsToEuro(o.pfand_value_cents)} €
 											</span>
 											{" · "}
-											{items ? `${items} · ` : null}
-											{o.address_hint || o.address_text}
+											{weekdayLabel(o.weekday)}
+											{o.pending_applications > 0
+												? ` · ${o.pending_applications} Bewerbung(en)`
+												: ""}
+											{o.assigned_display_name
+												? ` · ${o.assigned_display_name}`
+												: ""}
 										</div>
-										{o.status === "collected" && (
-											<button
-												type="button"
-												className="btn btn-sm btn-primary"
-												disabled={busyId === o.id}
-												onClick={() => void onConfirmHandover(o.id)}
-											>
-												{busyId === o.id ? "…" : "Übergabe bestätigen"}
-											</button>
-										)}
-										{o.status === "reserved" && (
-											<p className="muted small" style={{ marginTop: "0.35rem" }}>
-												Warte, bis der Abholer „Abgeholt“ tippt.
-											</p>
-										)}
 									</li>
-								);
-							})}
-							{mineRecurring.map((o) => (
-								<li key={`mr-${o.id}`} className="list-item">
-									<div>
-										<Link to={`/woche/${o.id}`}>
-											<strong>
-												↻ {o.title?.trim() || "Wöchentlich"}
-											</strong>
-										</Link>
-										<span className={offerStatusClass(o.status)}>
-											{recurringStatusLabel(o.status)}
-										</span>
-									</div>
-									<div className="meta">
-										<span className="list-pfand-inline">
-											{centsToEuro(o.pfand_value_cents)} €
-										</span>
-										{" · "}
-										{weekdayLabel(o.weekday)}
-										{o.pending_applications > 0
-											? ` · ${o.pending_applications} Bewerbung(en)`
-											: ""}
-										{o.assigned_display_name
-											? ` · ${o.assigned_display_name}`
-											: ""}
-									</div>
-								</li>
-							))}
-						</ul>
-					</div>
+								))}
+							</ul>
+						)}
+					</section>
 
 					{user && myRecurringApps.length > 0 && (
-						<div className="panel-block">
+						<section className="panel-block panel-section">
 							<div className="panel-head">
-								<h2>Meine Bewerbungen (wöchentlich)</h2>
+								<h2>Meine Bewerbungen</h2>
+								<span className="muted small panel-head-meta">wöchentlich</span>
 							</div>
 							<ul className="list">
 								{myRecurringApps.map((a) => (
 									<li key={a.application_id} className="list-item">
-										<div>
-											<Link to={`/woche/${a.offer_id}`}>
+										<div className="list-item-main">
+											<Link
+												className="list-item-title"
+												to={`/woche/${a.offer_id}`}
+											>
 												<strong>{a.title}</strong>
 											</Link>
 											<span className={offerStatusClass(a.application_status)}>
 												{recurringAppStatusLabel(a.application_status)}
 											</span>
 										</div>
-										<div className="meta">
-											{centsToEuro(a.pfand_value_cents)} € ·{" "}
+										<div className="meta list-item-meta">
+											<span className="list-pfand-inline">
+												{centsToEuro(a.pfand_value_cents)} €
+											</span>
+											{" · "}
 											{weekdayLabel(a.weekday)}
 											{a.is_assigned && a.address_text
 												? ` · ${a.address_text}`
@@ -506,12 +555,17 @@ export function MapHome() {
 									</li>
 								))}
 							</ul>
-						</div>
+						</section>
 					)}
 
-					<div className="panel-block">
+					<section className="panel-block panel-section">
 						<div className="panel-head">
 							<h2>Meine Abholungen</h2>
+							{user && unfinishedReservations.length > 0 && (
+								<span className="muted small panel-head-meta">
+									{unfinishedReservations.length} offen
+								</span>
+							)}
 						</div>
 						{user && sideLoading && unfinishedReservations.length === 0 && (
 							<p className="muted" role="status">
@@ -520,16 +574,24 @@ export function MapHome() {
 						)}
 						{!user && !authLoading && (
 							<div className="empty-state">
-								<p className="muted">
+								<span className="empty-state-icon" aria-hidden>
+									🔐
+								</span>
+								<p className="empty-state-title">Anmeldung nötig</p>
+								<p className="empty-state-text">
 									Zum Abholen bitte <Link to="/login">anmelden</Link>.
 								</p>
 							</div>
 						)}
 						{user && !sideLoading && unfinishedReservations.length === 0 && (
 							<div className="empty-state">
-								<p className="muted">
-									Keine offenen Abholungen. Du kannst immer nur eins gleichzeitig
-									machen – erst fertig, dann das nächste.
+								<span className="empty-state-icon" aria-hidden>
+									✓
+								</span>
+								<p className="empty-state-title">Keine offenen Abholungen</p>
+								<p className="empty-state-text">
+									Du kannst immer nur eins gleichzeitig machen – erst fertig,
+									dann das nächste.
 								</p>
 								{openCount > 0 && (
 									<p className="muted small">
@@ -538,48 +600,57 @@ export function MapHome() {
 								)}
 							</div>
 						)}
-						<ul className="list">
-							{unfinishedReservations.map((r) => (
-								<li key={r.reservation_id} className="list-item">
-									<div>
-										<Link to={`/angebot/${r.offer_id}`}>
-											<strong>{r.title}</strong>
-										</Link>
-										{r.reservation_status === "active" ? (
-											<span className="badge badge-warn">
-												{formatCountdown(r.deadline_at, now)}
+						{unfinishedReservations.length > 0 && (
+							<ul className="list">
+								{unfinishedReservations.map((r) => (
+									<li key={r.reservation_id} className="list-item">
+										<div className="list-item-main">
+											<Link
+												className="list-item-title"
+												to={`/angebot/${r.offer_id}`}
+											>
+												<strong>{r.title}</strong>
+											</Link>
+											{r.reservation_status === "active" ? (
+												<span className="badge badge-warn">
+													{formatCountdown(r.deadline_at, now)}
+												</span>
+											) : (
+												<span className="badge badge-warn">
+													wartet auf Bestätigung
+												</span>
+											)}
+										</div>
+										<div className="meta list-item-meta">
+											<span className="list-pfand-inline">
+												{centsToEuro(r.pfand_value_cents)} €
 											</span>
-										) : (
-											<span className="badge badge-warn">wartet auf Bestätigung</span>
+											{" · "}
+											{r.address_text}
+										</div>
+										{r.reservation_status === "active" && (
+											<div className="list-item-actions">
+												<button
+													type="button"
+													className="btn btn-sm btn-primary"
+													disabled={busyId === r.offer_id}
+													onClick={() => void onMarkCollected(r.offer_id)}
+												>
+													{busyId === r.offer_id ? "…" : "Abgeholt"}
+												</button>
+											</div>
 										)}
-									</div>
-									<div className="meta">
-										<span className="list-pfand-inline">
-											{centsToEuro(r.pfand_value_cents)} €
-										</span>
-										{" · "}
-										{r.address_text}
-									</div>
-									{r.reservation_status === "active" && (
-										<button
-											type="button"
-											className="btn btn-sm btn-primary"
-											disabled={busyId === r.offer_id}
-											onClick={() => void onMarkCollected(r.offer_id)}
-										>
-											{busyId === r.offer_id ? "…" : "Abgeholt"}
-										</button>
-									)}
-									{r.reservation_status === "collected" && (
-										<p className="muted small" style={{ marginTop: "0.35rem" }}>
-											Bitte den Inserenten bestätigen – dann darfst du was Neues
-											annehmen.
-										</p>
-									)}
-								</li>
-							))}
-						</ul>
-					</div>
+										{r.reservation_status === "collected" && (
+											<p className="muted small list-item-hint">
+												Bitte den Inserenten bestätigen – dann darfst du was
+												Neues annehmen.
+											</p>
+										)}
+									</li>
+								))}
+							</ul>
+						)}
+					</section>
 
 					<p className="footnote">
 						Kostenlos · nur eine offene Abholung · Abholer meldet, Inserent

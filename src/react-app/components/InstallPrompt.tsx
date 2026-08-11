@@ -74,9 +74,14 @@ export function InstallPrompt() {
 			aria-labelledby={titleId}
 			aria-describedby={descId}
 		>
+			<span className="install-icon" aria-hidden="true">
+				↓
+			</span>
 			<div className="install-copy">
-				<strong id={titleId}>GrabMe aufs Handy legen?</strong>
-				<p id={descId} className="muted small">
+				<strong id={titleId} className="install-title">
+					GrabMe aufs Handy legen?
+				</strong>
+				<p id={descId} className="install-desc muted small">
 					Als App auf dem Homescreen – schneller Start, und die Oberfläche geht
 					auch offline.
 				</p>
@@ -84,7 +89,7 @@ export function InstallPrompt() {
 			<div className="install-actions">
 				<button
 					type="button"
-					className="btn btn-sm"
+					className="btn btn-sm install-action-dismiss"
 					onClick={dismiss}
 					disabled={installing}
 				>
@@ -93,7 +98,7 @@ export function InstallPrompt() {
 				<button
 					ref={primaryRef}
 					type="button"
-					className={`btn btn-sm btn-primary${installing ? " is-loading" : ""}`}
+					className={`btn btn-sm btn-primary install-action-primary${installing ? " is-loading" : ""}`}
 					onClick={install}
 					disabled={installing}
 					aria-busy={installing}

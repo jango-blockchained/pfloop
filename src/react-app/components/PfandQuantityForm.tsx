@@ -32,6 +32,7 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 	const kaesten = PFAND_CATALOG.filter((e) => e.category === "kasten");
 	const meetsMin = totalCents >= MIN_PFAND_CENTS;
 	const progress = minProgress(totalCents);
+	const progressPct = Math.round(progress * 100);
 	const itemCount = Object.values(quantities).reduce((a, b) => a + b, 0);
 
 	function setQty(type: PfandItemType, raw: string) {
@@ -45,27 +46,45 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 		onChange({ ...quantities, [type]: next });
 	}
 
-	function renderGroup(title: string, entries: typeof PFAND_CATALOG) {
+	function renderGroup(
+		title: string,
+		entries: typeof PFAND_CATALOG,
+		groupKey: string,
+	) {
+		const titleId = `pfand-group-${groupKey}`;
 		return (
-			<div className="pfand-group">
-				<h3 className="pfand-group-title">{title}</h3>
+			<section
+				className={`pfand-group pfand-group--${groupKey}`}
+				aria-labelledby={titleId}
+			>
+				<h3 id={titleId} className="pfand-group-title">
+					{title}
+				</h3>
 				<ul className="pfand-list">
 					{entries.map((entry) => {
 						const q = quantities[entry.type] ?? 0;
 						const line = q * entry.unit_cents;
 						const unitLabel = centsToEuroDe(entry.unit_cents);
 						return (
-							<li key={entry.type} className="pfand-row">
+							<li
+								key={entry.type}
+								className={`pfand-row${q > 0 ? " has-qty" : ""}`}
+								data-item-type={entry.type}
+							>
 								<div className="pfand-row-info">
-									<strong>{entry.label}</strong>
-									<span className="muted small">
+									<strong className="pfand-row-label">{entry.label}</strong>
+									<span className="pfand-row-meta muted small">
 										{entry.hint} · je {unitLabel} €
 									</span>
 								</div>
-								<div className="pfand-row-controls">
+								<div
+									className="pfand-row-controls"
+									role="group"
+									aria-label={`Menge für ${entry.label}`}
+								>
 									<button
 										type="button"
-										className="btn btn-sm qty-btn"
+										className="btn btn-sm qty-btn qty-btn-dec"
 										aria-label={`${entry.label} weniger`}
 										disabled={q <= 0}
 										onClick={() => step(entry.type, -1)}
@@ -85,7 +104,7 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 									/>
 									<button
 										type="button"
-										className="btn btn-sm qty-btn"
+										className="btn btn-sm qty-btn qty-btn-inc"
 										aria-label={`${entry.label} mehr`}
 										onClick={() => step(entry.type, 1)}
 									>
@@ -93,6 +112,11 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 									</button>
 									<span
 										className={`pfand-line${q > 0 ? "" : " muted"}`}
+										aria-label={
+											q > 0
+												? `Zeilensumme ${centsToEuroDe(line)} Euro`
+												: "Keine Menge"
+										}
 										title={
 											q > 0
 												? `${q} × ${unitLabel} € = ${centsToEuroDe(line)} €`
@@ -106,24 +130,31 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 						);
 					})}
 				</ul>
-			</div>
+			</section>
 		);
 	}
 
 	return (
 		<div className="pfand-form">
-			<p className="muted small">
+			<p className="pfand-form-intro muted small">
 				Einfach die Stückzahlen eintippen. Den Pfandwert rechnen wir fest nach
 				deutschem Pfandsystem – den kannst du nicht frei ändern.
 			</p>
-			{renderGroup("Flaschen & Dosen", flaschen)}
-			{renderGroup("Kästen / Kisten", kaesten)}
+			<div className="pfand-groups">
+				{renderGroup("Flaschen & Dosen", flaschen, "flaschen")}
+				{renderGroup("Kästen / Kisten", kaesten, "kaesten")}
+			</div>
 
-			<div className={`pfand-total ${meetsMin ? "ok" : "low"}`}>
-				<div>
+			<div
+				className={`pfand-total ${meetsMin ? "ok" : "low"}`}
+				aria-live="polite"
+			>
+				<div className="pfand-total-head">
 					<span className="label">
 						Pfandwert gesamt
-						{itemCount > 0 ? ` · ${itemCount} Stück` : ""}
+						{itemCount > 0 ? (
+							<span className="pfand-total-count"> · {itemCount} Stück</span>
+						) : null}
 					</span>
 					<strong className="pfand-total-value">
 						{centsToEuroDe(totalCents)} €
@@ -134,10 +165,13 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 					role="progressbar"
 					aria-valuemin={0}
 					aria-valuemax={100}
-					aria-valuenow={Math.round(progress * 100)}
+					aria-valuenow={progressPct}
 					aria-label="Fortschritt zum Mindestwert"
 				>
-					<span style={{ width: `${Math.round(progress * 100)}%` }} />
+					<span
+						className="pfand-min-bar-fill"
+						style={{ width: `${progressPct}%` }}
+					/>
 				</div>
 				<span className="pfand-min-hint">{minValueHint(totalCents)}</span>
 			</div>

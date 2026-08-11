@@ -65,24 +65,26 @@ export function AuthVerify() {
 	}, [params, navigate, refresh]);
 
 	return (
-		<div className="page">
-			<h1>
-				{phase === "error"
-					? "Anmeldung hat nicht geklappt"
-					: phase === "success"
-						? "Schön, du bist drin"
-						: "Einen Moment…"}
-			</h1>
+		<div className="page auth-page auth-verify-page">
+			<header className="page-header">
+				<h1>
+					{phase === "error"
+						? "Anmeldung hat nicht geklappt"
+						: phase === "success"
+							? "Schön, du bist drin"
+							: "Einen Moment…"}
+				</h1>
+			</header>
 
 			{phase === "loading" && (
-				<>
+				<div className="auth-verify-status" role="status" aria-live="polite">
 					<p className="muted">Wir prüfen deinen Login-Link…</p>
 					<p className="muted small">Das dauert normalerweise nur kurz.</p>
-				</>
+				</div>
 			)}
 
 			{phase === "success" && (
-				<div className="banner info">
+				<div className="banner info auth-feedback">
 					<strong>Alles klar – du bist angemeldet.</strong>
 					<br />
 					Gleich geht’s zur Karte…
@@ -90,9 +92,9 @@ export function AuthVerify() {
 			)}
 
 			{phase === "error" && error && (
-				<>
-					<p className="banner error">{error}</p>
-					<div className="actions">
+				<div className="auth-verify-error">
+					<p className="banner error auth-feedback">{error}</p>
+					<div className="actions sticky-actions action-stack">
 						<Link className="btn btn-primary" to="/login">
 							Neuen Link holen
 						</Link>
@@ -100,11 +102,11 @@ export function AuthVerify() {
 							Zur Karte
 						</Link>
 					</div>
-					<p className="muted small">
+					<p className="muted small auth-footnote">
 						Tipp: Links gelten nur einmal und nicht lange. Spam-Ordner checken
 						und denselben Link nicht mehrmals hintereinander öffnen.
 					</p>
-				</>
+				</div>
 			)}
 		</div>
 	);

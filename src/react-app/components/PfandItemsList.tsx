@@ -10,7 +10,11 @@ type Props = {
 
 export function PfandItemsList({ items, showTotal = true }: Props) {
 	if (!items.length) {
-		return <p className="muted small">Keine Stückliste angegeben.</p>;
+		return (
+			<p className="pfand-items pfand-items-empty muted small">
+				Keine Stückliste angegeben.
+			</p>
+		);
 	}
 
 	const totalCents = items.reduce((sum, i) => sum + (i.line_cents || 0), 0);
@@ -23,12 +27,14 @@ export function PfandItemsList({ items, showTotal = true }: Props) {
 						? getPfandEntry(item.item_type).label
 						: item.item_type;
 					return (
-						<li key={`${item.item_type}-${item.quantity}-${item.unit_cents}`}>
+						<li
+							key={`${item.item_type}-${item.quantity}-${item.unit_cents}`}
+							className="pfand-item"
+						>
 							<span className="pfand-item-main">
-								<strong>
-									{item.quantity}× {label}
-								</strong>
-								<span className="muted small">
+								<span className="pfand-item-qty">{item.quantity}×</span>{" "}
+								<strong className="pfand-item-label">{label}</strong>
+								<span className="pfand-item-unit muted small">
 									{" "}
 									à {centsToEuro(item.unit_cents)} €
 								</span>
@@ -42,8 +48,10 @@ export function PfandItemsList({ items, showTotal = true }: Props) {
 			</ul>
 			{showTotal && items.length > 1 && (
 				<p className="pfand-items-total muted small">
-					Zusammen:{" "}
-					<strong>{centsToEuro(totalCents)} €</strong>
+					<span className="pfand-items-total-label">Zusammen:</span>{" "}
+					<strong className="pfand-items-total-value">
+						{centsToEuro(totalCents)} €
+					</strong>
 				</p>
 			)}
 		</div>

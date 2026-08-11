@@ -152,8 +152,10 @@ export function Profile() {
 
 	if (loading) {
 		return (
-			<div className="page">
-				<p className="muted">Einen Moment…</p>
+			<div className="page profile-page">
+				<p className="muted" role="status">
+					Einen Moment…
+				</p>
 			</div>
 		);
 	}
@@ -166,15 +168,20 @@ export function Profile() {
 		form.lat != null && form.lng != null ? [form.lat, form.lng] : null;
 
 	return (
-		<div className="page">
+		<div className="page profile-page">
 			<p className="back">
 				<Link to="/">← Karte</Link>
 			</p>
-			<h1>Konto</h1>
 
-			<div className="banner info">
-				<span>
-					<strong>{user.display_name || user.email}</strong>
+			<header className="page-header">
+				<h1>Konto</h1>
+			</header>
+
+			<div className="banner info profile-user-card">
+				<span className="profile-user-info">
+					<strong className="profile-user-name">
+						{user.display_name || user.email}
+					</strong>
 					<br />
 					<small className="muted">{user.email}</small>
 				</span>
@@ -183,46 +190,71 @@ export function Profile() {
 				</button>
 			</div>
 
-			<section className="panel-block profile-addresses" style={{ marginTop: "1.25rem" }}>
+			<section className="panel-block panel-section profile-addresses">
 				<div className="panel-head">
 					<h2>Gespeicherte Adressen</h2>
 					{!showForm && addresses.length < max && (
-						<button type="button" className="btn btn-sm btn-primary" onClick={startCreate}>
+						<button
+							type="button"
+							className="btn btn-sm btn-primary"
+							onClick={startCreate}
+						>
 							+ Adresse
 						</button>
 					)}
 				</div>
-				<p className="muted small" style={{ marginTop: 0 }}>
+				<p className="muted small panel-section-hint">
 					Adressen hier verwalten und im Angebot-Formular auswählen oder
 					automatisch vorausfüllen (Standard). Max. {max} Stück.
 				</p>
 
-				{listLoading && <p className="muted">Lade Adressen…</p>}
+				{listLoading && (
+					<p className="muted" role="status">
+						Lade Adressen…
+					</p>
+				)}
 
 				{!listLoading && addresses.length === 0 && !showForm && (
 					<div className="empty-state">
-						<p className="muted">Noch keine Adresse gespeichert.</p>
-						<button type="button" className="btn btn-primary btn-sm" onClick={startCreate}>
+						<span className="empty-state-icon" aria-hidden>
+							🏠
+						</span>
+						<p className="empty-state-title">Noch keine Adresse</p>
+						<p className="empty-state-text">
+							Speichere Zuhause oder Keller – beim Einstellen ist sie dann per
+							Klick da.
+						</p>
+						<button
+							type="button"
+							className="btn btn-primary btn-sm"
+							onClick={startCreate}
+						>
 							Erste Adresse anlegen
 						</button>
 					</div>
 				)}
 
 				{addresses.length > 0 && (
-					<ul className="list">
+					<ul className="list address-card-list">
 						{addresses.map((a) => (
-							<li key={a.id} className="list-item">
-								<div>
-									<strong>{a.label || "Adresse"}</strong>
+							<li key={a.id} className="list-item address-card">
+								<div className="list-item-main address-card-head">
+									<strong className="list-item-title">
+										{a.label || "Adresse"}
+									</strong>
 									{a.is_default && (
 										<span className="badge badge-ok">Standard</span>
 									)}
 								</div>
-								<div className="meta">{a.address_text}</div>
+								<div className="meta list-item-meta address-card-text">
+									{a.address_text}
+								</div>
 								{a.address_hint && (
-									<div className="meta muted small">{a.address_hint}</div>
+									<div className="meta muted small list-item-meta">
+										{a.address_hint}
+									</div>
 								)}
-								<div className="address-actions" style={{ marginTop: "0.45rem" }}>
+								<div className="address-actions list-item-actions">
 									{!a.is_default && (
 										<button
 											type="button"
@@ -256,84 +288,100 @@ export function Profile() {
 				)}
 
 				{showForm && (
-					<form className="form" onSubmit={onSave} style={{ marginTop: "1rem" }}>
-						<h3 className="form-section-title" style={{ margin: 0 }}>
-							{editingId ? "Adresse bearbeiten" : "Neue Adresse"}
-						</h3>
-						<label>
-							Kurzname
-							<input
-								value={form.label}
-								onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
-								placeholder="z. B. Zuhause, Keller"
-								maxLength={40}
-							/>
-						</label>
-						<label>
-							Volle Adresse
-							<input
-								value={form.address_text}
-								onChange={(e) =>
-									setForm((f) => ({ ...f, address_text: e.target.value }))
-								}
-								placeholder="Musterstraße 1, 10115 Berlin"
-								required
-								autoComplete="street-address"
-							/>
-						</label>
-						<label>
-							Stadtteil / Gegend (öffentlich)
-							<input
-								value={form.address_hint}
-								onChange={(e) =>
-									setForm((f) => ({ ...f, address_hint: e.target.value }))
-								}
-								placeholder="Berlin-Mitte"
-							/>
-						</label>
-						<div className="form-map">
-							<p className="label">Standort auf der Karte</p>
-							<div className="form-map-inner">
-								<OfferMap
-									offers={[]}
-									pickMode
-									pickPosition={pick}
-									showControls
-									center={pick ?? undefined}
-									onPick={(lat, lng) =>
-										setForm((f) => ({ ...f, lat, lng }))
+					<form className="form address-form" onSubmit={onSave}>
+						<section className="form-section">
+							<h3 className="form-section-title">
+								{editingId ? "Adresse bearbeiten" : "Neue Adresse"}
+							</h3>
+							<label>
+								Kurzname
+								<input
+									value={form.label}
+									onChange={(e) =>
+										setForm((f) => ({ ...f, label: e.target.value }))
 									}
-									onLocationResolved={({ lat, lng, label }) => {
-										setForm((f) => ({
-											...f,
-											lat,
-											lng,
-											address_text:
-												label && label !== "Mein Standort"
-													? label
-													: f.address_text,
-											address_hint: (() => {
-												if (f.address_hint || !label || label === "Mein Standort") {
-													return f.address_hint;
-												}
-												const parts = label.split(",").map((s) => s.trim());
-												return parts[parts.length - 1] ?? "";
-											})(),
-										}));
-									}}
-									className="map map-sm"
+									placeholder="z. B. Zuhause, Keller"
+									maxLength={40}
 								/>
+							</label>
+							<label>
+								Volle Adresse
+								<input
+									value={form.address_text}
+									onChange={(e) =>
+										setForm((f) => ({ ...f, address_text: e.target.value }))
+									}
+									placeholder="Musterstraße 1, 10115 Berlin"
+									required
+									autoComplete="street-address"
+								/>
+							</label>
+							<label>
+								Stadtteil / Gegend (öffentlich)
+								<input
+									value={form.address_hint}
+									onChange={(e) =>
+										setForm((f) => ({ ...f, address_hint: e.target.value }))
+									}
+									placeholder="Berlin-Mitte"
+								/>
+							</label>
+						</section>
+						<section className="form-section">
+							<div className="form-map">
+								<p className="label">Standort auf der Karte</p>
+								<div className="form-map-inner">
+									<OfferMap
+										offers={[]}
+										pickMode
+										pickPosition={pick}
+										showControls
+										center={pick ?? undefined}
+										onPick={(lat, lng) =>
+											setForm((f) => ({ ...f, lat, lng }))
+										}
+										onLocationResolved={({ lat, lng, label }) => {
+											setForm((f) => ({
+												...f,
+												lat,
+												lng,
+												address_text:
+													label && label !== "Mein Standort"
+														? label
+														: f.address_text,
+												address_hint: (() => {
+													if (
+														f.address_hint ||
+														!label ||
+														label === "Mein Standort"
+													) {
+														return f.address_hint;
+													}
+													const parts = label.split(",").map((s) => s.trim());
+													return parts[parts.length - 1] ?? "";
+												})(),
+											}));
+										}}
+										className="map map-sm"
+									/>
+								</div>
+								{pick ? (
+									<p className="muted small map-pin-status">
+										Standort: {pick[0].toFixed(5)}, {pick[1].toFixed(5)}
+									</p>
+								) : (
+									<p className="muted small map-pin-status">
+										Noch kein Punkt auf der Karte.
+									</p>
+								)}
 							</div>
-							{pick ? (
-								<p className="muted small">
-									Standort: {pick[0].toFixed(5)}, {pick[1].toFixed(5)}
-								</p>
-							) : (
-								<p className="muted small">Noch kein Punkt auf der Karte.</p>
-							)}
-						</div>
-						<div className="actions" style={{ flexDirection: "row", flexWrap: "wrap" }}>
-							<button className="btn btn-primary" type="submit" disabled={saving}>
+						</section>
+						<div className="actions sticky-actions form-actions-row">
+							<button
+								className="btn btn-primary"
+								type="submit"
+								disabled={saving}
+							>
 								{saving ? "Speichern…" : "Speichern"}
 							</button>
 							<button
@@ -352,10 +400,11 @@ export function Profile() {
 			{okMsg && <p className="banner ok">{okMsg}</p>}
 			{error && <p className="banner error">{error}</p>}
 
-			<p className="muted small" style={{ marginTop: "1.25rem" }}>
-				<Link to="/neu">Angebot erstellen</Link> ·{" "}
+			<nav className="profile-footer-links muted small">
+				<Link to="/neu">Angebot erstellen</Link>
+				<span aria-hidden> · </span>
 				<Link to="/">Zur Karte</Link>
-			</p>
+			</nav>
 		</div>
 	);
 }

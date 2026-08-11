@@ -150,9 +150,9 @@ export function OfferDetail() {
 
 	if (!id) {
 		return (
-			<div className="page">
+			<div className="page detail-page">
 				<p className="banner error">Hier fehlt die Angebots-ID.</p>
-				<p>
+				<p className="back">
 					<Link to="/">Zurück zur Karte</Link>
 				</p>
 			</div>
@@ -161,23 +161,24 @@ export function OfferDetail() {
 
 	if (loading && !offer) {
 		return (
-			<div className="page">
+			<div className="page detail-page">
 				<p className="back">
 					<Link to="/">← Karte</Link>
 				</p>
 				<div className="detail-card detail-skeleton" aria-busy="true">
-					<div className="detail-row">
+					<div className="detail-hero">
 						<span className="label">Pfandwert</span>
-						<span className="muted">lädt…</span>
+						<span className="skeleton skeleton-title" />
 					</div>
 					<div className="detail-row">
 						<span className="label">Status</span>
-						<span className="muted">lädt…</span>
+						<span className="skeleton skeleton-text short" />
 					</div>
 					<div className="detail-row">
 						<span className="label">Gebiet</span>
-						<span className="muted">lädt…</span>
+						<span className="skeleton skeleton-text short" />
 					</div>
+					<div className="skeleton skeleton-block" />
 					<p className="muted small">Angebot wird geladen…</p>
 				</div>
 			</div>
@@ -186,14 +187,14 @@ export function OfferDetail() {
 
 	if (!offer) {
 		return (
-			<div className="page">
+			<div className="page detail-page">
 				<p className="back">
 					<Link to="/">← Karte</Link>
 				</p>
 				<p className="banner error">
 					{loadError ?? "Das Angebot ließ sich nicht laden."}
 				</p>
-				<div className="actions">
+				<div className="actions sticky-actions">
 					<button
 						type="button"
 						className="btn btn-primary"
@@ -240,47 +241,56 @@ export function OfferDetail() {
 	const anyBusy = busy !== null;
 
 	return (
-		<div className="page">
+		<div className="page detail-page">
 			<p className="back">
 				<Link to="/">← Karte</Link>
 			</p>
-			<h1>{offer.title || "Pfand-Angebot"}</h1>
+
+			<header className="page-header">
+				<h1>{offer.title || "Pfand-Angebot"}</h1>
+			</header>
 
 			{nextStep && (
-				<div className="banner info handover-hint">
+				<div className="banner info handover-hint status-banner">
 					<strong>Als Nächstes:</strong> {nextStep}
 				</div>
 			)}
 
 			<div className="detail-card">
-				<div className="detail-row">
+				<div className="detail-hero detail-row">
 					<span className="label">Pfandwert</span>
-					<strong className="pfand">
+					<strong className="pfand detail-hero-value">
 						{centsToEuro(offer.pfand_value_cents)} €
 					</strong>
 				</div>
-				<div className="detail-desc">
-					<span className="label">Stückliste</span>
-					<PfandItemsList items={offer.items ?? []} />
+
+				<div className="detail-section">
+					<div className="detail-desc">
+						<span className="label">Stückliste</span>
+						<PfandItemsList items={offer.items ?? []} />
+					</div>
 				</div>
-				<div className="detail-row">
-					<span className="label">Status</span>
-					<span className={offerStatusClass(offer.status)}>
-						{offerStatusLabel(offer.status)}
-					</span>
-				</div>
-				{offerStatusHint(offer.status) && (
-					<p className="muted small status-hint">
-						{offerStatusHint(offer.status)}
-					</p>
-				)}
-				<div className="detail-row">
-					<span className="label">Gebiet</span>
-					<span>{offer.address_hint || "—"}</span>
+
+				<div className="detail-section detail-facts">
+					<div className="detail-row">
+						<span className="label">Status</span>
+						<span className={offerStatusClass(offer.status)}>
+							{offerStatusLabel(offer.status)}
+						</span>
+					</div>
+					{offerStatusHint(offer.status) && (
+						<p className="muted small status-hint">
+							{offerStatusHint(offer.status)}
+						</p>
+					)}
+					<div className="detail-row">
+						<span className="label">Gebiet</span>
+						<span>{offer.address_hint || "—"}</span>
+					</div>
 				</div>
 
 				{offer.address_text && (
-					<div className="detail-desc address-block">
+					<div className="detail-section detail-desc address-block">
 						<span className="label">Adresse</span>
 						<p className="address">{offer.address_text}</p>
 						<div className="address-actions">
@@ -319,7 +329,7 @@ export function OfferDetail() {
 				)}
 
 				{!offer.address_text && offer.status === "open" && (
-					<p className="muted small">
+					<p className="muted small address-privacy-hint">
 						Die genaue Adresse siehst du erst nach der Annahme. Danach hast du
 						6 Stunden zum Abholen. Danach: du tippst „Abgeholt“, der Inserent
 						bestätigt – fertig.
@@ -327,9 +337,11 @@ export function OfferDetail() {
 				)}
 
 				{offer.description && (
-					<div className="detail-desc">
+					<div className="detail-section detail-desc">
 						<span className="label">Hinweis</span>
-						<p style={{ whiteSpace: "pre-wrap" }}>{offer.description}</p>
+						<p className="detail-note" style={{ whiteSpace: "pre-wrap" }}>
+							{offer.description}
+						</p>
 					</div>
 				)}
 
@@ -355,43 +367,47 @@ export function OfferDetail() {
 				<p className="banner error">{error ?? loadError}</p>
 			)}
 
-			{isCollectorView && offer.status === "reserved" && (
-				<div className="banner info handover-hint">
-					<strong>Schritt 1:</strong> Hol das Pfand ab und tipp auf „Abgeholt“.
-					Der Inserent bestätigt danach – erst dann kannst du was Neues annehmen.
-				</div>
-			)}
+			<div className="status-banners">
+				{isCollectorView && offer.status === "reserved" && (
+					<div className="banner info handover-hint status-banner">
+						<strong>Schritt 1:</strong> Hol das Pfand ab und tipp auf „Abgeholt“.
+						Der Inserent bestätigt danach – erst dann kannst du was Neues
+						annehmen.
+					</div>
+				)}
 
-			{isCollectorView && offer.status === "collected" && (
-				<div className="banner info handover-hint">
-					<strong>Fast geschafft:</strong> Du hast abgeholt. Bitte den Inserenten,
-					in der App zu bestätigen. Bis dahin kein neues Angebot.
-				</div>
-			)}
+				{isCollectorView && offer.status === "collected" && (
+					<div className="banner info handover-hint status-banner">
+						<strong>Fast geschafft:</strong> Du hast abgeholt. Bitte den
+						Inserenten, in der App zu bestätigen. Bis dahin kein neues Angebot.
+					</div>
+				)}
 
-			{offer.is_own && offer.status === "reserved" && (
-				<div className="banner info handover-hint">
-					<strong>Abholung läuft:</strong> Jemand ist unterwegs (6 Stunden Zeit).
-					Sobald er oder sie „Abgeholt“ tippt, bestätigst du die Übergabe.
-				</div>
-			)}
+				{offer.is_own && offer.status === "reserved" && (
+					<div className="banner info handover-hint status-banner">
+						<strong>Abholung läuft:</strong> Jemand ist unterwegs (6 Stunden
+						Zeit). Sobald er oder sie „Abgeholt“ tippt, bestätigst du die
+						Übergabe.
+					</div>
+				)}
 
-			{canConfirm && (
-				<div className="banner info handover-hint">
-					<strong>Deine Bestätigung:</strong> Der Abholer sagt, er war da.
-					Bestätige bitte, dass das Pfand wirklich weg ist.
-				</div>
-			)}
+				{canConfirm && (
+					<div className="banner info handover-hint status-banner">
+						<strong>Deine Bestätigung:</strong> Der Abholer sagt, er war da.
+						Bestätige bitte, dass das Pfand wirklich weg ist.
+					</div>
+				)}
 
-			{offer.is_own && offer.status === "open" && (
-				<div className="banner info handover-hint">
-					<strong>Dein Angebot ist online.</strong> Adresse und genaue Position
-					sehen andere erst nach der Annahme. Stornieren geht, solange noch nicht
-					alles erledigt ist.
-				</div>
-			)}
+				{offer.is_own && offer.status === "open" && (
+					<div className="banner info handover-hint status-banner">
+						<strong>Dein Angebot ist online.</strong> Adresse und genaue
+						Position sehen andere erst nach der Annahme. Stornieren geht,
+						solange noch nicht alles erledigt ist.
+					</div>
+				)}
+			</div>
 
-			<div className="actions">
+			<div className="actions sticky-actions action-stack">
 				{canAccept && (
 					<button
 						type="button"
@@ -437,12 +453,12 @@ export function OfferDetail() {
 					</button>
 				)}
 				{offer.status === "completed" && (
-					<p className="muted">
+					<p className="muted action-done">
 						Passt – Abholung erledigt. Danke!
 					</p>
 				)}
 				{offer.status === "cancelled" && (
-					<p className="muted">Dieses Angebot wurde storniert.</p>
+					<p className="muted action-done">Dieses Angebot wurde storniert.</p>
 				)}
 			</div>
 		</div>

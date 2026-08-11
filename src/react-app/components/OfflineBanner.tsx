@@ -28,9 +28,11 @@ export function OfflineBanner() {
 			<span className="offline-banner-icon" aria-hidden="true">
 				!
 			</span>
-			<span className="offline-banner-text">
-				Du bist offline. Karte und Angebote brauchen Internet – die App selbst
-				bleibt offen.
+			<span className="offline-banner-body">
+				<span className="offline-banner-text">
+					Du bist offline. Karte und Angebote brauchen Internet – die App selbst
+					bleibt offen.
+				</span>
 			</span>
 		</div>
 	);

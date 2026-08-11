@@ -54,21 +54,27 @@ export function Login() {
 
 	if (loading) {
 		return (
-			<div className="page">
-				<p className="muted">Einen Moment…</p>
+			<div className="page auth-page">
+				<p className="muted" role="status">
+					Einen Moment…
+				</p>
 			</div>
 		);
 	}
 
 	if (user) {
 		return (
-			<div className="page">
-				<h1>Du bist angemeldet</h1>
-				<div className="banner info">
-					<span>
-						{user.display_name || user.email}
+			<div className="page auth-page">
+				<header className="page-header">
+					<h1>Du bist angemeldet</h1>
+				</header>
+				<div className="banner info profile-user-card">
+					<span className="profile-user-info">
+						<strong className="profile-user-name">
+							{user.display_name || user.email}
+						</strong>
 						<br />
-						<small>{user.email}</small>
+						<small className="muted">{user.email}</small>
 					</span>
 					<button
 						type="button"
@@ -78,60 +84,68 @@ export function Login() {
 						Abmelden
 					</button>
 				</div>
-				<p>
-					<Link to="/profil">Konto & Adressen</Link> ·{" "}
-					<Link to="/neu">Angebot erstellen</Link> ·{" "}
+				<nav className="auth-footer-links">
+					<Link to="/profil">Konto & Adressen</Link>
+					<span aria-hidden> · </span>
+					<Link to="/neu">Angebot erstellen</Link>
+					<span aria-hidden> · </span>
 					<Link to="/">Zur Karte</Link>
-				</p>
+				</nav>
 			</div>
 		);
 	}
 
 	return (
-		<div className="page">
-			<h1>Anmelden</h1>
-			<p className="muted">
-				Ganz ohne Passwort: Wir schicken dir einen Link per E-Mail. Der gilt
-				einmal und etwa 15 Minuten.
-			</p>
+		<div className="page auth-page">
+			<header className="page-header">
+				<h1>Anmelden</h1>
+				<p className="page-lede muted">
+					Ganz ohne Passwort: Wir schicken dir einen Link per E-Mail. Der gilt
+					einmal und etwa 15 Minuten.
+				</p>
+			</header>
 
-			<form className="form" onSubmit={onSubmit} noValidate>
-				<label>
-					E-Mail
-					<input
-						type="email"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						onBlur={() => setEmailTouched(true)}
-						required
-						placeholder="du@example.de"
-						autoComplete="email"
-						inputMode="email"
-						aria-invalid={Boolean(emailHint)}
-					/>
-					{emailHint && <span className="field-error">{emailHint}</span>}
-				</label>
-				<label>
-					Anzeigename (optional, beim ersten Mal)
-					<input
-						value={displayName}
-						onChange={(e) => setDisplayName(e.target.value)}
-						placeholder="Alex"
-						autoComplete="nickname"
-						maxLength={80}
-					/>
-				</label>
-				<button
-					className="btn btn-primary"
-					type="submit"
-					disabled={sending || (emailTouched && !emailOk)}
-				>
-					{sending ? "Link wird gesendet…" : "Login-Link senden"}
-				</button>
+			<form className="form auth-form" onSubmit={onSubmit} noValidate>
+				<section className="form-section">
+					<label>
+						E-Mail
+						<input
+							type="email"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+							onBlur={() => setEmailTouched(true)}
+							required
+							placeholder="du@example.de"
+							autoComplete="email"
+							inputMode="email"
+							aria-invalid={Boolean(emailHint)}
+						/>
+						{emailHint && <span className="field-error">{emailHint}</span>}
+					</label>
+					<label>
+						Anzeigename (optional, beim ersten Mal)
+						<input
+							value={displayName}
+							onChange={(e) => setDisplayName(e.target.value)}
+							placeholder="Alex"
+							autoComplete="nickname"
+							maxLength={80}
+						/>
+					</label>
+				</section>
+				<div className="form-submit sticky-actions">
+					<button
+						className="btn btn-primary"
+						type="submit"
+						disabled={sending || (emailTouched && !emailOk)}
+					>
+						{sending ? "Link wird gesendet…" : "Login-Link senden"}
+					</button>
+				</div>
 			</form>
 
 			{message && (
-				<div className="banner info">
+				<div className="banner info auth-feedback">
 					<strong>Schau in dein Postfach.</strong>
 					<br />
 					{message}
@@ -142,17 +156,17 @@ export function Login() {
 					</small>
 				</div>
 			)}
-			{error && <p className="banner error">{error}</p>}
+			{error && <p className="banner error auth-feedback">{error}</p>}
 			{devLink && (
-				<div className="banner info dev-link">
+				<div className="banner info dev-link auth-feedback">
 					<strong>Entwickler-Modus</strong>
-					<p className="muted small" style={{ margin: "0.35rem 0" }}>
+					<p className="muted small dev-link-hint">
 						Keine E-Mail eingerichtet – hier ist der Link direkt:
 					</p>
-					<p style={{ wordBreak: "break-all", margin: 0 }}>
+					<p className="dev-link-url">
 						<a href={devLink}>{devLink}</a>
 					</p>
-					<p style={{ marginTop: "0.5rem" }}>
+					<p className="dev-link-action">
 						<a className="btn btn-sm btn-primary" href={devLink}>
 							Jetzt anmelden
 						</a>
@@ -160,7 +174,7 @@ export function Login() {
 				</div>
 			)}
 
-			<p className="muted small" style={{ marginTop: "1.25rem" }}>
+			<p className="muted small auth-footnote">
 				Wenn du angemeldet bist, kannst du Angebote einstellen, annehmen und die
 				Übergabe abschließen.
 			</p>

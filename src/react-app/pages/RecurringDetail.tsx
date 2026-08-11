@@ -154,33 +154,51 @@ export function RecurringDetail() {
 
 	if (!id) {
 		return (
-			<div className="page">
+			<div className="page detail-page">
 				<p className="banner error">Hier fehlt die Angebots-ID.</p>
+				<p className="back">
+					<Link to="/">Zurück zur Karte</Link>
+				</p>
 			</div>
 		);
 	}
 
 	if (loading && !offer) {
 		return (
-			<div className="page">
+			<div className="page detail-page">
 				<p className="back">
 					<Link to="/">← Karte</Link>
 				</p>
-				<p className="muted">Wöchentliches Angebot wird geladen…</p>
+				<div className="detail-card detail-skeleton" aria-busy="true">
+					<div className="detail-hero">
+						<span className="label">Pfandwert (ca.)</span>
+						<span className="skeleton skeleton-title" />
+					</div>
+					<div className="detail-row">
+						<span className="label">Status</span>
+						<span className="skeleton skeleton-text short" />
+					</div>
+					<div className="detail-row">
+						<span className="label">Wochentag</span>
+						<span className="skeleton skeleton-text short" />
+					</div>
+					<div className="skeleton skeleton-block" />
+					<p className="muted small">Wöchentliches Angebot wird geladen…</p>
+				</div>
 			</div>
 		);
 	}
 
 	if (!offer) {
 		return (
-			<div className="page">
+			<div className="page detail-page">
 				<p className="back">
 					<Link to="/">← Karte</Link>
 				</p>
 				<p className="banner error">
 					{loadError ?? "Das Angebot ließ sich nicht laden."}
 				</p>
-				<div className="actions">
+				<div className="actions sticky-actions">
 					<button
 						type="button"
 						className="btn btn-primary"
@@ -213,47 +231,61 @@ export function RecurringDetail() {
 	const anyBusy = busy !== null;
 
 	return (
-		<div className="page">
+		<div className="page detail-page">
 			<p className="back">
 				<Link to="/">← Karte</Link>
 			</p>
-			<h1>{offer.title || "Wöchentliches Pfand"}</h1>
-			<p className="muted small">
-				<span className="badge">Wöchentlich</span>{" "}
-				{weekdayLabel(offer.weekday)}
-				{offer.time_hint ? ` · ${offer.time_hint}` : ""}
-			</p>
 
-			<div className="banner info handover-hint">
-				{offer.is_own && offer.status === "open" && (
-					<>
-						<strong>Als Nächstes:</strong> Warte auf Bewerbungen und such dir
-						jemanden aus. Danach ist das Angebot von der Karte weg.
-					</>
-				)}
-				{offer.is_own && offer.status === "assigned" && (
-					<>
-						<strong>Abholer steht fest:</strong> Andere sehen das Angebot nicht
-						mehr. Freigeben, wenn wieder Bewerbungen rein sollen. Stell das
-						Pfand bitte immer zur vereinbarten Zeit bereit.
-					</>
-				)}
-				{offer.is_assigned_collector && (
-					<>
-						<strong>Du holst regelmäßig ab:</strong> Die Adresse siehst du.
-						Termin: {weekdayLabel(offer.weekday)}
-						{offer.time_hint ? `, ${offer.time_hint}` : ""}. Melde die Abholung
-						bitte selbst in der App – sonst blockiert eine offene Abholung neue
-						Angebote.
-					</>
-				)}
-				{!offer.is_own && !offer.is_assigned_collector && offer.status === "open" && (
-					<>
-						<strong>Bewerben:</strong> Der Inserent sucht jemanden aus. Die
-						Adresse siehst du erst, wenn du dran bist.
-					</>
-				)}
-			</div>
+			<header className="page-header">
+				<h1>{offer.title || "Wöchentliches Pfand"}</h1>
+				<p className="page-meta muted small">
+					<span className="badge">Wöchentlich</span>{" "}
+					{weekdayLabel(offer.weekday)}
+					{offer.time_hint ? ` · ${offer.time_hint}` : ""}
+				</p>
+			</header>
+
+			{(offer.is_own && offer.status === "open") ||
+			(offer.is_own && offer.status === "assigned") ||
+			offer.is_assigned_collector ||
+			(!offer.is_own &&
+				!offer.is_assigned_collector &&
+				offer.status === "open") ? (
+				<div className="status-banners">
+					<div className="banner info handover-hint status-banner">
+						{offer.is_own && offer.status === "open" && (
+							<>
+								<strong>Als Nächstes:</strong> Warte auf Bewerbungen und such
+								dir jemanden aus. Danach ist das Angebot von der Karte weg.
+							</>
+						)}
+						{offer.is_own && offer.status === "assigned" && (
+							<>
+								<strong>Abholer steht fest:</strong> Andere sehen das Angebot
+								nicht mehr. Freigeben, wenn wieder Bewerbungen rein sollen.
+								Stell das Pfand bitte immer zur vereinbarten Zeit bereit.
+							</>
+						)}
+						{offer.is_assigned_collector && (
+							<>
+								<strong>Du holst regelmäßig ab:</strong> Die Adresse siehst du.
+								Termin: {weekdayLabel(offer.weekday)}
+								{offer.time_hint ? `, ${offer.time_hint}` : ""}. Melde die
+								Abholung bitte selbst in der App – sonst blockiert eine offene
+								Abholung neue Angebote.
+							</>
+						)}
+						{!offer.is_own &&
+							!offer.is_assigned_collector &&
+							offer.status === "open" && (
+								<>
+									<strong>Bewerben:</strong> Der Inserent sucht jemanden aus.
+									Die Adresse siehst du erst, wenn du dran bist.
+								</>
+							)}
+					</div>
+				</div>
+			) : null}
 
 			{offer.is_own && <WeeklyTips variant="poster" />}
 			{offer.is_assigned_collector && <WeeklyTips variant="collector" />}
@@ -262,36 +294,42 @@ export function RecurringDetail() {
 				offer.status === "open" && <WeeklyTips variant="applicant" compact />}
 
 			<div className="detail-card">
-				<div className="detail-row">
+				<div className="detail-hero detail-row">
 					<span className="label">Pfandwert (ca.)</span>
-					<strong className="pfand">
+					<strong className="pfand detail-hero-value">
 						{centsToEuro(offer.pfand_value_cents)} €
 					</strong>
 				</div>
-				<div className="detail-desc">
-					<span className="label">Stückliste</span>
-					<PfandItemsList items={offer.items ?? []} />
+
+				<div className="detail-section">
+					<div className="detail-desc">
+						<span className="label">Stückliste</span>
+						<PfandItemsList items={offer.items ?? []} />
+					</div>
 				</div>
-				<div className="detail-row">
-					<span className="label">Status</span>
-					<span className={offerStatusClass(offer.status)}>
-						{recurringStatusLabel(offer.status)}
-					</span>
-				</div>
-				<div className="detail-row">
-					<span className="label">Wochentag</span>
-					<span>
-						{weekdayLabel(offer.weekday)}
-						{offer.time_hint ? ` · ${offer.time_hint}` : ""}
-					</span>
-				</div>
-				<div className="detail-row">
-					<span className="label">Gebiet</span>
-					<span>{offer.address_hint || "—"}</span>
+
+				<div className="detail-section detail-facts">
+					<div className="detail-row">
+						<span className="label">Status</span>
+						<span className={offerStatusClass(offer.status)}>
+							{recurringStatusLabel(offer.status)}
+						</span>
+					</div>
+					<div className="detail-row">
+						<span className="label">Wochentag</span>
+						<span>
+							{weekdayLabel(offer.weekday)}
+							{offer.time_hint ? ` · ${offer.time_hint}` : ""}
+						</span>
+					</div>
+					<div className="detail-row">
+						<span className="label">Gebiet</span>
+						<span>{offer.address_hint || "—"}</span>
+					</div>
 				</div>
 
 				{offer.address_text && (
-					<div className="detail-desc address-block">
+					<div className="detail-section detail-desc address-block">
 						<span className="label">Adresse</span>
 						<p className="address">{offer.address_text}</p>
 						<div className="address-actions">
@@ -327,9 +365,11 @@ export function RecurringDetail() {
 				)}
 
 				{offer.description && (
-					<div className="detail-desc">
+					<div className="detail-section detail-desc">
 						<span className="label">Hinweis</span>
-						<p style={{ whiteSpace: "pre-wrap" }}>{offer.description}</p>
+						<p className="detail-note" style={{ whiteSpace: "pre-wrap" }}>
+							{offer.description}
+						</p>
 					</div>
 				)}
 			</div>
@@ -339,7 +379,7 @@ export function RecurringDetail() {
 			)}
 
 			{myApp && !offer.is_own && (
-				<div className="banner info">
+				<div className="banner info status-banner">
 					<strong>Deine Bewerbung:</strong>{" "}
 					{recurringAppStatusLabel(myApp.status)}
 					{myApp.message ? ` — „${myApp.message}“` : ""}
@@ -347,37 +387,49 @@ export function RecurringDetail() {
 			)}
 
 			{offer.is_own && offer.applications && (
-				<section className="panel-block" style={{ marginTop: "1rem" }}>
+				<section className="panel-block panel-section applicants-section">
 					<div className="panel-head">
-						<h2>Bewerbungen ({offer.applications.length})</h2>
+						<h2>Bewerbungen</h2>
+						<span className="muted small panel-head-meta">
+							{offer.applications.length}
+						</span>
 					</div>
 					{offer.applications.length === 0 ? (
-						<p className="muted">Noch keine Bewerbungen.</p>
+						<div className="empty-state">
+							<p className="empty-state-title">Noch keine Bewerbungen</p>
+							<p className="empty-state-text">
+								Sobald sich jemand meldet, erscheint die Person hier.
+							</p>
+						</div>
 					) : (
 						<ul className="list">
 							{offer.applications.map((a) => (
 								<li key={a.id} className="list-item">
-									<div>
-										<strong>{a.display_name}</strong>
+									<div className="list-item-main">
+										<strong className="list-item-title">
+											{a.display_name}
+										</strong>
 										<span className={offerStatusClass(a.status)}>
 											{recurringAppStatusLabel(a.status)}
 										</span>
 									</div>
 									{a.message && (
-										<div className="meta">„{a.message}“</div>
+										<div className="meta list-item-meta">„{a.message}“</div>
 									)}
-									<div className="meta muted small">{a.email}</div>
+									<div className="meta muted small list-item-meta">{a.email}</div>
 									{offer.status === "open" && a.status === "pending" && (
-										<button
-											type="button"
-											className="btn btn-sm btn-primary"
-											disabled={anyBusy}
-											onClick={() => void onSelect(a.applicant_id)}
-										>
-											{busy === `select-${a.applicant_id}`
-												? "Wird gewählt…"
-												: "Als Abholer nehmen"}
-										</button>
+										<div className="list-item-actions">
+											<button
+												type="button"
+												className="btn btn-sm btn-primary"
+												disabled={anyBusy}
+												onClick={() => void onSelect(a.applicant_id)}
+											>
+												{busy === `select-${a.applicant_id}`
+													? "Wird gewählt…"
+													: "Als Abholer nehmen"}
+											</button>
+										</div>
 									)}
 								</li>
 							))}
@@ -386,9 +438,9 @@ export function RecurringDetail() {
 				</section>
 			)}
 
-			<div className="actions">
+			<div className="actions sticky-actions action-stack">
 				{canApply && (
-					<>
+					<div className="apply-form">
 						<label>
 							Kurze Nachricht (optional)
 							<textarea
@@ -407,7 +459,7 @@ export function RecurringDetail() {
 						>
 							{busy === "apply" ? "Wird gesendet…" : "Bewerben"}
 						</button>
-					</>
+					</div>
 				)}
 				{canWithdraw && (
 					<button
@@ -441,7 +493,9 @@ export function RecurringDetail() {
 						</button>
 					)}
 				{offer.status === "cancelled" && (
-					<p className="muted">Dieses wöchentliche Angebot wurde storniert.</p>
+					<p className="muted action-done">
+						Dieses wöchentliche Angebot wurde storniert.
+					</p>
 				)}
 			</div>
 		</div>

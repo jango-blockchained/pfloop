@@ -6,6 +6,8 @@ import { OfflineBanner } from "./OfflineBanner";
 export function Layout() {
 	const { user, loading } = useAuth();
 
+	const accountLabel = user?.display_name || "Konto";
+
 	return (
 		<div className="app-shell">
 			<a href="#main-content" className="skip-link">
@@ -17,23 +19,30 @@ export function Layout() {
 					<span className="brand-mark" aria-hidden="true">
 						G
 					</span>
-					<span className="brand-name">GrabMe</span>
+					<span className="brand-text">
+						<span className="brand-name">GrabMe</span>
+					</span>
 				</Link>
 				<nav className="nav" aria-label="Hauptnavigation">
-					<NavLink to="/" end>
+					<NavLink to="/" end className="nav-link">
 						Karte
 					</NavLink>
-					<NavLink to="/neu">Angebot</NavLink>
+					<NavLink to="/neu" className="nav-link">
+						Angebot
+					</NavLink>
 					{!loading && user ? (
 						<NavLink
 							to="/profil"
+							className="nav-link nav-link-user user-chip"
 							title={user.email}
 							aria-label={`Konto: ${user.display_name || user.email}`}
 						>
-							{user.display_name || "Konto"}
+							<span className="user-chip-label">{accountLabel}</span>
 						</NavLink>
 					) : (
-						<NavLink to="/login">Login</NavLink>
+						<NavLink to="/login" className="nav-link">
+							Login
+						</NavLink>
 					)}
 				</nav>
 			</header>
