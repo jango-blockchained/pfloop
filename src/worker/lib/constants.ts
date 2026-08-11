@@ -34,6 +34,9 @@ export const MAX_ADDRESS_HINT_LEN = 120;
 export const MAX_EMAIL_LEN = 254;
 export const MAX_DISPLAY_NAME_LEN = 80;
 export const MAX_TOKEN_LEN = 128;
+export const MAX_ADDRESS_LABEL_LEN = 40;
+/** Saved addresses per user (profile). */
+export const MAX_USER_ADDRESSES = 8;
 
 /** Geographic bounds. */
 export const LAT_MIN = -90;

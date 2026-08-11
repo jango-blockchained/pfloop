@@ -96,6 +96,12 @@ wrangler.jsonc        # Worker, D1, Cron, Assets
 - Service Worker cached App-Shell + OSM-Kacheln; `/api/*` immer Network-Only
 - Offline-Banner wenn keine Verbindung
 
+## Adressen (Profil)
+
+- Unter **Konto** (`/profil`) bis zu 8 Adressen speichern (Label, volle Adresse, Stadtteil, Kartenpunkt)
+- Eine Adresse als **Standard** → wird im Angebot-Formular vorausgefüllt
+- Im Formular wählbar per Dropdown; optional „Diese Adresse im Konto speichern“
+
 ## Android & iOS (Capacitor)
 
 Native App-Shells (`dev.cryptolinx.grabme`) laden standardmäßig die Live-App,

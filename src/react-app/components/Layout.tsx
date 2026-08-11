@@ -26,7 +26,7 @@ export function Layout() {
 					<NavLink to="/neu">Angebot</NavLink>
 					{!loading && user ? (
 						<NavLink
-							to="/login"
+							to="/profil"
 							title={user.email}
 							aria-label={`Konto: ${user.display_name || user.email}`}
 						>

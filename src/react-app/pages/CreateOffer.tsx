@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { OfferMap } from "../components/OfferMap";
 import {
@@ -6,9 +6,12 @@ import {
 	PfandQuantityForm,
 } from "../components/PfandQuantityForm";
 import {
+	createAddress,
 	createOffer,
 	createRecurringOffer,
+	fetchMyAddresses,
 	getErrorMessage,
+	type SavedAddress,
 	type Weekday,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
@@ -38,6 +41,55 @@ export function CreateOffer() {
 	const [error, setError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
 	const [attempted, setAttempted] = useState(false);
+	const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+	const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+	const [saveAsNew, setSaveAsNew] = useState(false);
+	const [addressPrefillDone, setAddressPrefillDone] = useState(false);
+
+	useEffect(() => {
+		if (!user) {
+			setSavedAddresses([]);
+			setAddressPrefillDone(false);
+			return;
+		}
+		let cancelled = false;
+		void (async () => {
+			try {
+				const data = await fetchMyAddresses();
+				if (cancelled) return;
+				setSavedAddresses(data.addresses);
+				const def =
+					data.addresses.find((a) => a.is_default) ?? data.addresses[0];
+				if (def && !addressPrefillDone) {
+					applySavedAddress(def);
+					setSelectedAddressId(def.id);
+					setAddressPrefillDone(true);
+				} else {
+					setAddressPrefillDone(true);
+				}
+			} catch {
+				if (!cancelled) setAddressPrefillDone(true);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- prefill once per login
+	}, [user]);
+
+	function applySavedAddress(a: SavedAddress) {
+		setAddressText(a.address_text);
+		setAddressHint(a.address_hint);
+		setPick([a.lat, a.lng]);
+		setSelectedAddressId(a.id);
+	}
+
+	function onSelectSaved(id: string) {
+		setSelectedAddressId(id);
+		if (!id) return;
+		const a = savedAddresses.find((x) => x.id === id);
+		if (a) applySavedAddress(a);
+	}
 
 	const { totalCents, lines } = useMemo(
 		() => totalFromQuantities(quantities),
@@ -106,27 +158,39 @@ export function CreateOffer() {
 
 		setSaving(true);
 		try {
+			const payload = {
+				items,
+				note: note.trim() || undefined,
+				lat: pick[0],
+				lng: pick[1],
+				address_hint: addressHint.trim() || "—",
+				address_text: addressText.trim(),
+			};
+
+			if (saveAsNew) {
+				try {
+					await createAddress({
+						address_text: payload.address_text,
+						address_hint:
+							addressHint.trim() || undefined,
+						lat: payload.lat,
+						lng: payload.lng,
+						is_default: savedAddresses.length === 0,
+					});
+				} catch {
+					// Offer still publishes; address save is best-effort
+				}
+			}
+
 			if (mode === "recurring") {
 				const { id } = await createRecurringOffer({
-					items,
-					note: note.trim() || undefined,
-					lat: pick[0],
-					lng: pick[1],
-					address_hint: addressHint.trim() || "—",
-					address_text: addressText.trim(),
+					...payload,
 					weekday,
 					time_hint: timeHint.trim() || undefined,
 				});
 				navigate(`/woche/${id}`);
 			} else {
-				const { id } = await createOffer({
-					items,
-					note: note.trim() || undefined,
-					lat: pick[0],
-					lng: pick[1],
-					address_hint: addressHint.trim() || "—",
-					address_text: addressText.trim(),
-				});
+				const { id } = await createOffer(payload);
 				navigate(`/angebot/${id}`);
 			}
 		} catch (err) {
@@ -282,13 +346,46 @@ export function CreateOffer() {
 						/>
 					</label>
 
+					{savedAddresses.length > 0 && (
+						<label>
+							Gespeicherte Adresse
+							<select
+								value={selectedAddressId}
+								onChange={(e) => onSelectSaved(e.target.value)}
+							>
+								<option value="">— manuell eingeben —</option>
+								{savedAddresses.map((a) => (
+									<option key={a.id} value={a.id}>
+										{a.label || a.address_text}
+										{a.is_default ? " (Standard)" : ""}
+									</option>
+								))}
+							</select>
+							<span className="muted small">
+								Verwalten unter{" "}
+								<Link to="/profil">Konto → Adressen</Link>
+							</span>
+						</label>
+					)}
+
+					{savedAddresses.length === 0 && (
+						<p className="muted small">
+							Tipp: Adressen im{" "}
+							<Link to="/profil">Konto</Link> speichern – dann sind sie hier
+							per Klick wählbar und die Standardadresse wird vorausgefüllt.
+						</p>
+					)}
+
 					<label>
 						{mode === "recurring"
 							? "Volle Adresse (nur für den gewählten Abholer)"
 							: "Volle Adresse (privat bis zur Annahme)"}
 						<input
 							value={addressText}
-							onChange={(e) => setAddressText(e.target.value)}
+							onChange={(e) => {
+								setAddressText(e.target.value);
+								setSelectedAddressId("");
+							}}
 							placeholder="Musterstraße 1, 10115 Berlin"
 							required
 							autoComplete="street-address"
@@ -302,10 +399,21 @@ export function CreateOffer() {
 						Stadtteil / Gegend (öffentlich)
 						<input
 							value={addressHint}
-							onChange={(e) => setAddressHint(e.target.value)}
+							onChange={(e) => {
+								setAddressHint(e.target.value);
+								setSelectedAddressId("");
+							}}
 							placeholder="Berlin-Mitte"
 							autoComplete="address-level2"
 						/>
+					</label>
+					<label className="checkbox-row">
+						<input
+							type="checkbox"
+							checked={saveAsNew}
+							onChange={(e) => setSaveAsNew(e.target.checked)}
+						/>
+						<span>Diese Adresse im Konto speichern</span>
 					</label>
 				</section>
 
@@ -321,9 +429,14 @@ export function CreateOffer() {
 								pickMode
 								pickPosition={pick}
 								showControls
-								onPick={(lat, lng) => setPick([lat, lng])}
+								center={pick ?? undefined}
+								onPick={(lat, lng) => {
+									setPick([lat, lng]);
+									setSelectedAddressId("");
+								}}
 								onLocationResolved={({ lat, lng, label }) => {
 									setPick([lat, lng]);
+									setSelectedAddressId("");
 									if (label && label !== "Mein Standort") {
 										setAddressText(label);
 										const parts = label.split(",").map((s) => s.trim());

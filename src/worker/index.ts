@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { offersRoutes } from "./routes/offers";
 import { reservationsRoutes } from "./routes/reservations";
 import { recurringRoutes } from "./routes/recurring";
+import { addressesRoutes } from "./routes/addresses";
 import { authRoutes } from "./routes/auth";
 import { releaseExpiredReservations } from "./cron";
 import { resolveSessionUser } from "./lib/auth";
@@ -72,6 +73,7 @@ app.route("/api/auth", authRoutes);
 app.route("/api/offers", offersRoutes);
 app.route("/api/reservations", reservationsRoutes);
 app.route("/api/recurring", recurringRoutes);
+app.route("/api/addresses", addressesRoutes);
 
 /**
  * Digital Asset Links (Android) + Apple App Site Association (iOS Universal Links).

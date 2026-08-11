@@ -79,8 +79,9 @@ export function Login() {
 					</button>
 				</div>
 				<p>
-					<Link to="/">Zur Karte</Link> ·{" "}
-					<Link to="/neu">Angebot erstellen</Link>
+					<Link to="/profil">Konto & Adressen</Link> ·{" "}
+					<Link to="/neu">Angebot erstellen</Link> ·{" "}
+					<Link to="/">Zur Karte</Link>
 				</p>
 			</div>
 		);

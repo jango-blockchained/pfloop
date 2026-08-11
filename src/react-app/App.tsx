@@ -7,6 +7,7 @@ import { Login } from "./pages/Login";
 import { AuthVerify } from "./pages/AuthVerify";
 import { OfferDetail } from "./pages/OfferDetail";
 import { RecurringDetail } from "./pages/RecurringDetail";
+import { Profile } from "./pages/Profile";
 
 export default function App() {
 	return (
@@ -16,6 +17,7 @@ export default function App() {
 					<Route index element={<MapHome />} />
 					<Route path="neu" element={<CreateOffer />} />
 					<Route path="login" element={<Login />} />
+					<Route path="profil" element={<Profile />} />
 					<Route path="auth/verify" element={<AuthVerify />} />
 					<Route path="angebot/:id" element={<OfferDetail />} />
 					<Route path="woche/:id" element={<RecurringDetail />} />

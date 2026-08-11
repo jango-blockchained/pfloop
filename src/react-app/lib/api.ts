@@ -430,3 +430,62 @@ export async function cancelRecurringOffer(id: string) {
 		await apiFetch(`/api/recurring/${id}/cancel`, { method: "POST" }),
 	);
 }
+
+// ── Saved addresses (profile) ───────────────────────────────────────
+
+export type SavedAddress = {
+	id: string;
+	label: string;
+	address_text: string;
+	address_hint: string;
+	lat: number;
+	lng: number;
+	is_default: boolean;
+	created_at: string;
+	updated_at: string;
+};
+
+export type AddressInput = {
+	label?: string;
+	address_text: string;
+	address_hint?: string;
+	lat: number;
+	lng: number;
+	is_default?: boolean;
+};
+
+export async function fetchMyAddresses() {
+	return json<{ addresses: SavedAddress[]; max: number }>(
+		await apiFetch("/api/addresses"),
+	);
+}
+
+export async function createAddress(body: AddressInput) {
+	return json<{ address: SavedAddress }>(
+		await apiFetch("/api/addresses", {
+			method: "POST",
+			body: JSON.stringify(body),
+		}),
+	);
+}
+
+export async function updateAddress(id: string, body: Partial<AddressInput>) {
+	return json<{ address: SavedAddress }>(
+		await apiFetch(`/api/addresses/${id}`, {
+			method: "PATCH",
+			body: JSON.stringify(body),
+		}),
+	);
+}
+
+export async function setDefaultAddress(id: string) {
+	return json<{ ok: boolean }>(
+		await apiFetch(`/api/addresses/${id}/default`, { method: "POST" }),
+	);
+}
+
+export async function deleteAddress(id: string) {
+	return json<{ ok: boolean }>(
+		await apiFetch(`/api/addresses/${id}`, { method: "DELETE" }),
+	);
+}
