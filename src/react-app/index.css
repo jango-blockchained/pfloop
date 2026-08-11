@@ -3,9 +3,9 @@
 	/* Surfaces */
 	--bg: #0f172a;
 	--bg-elevated: #1e293b;
-	--bg-app: #e8eaed;
+	--bg-app: #f0f2f5;
 	--bg-pattern: url("/bg-pattern.jpg");
-	--bg-pattern-size: 360px;
+	--bg-pattern-size: 380px;
 	--panel: #f8fafc;
 	--panel-dark: #1e293b;
 	--surface: #ffffff;
