@@ -4,6 +4,7 @@
  */
 
 import type { Context } from "hono";
+import { isPublicArea } from "../../shared/areas";
 import {
 	LAT_MAX,
 	LAT_MIN,
@@ -180,10 +181,24 @@ export function validateOfferStrings(body: {
 
 	const addressHint =
 		typeof body.address_hint === "string" ? body.address_hint.trim() : "";
+	// Legacy placeholder from older clients
+	const hintEmpty = !addressHint || addressHint === "—" || addressHint === "-";
+	if (hintEmpty) {
+		return {
+			ok: false,
+			error: "Bitte Stadtteil / Gegend aus der Liste wählen",
+		};
+	}
 	if (addressHint.length > MAX_ADDRESS_HINT_LEN) {
 		return {
 			ok: false,
 			error: `Der Stadtteil-Hinweis ist zu lang (höchstens ${MAX_ADDRESS_HINT_LEN} Zeichen)`,
+		};
+	}
+	if (!isPublicArea(addressHint)) {
+		return {
+			ok: false,
+			error: "Stadtteil / Gegend bitte aus der vorgegebenen Liste wählen",
 		};
 	}
 

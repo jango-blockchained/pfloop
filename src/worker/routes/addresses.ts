@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { isPublicArea } from "../../shared/areas";
 import { nowIso } from "../lib/time";
 import {
 	MAX_ADDRESS_HINT_LEN,
@@ -131,6 +132,13 @@ addressesRoutes.post("/", async (c) => {
 		addressText.split(",")[0]?.trim().slice(0, MAX_ADDRESS_LABEL_LEN) ||
 		"Adresse";
 	const addressHint = sanitizeText(parsed.data.address_hint, MAX_ADDRESS_HINT_LEN);
+	if (!addressHint || !isPublicArea(addressHint)) {
+		return jsonError(
+			c,
+			"Bitte Stadtteil / Gegend aus der Liste wählen",
+			400,
+		);
+	}
 	const wantDefault =
 		parsed.data.is_default === true ||
 		parsed.data.is_default === 1 ||
@@ -230,6 +238,13 @@ addressesRoutes.patch("/:id", async (c) => {
 		body.address_hint !== undefined
 			? sanitizeText(body.address_hint, MAX_ADDRESS_HINT_LEN)
 			: existing.address_hint;
+	if (!addressHint || !isPublicArea(addressHint)) {
+		return jsonError(
+			c,
+			"Bitte Stadtteil / Gegend aus der Liste wählen",
+			400,
+		);
+	}
 
 	let lat = existing.lat;
 	let lng = existing.lng;

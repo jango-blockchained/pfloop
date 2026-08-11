@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate } from "react-router-dom";
+import { AreaSelect } from "../components/AreaSelect";
 import { OfferMap } from "../components/OfferMap";
 import {
 	createAddress,
@@ -11,6 +12,7 @@ import {
 	type SavedAddress,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
+import { isPublicArea, suggestPublicArea } from "../../shared/areas";
 
 const emptyForm = {
 	label: "",
@@ -63,7 +65,9 @@ export function Profile() {
 		setForm({
 			label: a.label,
 			address_text: a.address_text,
-			address_hint: a.address_hint,
+			address_hint: isPublicArea(a.address_hint)
+				? a.address_hint
+				: (suggestPublicArea(a.address_hint || a.address_text) ?? ""),
 			lat: a.lat,
 			lng: a.lng,
 		});
@@ -85,8 +89,13 @@ export function Profile() {
 		setOkMsg(null);
 
 		const address_text = form.address_text.trim();
+		const address_hint = form.address_hint.trim();
 		if (!address_text) {
 			setError("Bitte die volle Adresse angeben.");
+			return;
+		}
+		if (!address_hint || !isPublicArea(address_hint)) {
+			setError("Bitte Stadtteil / Gegend aus der Liste wählen.");
 			return;
 		}
 		if (form.lat == null || form.lng == null) {
@@ -99,7 +108,7 @@ export function Profile() {
 			const body = {
 				label: form.label.trim() || undefined,
 				address_text,
-				address_hint: form.address_hint.trim() || undefined,
+				address_hint,
 				lat: form.lat,
 				lng: form.lng,
 				is_default: addresses.length === 0 && !editingId ? true : undefined,
@@ -318,13 +327,16 @@ export function Profile() {
 							</label>
 							<label>
 								Stadtteil / Gegend (öffentlich)
-								<input
+								<AreaSelect
 									value={form.address_hint}
-									onChange={(e) =>
-										setForm((f) => ({ ...f, address_hint: e.target.value }))
+									required
+									onChange={(v) =>
+										setForm((f) => ({ ...f, address_hint: v }))
 									}
-									placeholder="Berlin-Mitte"
 								/>
+								<span className="muted small">
+									Wird auf der Karte angezeigt – aus der Liste wählen.
+								</span>
 							</label>
 						</section>
 						<section className="form-section">
@@ -341,26 +353,27 @@ export function Profile() {
 											setForm((f) => ({ ...f, lat, lng }))
 										}
 										onLocationResolved={({ lat, lng, label }) => {
-											setForm((f) => ({
-												...f,
-												lat,
-												lng,
-												address_text:
-													label && label !== "Mein Standort"
-														? label
-														: f.address_text,
-												address_hint: (() => {
-													if (
-														f.address_hint ||
-														!label ||
-														label === "Mein Standort"
-													) {
-														return f.address_hint;
-													}
-													const parts = label.split(",").map((s) => s.trim());
-													return parts[parts.length - 1] ?? "";
-												})(),
-											}));
+											setForm((f) => {
+												let nextHint = f.address_hint;
+												if (
+													(!f.address_hint || !isPublicArea(f.address_hint)) &&
+													label &&
+													label !== "Mein Standort"
+												) {
+													nextHint =
+														suggestPublicArea(label) ?? f.address_hint;
+												}
+												return {
+													...f,
+													lat,
+													lng,
+													address_text:
+														label && label !== "Mein Standort"
+															? label
+															: f.address_text,
+													address_hint: nextHint,
+												};
+											});
 										}}
 										className="map map-sm"
 									/>

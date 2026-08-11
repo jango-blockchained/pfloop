@@ -22,7 +22,9 @@ import {
 	quantitiesToItems,
 	totalFromQuantities,
 } from "../lib/pfand-ui";
+import { AreaSelect } from "../components/AreaSelect";
 import { WeeklyTips } from "../components/WeeklyTips";
+import { isPublicArea, suggestPublicArea } from "../../shared/areas";
 import { centsToEuroDe } from "../../shared/pfand";
 
 const WEEKDAYS: Weekday[] = [1, 2, 3, 4, 5, 6, 7];
@@ -79,7 +81,12 @@ export function CreateOffer() {
 
 	function applySavedAddress(a: SavedAddress) {
 		setAddressText(a.address_text);
-		setAddressHint(a.address_hint);
+		// Only apply catalog areas (legacy free-text hints may not match)
+		setAddressHint(
+			isPublicArea(a.address_hint)
+				? a.address_hint
+				: (suggestPublicArea(a.address_hint || a.address_text) ?? ""),
+		);
 		setPick([a.lat, a.lng]);
 		setSelectedAddressId(a.id);
 	}
@@ -100,6 +107,7 @@ export function CreateOffer() {
 	const missingItems = items.length === 0;
 	const belowMin = totalCents < MIN_PFAND_CENTS;
 	const missingAddress = !addressText.trim();
+	const missingArea = !addressHint || !isPublicArea(addressHint);
 	const missingPin = !pick;
 	const restToMin = centsUntilMinimum(totalCents);
 
@@ -110,6 +118,7 @@ export function CreateOffer() {
 			return `Noch ${centsToEuroDe(restToMin)} € bis zu den ${centsToEuroDe(MIN_PFAND_CENTS)} € Minimum`;
 		}
 		if (missingAddress) return "Die Adresse fehlt noch";
+		if (missingArea) return "Stadtteil / Gegend aus der Liste wählen";
 		if (missingPin) return "Setz bitte noch einen Punkt auf der Karte";
 		return null;
 	}, [
@@ -118,6 +127,7 @@ export function CreateOffer() {
 		belowMin,
 		restToMin,
 		missingAddress,
+		missingArea,
 		missingPin,
 	]);
 
@@ -151,6 +161,10 @@ export function CreateOffer() {
 			);
 			return;
 		}
+		if (missingArea) {
+			setError("Bitte Stadtteil / Gegend aus der Liste wählen.");
+			return;
+		}
 		if (!pick) {
 			setError("Setz bitte noch einen Punkt auf der Karte.");
 			return;
@@ -163,7 +177,7 @@ export function CreateOffer() {
 				note: note.trim() || undefined,
 				lat: pick[0],
 				lng: pick[1],
-				address_hint: addressHint.trim() || "—",
+				address_hint: addressHint.trim(),
 				address_text: addressText.trim(),
 			};
 
@@ -171,8 +185,7 @@ export function CreateOffer() {
 				try {
 					await createAddress({
 						address_text: payload.address_text,
-						address_hint:
-							addressHint.trim() || undefined,
+						address_hint: payload.address_hint,
 						lat: payload.lat,
 						lng: payload.lng,
 						is_default: savedAddresses.length === 0,
@@ -423,15 +436,23 @@ export function CreateOffer() {
 					</label>
 					<label>
 						Stadtteil / Gegend (öffentlich)
-						<input
+						<AreaSelect
 							value={addressHint}
-							onChange={(e) => {
-								setAddressHint(e.target.value);
+							required
+							aria-invalid={attempted && missingArea}
+							onChange={(v) => {
+								setAddressHint(v);
 								setSelectedAddressId("");
 							}}
-							placeholder="Berlin-Mitte"
-							autoComplete="address-level2"
 						/>
+						<span className="muted small">
+							Auf der Karte sichtbar – bitte aus der Liste wählen.
+						</span>
+						{attempted && missingArea && (
+							<span className="field-error">
+								Stadtteil / Gegend wählen.
+							</span>
+						)}
 					</label>
 					<label className="checkbox-row">
 						<input
@@ -467,9 +488,9 @@ export function CreateOffer() {
 									setSelectedAddressId("");
 									if (label && label !== "Mein Standort") {
 										setAddressText(label);
-										const parts = label.split(",").map((s) => s.trim());
-										if (parts.length >= 2 && !addressHint) {
-											setAddressHint(parts[parts.length - 1] ?? "");
+										if (!addressHint || !isPublicArea(addressHint)) {
+											const suggested = suggestPublicArea(label);
+											if (suggested) setAddressHint(suggested);
 										}
 									}
 								}}
