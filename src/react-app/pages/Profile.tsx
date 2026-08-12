@@ -421,6 +421,12 @@ export function Profile() {
 				<Link to="/neu">Angebot erstellen</Link>
 				<span aria-hidden> · </span>
 				<Link to="/">Zur Karte</Link>
+				<span aria-hidden> · </span>
+				<Link to="/impressum">Impressum</Link>
+				<span aria-hidden> · </span>
+				<Link to="/datenschutz">Datenschutz</Link>
+				<span aria-hidden> · </span>
+				<Link to="/agb">AGB</Link>
 			</nav>
 		</div>
 	);

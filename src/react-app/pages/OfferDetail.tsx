@@ -24,6 +24,7 @@ import {
 	type OfferRole,
 } from "../lib/labels";
 import { PfandItemsList } from "../components/PfandItemsList";
+import { OfferTips } from "../components/OfferTips";
 
 type BusyAction = "accept" | "collect" | "confirm" | "cancel" | null;
 
@@ -254,6 +255,12 @@ export function OfferDetail() {
 				<div className="banner info handover-hint status-banner">
 					<strong>Als Nächstes:</strong> {nextStep}
 				</div>
+			)}
+
+			{offer.is_own && <OfferTips variant="poster" compact />}
+			{isCollectorView && <OfferTips variant="collector" compact />}
+			{!offer.is_own && !isCollectorView && offer.status === "open" && (
+				<OfferTips variant="public" compact />
 			)}
 
 			<div className="detail-card">

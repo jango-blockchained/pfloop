@@ -5,7 +5,7 @@ PWA zum **Inserieren und Abholen von Flaschenpfand** (deutsches Pfandsystem).
 - Inserenten stellen Angebote (Flaschen, Dosen, Kästen) mit Adresse und Pfandwert ein
 - Abholer sehen Angebote auf einer Karte, nehmen an und holen innerhalb von **6 Stunden** ab
 - „Bezahlung“ ist der **Pfandwert** selbst
-- **Mindest-Pfandwert: 3 €** (einmalig und wöchentlich)
+- **Mindest-Pfandwert:** einmalig **3 €**, wöchentlich Schätzung ab **2,50 €** (bis −50 % Schwankung)
 - **Wöchentliche Angebote:** bis 2 pro Nutzer, Bewerben → Inserent wählt Abholer
 - Service zunächst **kostenlos**
 - Hosting & DB: **Cloudflare Workers + D1**
@@ -21,7 +21,8 @@ PWA zum **Inserieren und Abholen von Flaschenpfand** (deutsches Pfandsystem).
 
 ## Domain-Regeln
 
-- Pfand in **Cent** gespeichert, Minimum **300** (€3)
+- Pfand in **Cent** gespeichert; einmalig Minimum **300** (€3), wöchentlich Schätzung Minimum **250** (€2,50)
+- Wöchentlich: gelisteter Wert ist eine Schätzung; realistisch bis **−50 %** (z. B. 5,00 € → ab ca. 2,50 €)
 - Einmalig: Annahme → Status `reserved`, Deadline = jetzt + **6h**
 - Wöchentlich: Bewerbung → Inserent wählt → Status `assigned` (verborgen bis Freigabe)
 - Volle Adresse nur für Inserent und aktiven / gewählten Abholer

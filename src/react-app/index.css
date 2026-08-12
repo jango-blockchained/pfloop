@@ -73,7 +73,8 @@
 	font-weight: 400;
 	font-size: 16px;
 	color: var(--text);
-	background: var(--bg);
+	/* App pattern is painted on body for full document height */
+	background: var(--bg-app);
 	-webkit-text-size-adjust: 100%;
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
@@ -88,22 +89,34 @@ html,
 body,
 #root {
 	margin: 0;
+	/* Grow with document — do not lock to vh (pattern would stop mid-scroll). */
 	min-height: 100%;
-	height: 100%;
+	height: auto;
 }
 
 /* Prefer dynamic viewport on mobile browsers */
-@supports (height: 100dvh) {
+@supports (min-height: 100dvh) {
 	html,
 	body,
 	#root {
-		height: 100dvh;
 		min-height: 100dvh;
 	}
 }
 
 body {
 	overflow-x: hidden;
+	/* Full-document pattern: body grows with content, tile paints entire scroll height */
+	background-color: var(--bg-app);
+	background-image:
+		linear-gradient(
+			rgba(244, 245, 247, var(--bg-pattern-wash)),
+			rgba(244, 245, 247, var(--bg-pattern-wash))
+		),
+		var(--bg-pattern);
+	background-repeat: repeat;
+	background-size: auto, var(--bg-pattern-size) var(--bg-pattern-size);
+	background-attachment: scroll;
+	color: var(--text);
 }
 
 /* —— Focus & interaction defaults —— */
@@ -175,19 +188,12 @@ select {
 .app-shell {
 	display: flex;
 	flex-direction: column;
+	/* At least full viewport; grow with tall pages so children can flex-fill map */
 	min-height: 100%;
-	height: 100%;
-	/* WhatsApp-style Pfand doodle tile (cans, bottles, crates) */
-	background-color: var(--bg-app);
-	background-image:
-		linear-gradient(
-			rgba(244, 245, 247, var(--bg-pattern-wash)),
-			rgba(244, 245, 247, var(--bg-pattern-wash))
-		),
-		var(--bg-pattern);
-	background-repeat: repeat;
-	background-size: auto, var(--bg-pattern-size) var(--bg-pattern-size);
-	background-attachment: local;
+	min-height: 100dvh;
+	height: auto;
+	/* Pattern lives on body (full document). Shell stays transparent. */
+	background: transparent;
 	color: var(--text);
 }
 
@@ -308,10 +314,139 @@ select {
 }
 
 .main {
-	flex: 1;
+	flex: 1 1 auto;
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
+}
+
+/* —— Site footer (legal) —— */
+.site-footer {
+	flex-shrink: 0;
+	margin-top: auto;
+	padding: 0.85rem 1rem 1rem;
+	padding-left: max(1rem, env(safe-area-inset-left));
+	padding-right: max(1rem, env(safe-area-inset-right));
+	padding-bottom: max(1rem, env(safe-area-inset-bottom));
+	border-top: 1px solid rgba(15, 23, 42, 0.08);
+	background: rgba(248, 250, 252, 0.82);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+.site-footer-inner {
+	max-width: 960px;
+	margin: 0 auto;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem 1rem;
+}
+
+.site-footer-nav {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem 0.15rem;
+	font-size: 0.85rem;
+}
+
+.site-footer-nav a {
+	color: var(--muted);
+	font-weight: 600;
+	text-decoration: none;
+	padding: 0.25rem 0.45rem;
+	border-radius: var(--radius-sm);
+	min-height: var(--touch-min);
+	display: inline-flex;
+	align-items: center;
+}
+
+.site-footer-nav a:hover {
+	color: var(--brand);
+	text-decoration: underline;
+	text-underline-offset: 0.12em;
+}
+
+.site-footer-nav a.active {
+	color: var(--brand-deep);
+}
+
+.site-footer-sep {
+	color: var(--border-strong);
+	user-select: none;
+	padding: 0 0.1rem;
+}
+
+.site-footer-meta {
+	margin: 0;
+	font-size: 0.78rem;
+	color: var(--muted);
+}
+
+/* —— Legal pages —— */
+.legal-page {
+	max-width: 720px;
+}
+
+.legal-page .page-lede {
+	margin-bottom: 1.1rem;
+}
+
+.legal-updated {
+	margin: 0 0 1.25rem;
+	font-size: 0.85rem;
+}
+
+.legal-body {
+	display: flex;
+	flex-direction: column;
+	gap: 1.15rem;
+}
+
+.legal-body section {
+	background: var(--surface-glass);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-md);
+	padding: 1rem 1.1rem 1.05rem;
+	box-shadow: var(--shadow-xs);
+}
+
+.legal-body h2 {
+	margin: 0 0 0.45rem;
+	font-size: 1.05rem;
+}
+
+.legal-body p,
+.legal-body li {
+	margin: 0 0 0.45rem;
+	line-height: 1.55;
+	font-size: 0.95rem;
+	color: var(--text);
+}
+
+.legal-body p:last-child,
+.legal-body li:last-child {
+	margin-bottom: 0;
+}
+
+.legal-body ul {
+	margin: 0.25rem 0 0;
+	padding-left: 1.2rem;
+}
+
+.legal-body li {
+	margin-bottom: 0.35rem;
+}
+
+.legal-crosslinks {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem 0.85rem;
+	margin-top: 0.25rem;
+	font-size: 0.9rem;
+	font-weight: 600;
 }
 
 /* —— Home / map layout —— */
@@ -1918,6 +2053,11 @@ code {
 	margin-top: 0.8rem;
 }
 
+/* Offer / weekly tips on detail pages sit above the card */
+.detail-page > .weekly-tips {
+	margin-bottom: 0.85rem;
+}
+
 .weekly-tips-list {
 	margin: 0.55rem 0 0;
 	padding-left: 1.2rem;
@@ -2618,6 +2758,16 @@ code {
 	font-weight: 600;
 	color: var(--muted);
 	font-size: 0.85rem;
+}
+
+.pfand-total-floor {
+	margin: 0.15rem 0 0.35rem;
+	line-height: 1.35;
+}
+
+.detail-pfand-floor {
+	margin: -0.15rem 0 0.65rem;
+	line-height: 1.4;
 }
 
 .pfand-min-bar-fill {

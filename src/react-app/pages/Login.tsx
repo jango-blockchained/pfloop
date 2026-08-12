@@ -90,6 +90,8 @@ export function Login() {
 					<Link to="/neu">Angebot erstellen</Link>
 					<span aria-hidden> · </span>
 					<Link to="/">Zur Karte</Link>
+					<span aria-hidden> · </span>
+					<Link to="/datenschutz">Datenschutz</Link>
 				</nav>
 			</div>
 		);
@@ -178,6 +180,13 @@ export function Login() {
 				Wenn du angemeldet bist, kannst du Angebote einstellen, annehmen und die
 				Übergabe abschließen.
 			</p>
+			<nav className="auth-footer-links muted small">
+				<Link to="/impressum">Impressum</Link>
+				<span aria-hidden> · </span>
+				<Link to="/datenschutz">Datenschutz</Link>
+				<span aria-hidden> · </span>
+				<Link to="/agb">AGB</Link>
+			</nav>
 		</div>
 	);
 }

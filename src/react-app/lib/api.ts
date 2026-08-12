@@ -31,7 +31,11 @@ export type PublicRecurringOffer = {
 	kind: "recurring";
 	title: string;
 	description: string;
+	/** Estimated weekly pfand (poster’s quantity guess). */
 	pfand_value_cents: number;
+	/** Estimate × threshold (−50 %), when provided by API. */
+	pfand_floor_cents?: number;
+	value_threshold?: number;
 	status: string;
 	lat: number;
 	lng: number;

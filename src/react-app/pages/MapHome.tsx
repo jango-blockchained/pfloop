@@ -27,7 +27,7 @@ import {
 	recurringStatusLabel,
 	weekdayLabel,
 } from "../lib/labels";
-import { formatItemsShort } from "../lib/pfand-ui";
+import { formatItemsShort, formatRecurringPfandLabel } from "../lib/pfand-ui";
 import { useGeolocation } from "../hooks/useGeolocation";
 
 type BBox = {
@@ -379,7 +379,7 @@ export function MapHome() {
 													</strong>
 												</Link>
 												<span className="list-pfand">
-													{centsToEuro(o.pfand_value_cents)} €
+													{formatRecurringPfandLabel(o.pfand_value_cents)}
 												</span>
 											</div>
 											<div className="meta list-item-meta">
@@ -505,7 +505,7 @@ export function MapHome() {
 										</div>
 										<div className="meta list-item-meta">
 											<span className="list-pfand-inline">
-												{centsToEuro(o.pfand_value_cents)} €
+												{formatRecurringPfandLabel(o.pfand_value_cents)}
 											</span>
 											{" · "}
 											{weekdayLabel(o.weekday)}
@@ -544,7 +544,7 @@ export function MapHome() {
 										</div>
 										<div className="meta list-item-meta">
 											<span className="list-pfand-inline">
-												{centsToEuro(a.pfand_value_cents)} €
+												{formatRecurringPfandLabel(a.pfand_value_cents)}
 											</span>
 											{" · "}
 											{weekdayLabel(a.weekday)}

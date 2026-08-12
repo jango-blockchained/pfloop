@@ -7,6 +7,7 @@ import {
 	MIN_PFAND_CENTS,
 	minProgress,
 	minValueHint,
+	recurringFloorCents,
 } from "../lib/pfand-ui";
 
 type QtyMap = Record<PfandItemType, number>;
@@ -15,6 +16,10 @@ type Props = {
 	quantities: QtyMap;
 	onChange: (next: QtyMap) => void;
 	totalCents: number;
+	/** Minimum to publish; defaults to one-shot €3. */
+	minCents?: number;
+	/** Weekly estimate mode: −50 % floor copy. */
+	recurring?: boolean;
 };
 
 export function emptyQuantities(): QtyMap {
@@ -27,13 +32,20 @@ export function emptyQuantities(): QtyMap {
 	};
 }
 
-export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
+export function PfandQuantityForm({
+	quantities,
+	onChange,
+	totalCents,
+	minCents = MIN_PFAND_CENTS,
+	recurring = false,
+}: Props) {
 	const flaschen = PFAND_CATALOG.filter((e) => e.category === "flasche");
 	const kaesten = PFAND_CATALOG.filter((e) => e.category === "kasten");
-	const meetsMin = totalCents >= MIN_PFAND_CENTS;
-	const progress = minProgress(totalCents);
+	const meetsMin = totalCents >= minCents;
+	const progress = minProgress(totalCents, minCents);
 	const progressPct = Math.round(progress * 100);
 	const itemCount = Object.values(quantities).reduce((a, b) => a + b, 0);
+	const floorCents = recurring ? recurringFloorCents(totalCents) : 0;
 
 	function setQty(type: PfandItemType, raw: string) {
 		const n = raw === "" ? 0 : Number.parseInt(raw, 10);
@@ -137,8 +149,9 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 	return (
 		<div className="pfand-form">
 			<p className="pfand-form-intro muted small">
-				Einfach die Stückzahlen eintippen. Den Pfandwert rechnen wir fest nach
-				deutschem Pfandsystem – den kannst du nicht frei ändern.
+				{recurring
+					? "Typische Wochenmengen schätzen – den genauen künftigen Pfand kennt niemand. Abholer rechnen mit bis zu −50 %."
+					: "Einfach die Stückzahlen eintippen. Den Pfandwert rechnen wir fest nach deutschem Pfandsystem – den kannst du nicht frei ändern."}
 			</p>
 			<div className="pfand-groups">
 				{renderGroup("Flaschen & Dosen", flaschen, "flaschen")}
@@ -151,7 +164,7 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 			>
 				<div className="pfand-total-head">
 					<span className="label">
-						Pfandwert gesamt
+						{recurring ? "Schätzung pro Woche" : "Pfandwert gesamt"}
 						{itemCount > 0 ? (
 							<span className="pfand-total-count"> · {itemCount} Stück</span>
 						) : null}
@@ -160,6 +173,12 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 						{centsToEuroDe(totalCents)} €
 					</strong>
 				</div>
+				{recurring && totalCents > 0 && (
+					<div className="pfand-total-floor muted small">
+						Realistisch ab ca. {centsToEuroDe(floorCents)} € (−50 %
+						Schwankung)
+					</div>
+				)}
 				<div
 					className="pfand-min-bar"
 					role="progressbar"
@@ -173,7 +192,9 @@ export function PfandQuantityForm({ quantities, onChange, totalCents }: Props) {
 						style={{ width: `${progressPct}%` }}
 					/>
 				</div>
-				<span className="pfand-min-hint">{minValueHint(totalCents)}</span>
+				<span className="pfand-min-hint">
+					{minValueHint(totalCents, minCents, { recurring })}
+				</span>
 			</div>
 		</div>
 	);

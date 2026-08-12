@@ -1,4 +1,8 @@
-import { MIN_PFAND_CENTS } from "./constants";
+import {
+	MIN_PFAND_CENTS,
+	MIN_RECURRING_PFAND_CENTS,
+	RECURRING_VALUE_THRESHOLD,
+} from "./constants";
 
 /** Parse euros like "12,50" or "12.50" to cents. Returns null if invalid. */
 export function eurosToCents(input: string | number): number | null {
@@ -17,9 +21,22 @@ export function centsToEuroString(cents: number): string {
 	return (cents / 100).toFixed(2).replace(".", ",");
 }
 
-export function assertMinPfand(cents: number): string | null {
-	if (cents < MIN_PFAND_CENTS) {
-		return `Mindestens ${centsToEuroString(MIN_PFAND_CENTS)} € Pfand nötig`;
+/** Floor of a weekly estimate after the −threshold (e.g. 50 % of 5 € → 2,50 €). */
+export function recurringFloorCents(estimateCents: number): number {
+	if (!Number.isFinite(estimateCents) || estimateCents <= 0) return 0;
+	return Math.floor(estimateCents * RECURRING_VALUE_THRESHOLD);
+}
+
+export function assertMinPfand(
+	cents: number,
+	minCents: number = MIN_PFAND_CENTS,
+): string | null {
+	if (cents < minCents) {
+		return `Mindestens ${centsToEuroString(minCents)} € Pfand nötig`;
 	}
 	return null;
+}
+
+export function assertMinRecurringPfand(cents: number): string | null {
+	return assertMinPfand(cents, MIN_RECURRING_PFAND_CENTS);
 }

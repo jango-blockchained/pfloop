@@ -54,6 +54,24 @@ export function Layout() {
 			<main id="main-content" className="main" tabIndex={-1}>
 				<Outlet />
 			</main>
+			<footer className="site-footer">
+				<div className="site-footer-inner">
+					<nav className="site-footer-nav" aria-label="Rechtliches">
+						<NavLink to="/impressum">Impressum</NavLink>
+						<span className="site-footer-sep" aria-hidden>
+							·
+						</span>
+						<NavLink to="/datenschutz">Datenschutz</NavLink>
+						<span className="site-footer-sep" aria-hidden>
+							·
+						</span>
+						<NavLink to="/agb">AGB</NavLink>
+					</nav>
+					<p className="site-footer-meta">
+						© {new Date().getFullYear()} GrabMe · kostenloser Pfand-Dienst
+					</p>
+				</div>
+			</footer>
 			<InstallPrompt />
 		</div>
 	);

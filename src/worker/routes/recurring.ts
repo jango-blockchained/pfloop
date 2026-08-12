@@ -1,11 +1,12 @@
 import { Hono } from "hono";
-import { assertMinPfand } from "../lib/money";
+import { assertMinRecurringPfand, recurringFloorCents } from "../lib/money";
 import { nowIso } from "../lib/time";
 import {
 	MAX_MAP_OFFERS,
 	MAX_MINE_OFFERS,
 	MAX_RECURRING_OFFERS_PER_USER,
-	MIN_PFAND_CENTS,
+	MIN_RECURRING_PFAND_CENTS,
+	RECURRING_VALUE_THRESHOLD,
 	WEEKDAYS,
 	type Weekday,
 } from "../lib/constants";
@@ -95,7 +96,19 @@ recurringRoutes.get("/", async (c) => {
 		 LIMIT ?`,
 	)
 		.bind(bbox.south, bbox.north, bbox.west, bbox.east, MAX_MAP_OFFERS)
-		.all<{ id: string }>();
+		.all<{
+			id: string;
+			title: string;
+			description: string;
+			pfand_value_cents: number;
+			status: string;
+			lat: number;
+			lng: number;
+			address_hint: string;
+			weekday: number;
+			time_hint: string;
+			created_at: string;
+		}>();
 
 	const offers = results ?? [];
 	const itemsByOffer = await loadRecurringOfferItemsForMany(
@@ -108,8 +121,10 @@ recurringRoutes.get("/", async (c) => {
 			...o,
 			kind: "recurring" as const,
 			items: itemsByOffer.get(o.id) ?? [],
+			pfand_floor_cents: recurringFloorCents(o.pfand_value_cents),
 		})),
-		min_pfand_cents: MIN_PFAND_CENTS,
+		min_pfand_cents: MIN_RECURRING_PFAND_CENTS,
+		value_threshold: RECURRING_VALUE_THRESHOLD,
 		max_per_user: MAX_RECURRING_OFFERS_PER_USER,
 	});
 });
@@ -344,6 +359,8 @@ recurringRoutes.get("/:id", async (c) => {
 			...rest,
 			kind: "recurring" as const,
 			items,
+			pfand_floor_cents: recurringFloorCents(offer.pfand_value_cents),
+			value_threshold: RECURRING_VALUE_THRESHOLD,
 			is_own: isOwn,
 			is_assigned_collector: isAssignedCollector,
 			assigned_collector_id: isOwn ? assigned_collector_id : null,
@@ -410,7 +427,7 @@ recurringRoutes.post("/", async (c) => {
 		return jsonError(c, computed.error, 400);
 	}
 
-	const minErr = assertMinPfand(computed.total_cents);
+	const minErr = assertMinRecurringPfand(computed.total_cents);
 	if (minErr) {
 		return jsonError(c, minErr, 400);
 	}
@@ -467,6 +484,8 @@ recurringRoutes.post("/", async (c) => {
 		{
 			id,
 			pfand_value_cents: computed.total_cents,
+			pfand_floor_cents: recurringFloorCents(computed.total_cents),
+			value_threshold: RECURRING_VALUE_THRESHOLD,
 			weekday,
 			items: computed.lines,
 		},

@@ -19,6 +19,7 @@ import {
 	recurringStatusLabel,
 	weekdayLabel,
 } from "../lib/labels";
+import { recurringFloorCents } from "../lib/pfand-ui";
 import { PfandItemsList } from "../components/PfandItemsList";
 import { WeeklyTips } from "../components/WeeklyTips";
 
@@ -295,15 +296,23 @@ export function RecurringDetail() {
 
 			<div className="detail-card">
 				<div className="detail-hero detail-row">
-					<span className="label">Pfandwert (ca.)</span>
+					<span className="label">Pfand-Schätzung (pro Woche)</span>
 					<strong className="pfand detail-hero-value">
-						{centsToEuro(offer.pfand_value_cents)} €
+						ca. {centsToEuro(offer.pfand_value_cents)} €
 					</strong>
 				</div>
+				<p className="muted small detail-pfand-floor">
+					Künftiges Pfand schwankt – realistisch ab ca.{" "}
+					{centsToEuro(
+						offer.pfand_floor_cents ??
+							recurringFloorCents(offer.pfand_value_cents),
+					)}{" "}
+					€ (bis −50 %).
+				</p>
 
 				<div className="detail-section">
 					<div className="detail-desc">
-						<span className="label">Stückliste</span>
+						<span className="label">Typische Stückliste (Schätzung)</span>
 						<PfandItemsList items={offer.items ?? []} />
 					</div>
 				</div>

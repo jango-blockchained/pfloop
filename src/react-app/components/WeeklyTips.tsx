@@ -68,8 +68,12 @@ function tipsFor(variant: Variant): string[] {
 	const confirmRule =
 		"Wichtig: Der Abholer meldet die Abholung selbst in der App. Ohne Meldung und Bestätigung des Inserenten bleibt die Abholung offen – und blockiert (wie bei normalen Angeboten) neue Annahmen.";
 
+	const amountVaries =
+		"Die Mengen sind eine Schätzung – künftiges Pfand kennt niemand genau. Rechne mit bis zu −50 % (z. B. 5 € → ab ca. 2,50 €).";
+
 	if (variant === "create" || variant === "poster") {
 		return [
+			"Trag eine typische Wochenmenge ein (mind. 2,50 € Schätzung). Die echte Menge kann bis −50 % darunter liegen.",
 			timeReady,
 			outdoor,
 			fixedTimeBoth,
@@ -80,6 +84,7 @@ function tipsFor(variant: Variant): string[] {
 
 	if (variant === "collector") {
 		return [
+			amountVaries,
 			"Komm zur vereinbarten Zeit – der Inserent stellt das Pfand dann bereit, damit es schnell geht.",
 			"Steht das Pfand draußen (Hof, Mülltonnen, …), nimm es mit – so entfällt das Klingeln, wenn ihr das so vereinbart habt.",
 			confirmRule,
@@ -89,6 +94,7 @@ function tipsFor(variant: Variant): string[] {
 
 	if (variant === "applicant") {
 		return [
+			amountVaries,
 			"Der Inserent wählt jemanden aus. Die Adresse siehst du erst, wenn du dran bist.",
 			"Danach gilt ein fester Wochentag (und oft eine Uhrzeit). Kurze Absprachen halten den Aufwand klein.",
 			confirmRule,
@@ -96,5 +102,5 @@ function tipsFor(variant: Variant): string[] {
 	}
 
 	// public / open listing
-	return [fixedTimeBoth, timeReady, outdoor, confirmRule];
+	return [amountVaries, fixedTimeBoth, timeReady, outdoor, confirmRule];
 }

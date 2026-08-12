@@ -1,7 +1,20 @@
 /** Domain rules for GrabMe (Pfand pickup). */
 
-/** Minimum offer value in euro cents (€3.00) — one-shot and recurring. */
+/** Minimum one-shot offer value in euro cents (€3.00). */
 export const MIN_PFAND_CENTS = 300;
+
+/**
+ * Minimum recurring (weekly) estimate in euro cents (€2.50).
+ * Future weekly amounts are uncertain; collectors treat the listed value as a
+ * rough estimate with up to RECURRING_VALUE_THRESHOLD downside.
+ */
+export const MIN_RECURRING_PFAND_CENTS = 250;
+
+/**
+ * Max downside on a weekly estimate (0.5 = −50 %).
+ * Example: 20×0,25 € = 5,00 € estimate → floor 2,50 €.
+ */
+export const RECURRING_VALUE_THRESHOLD = 0.5;
 
 /** How long a collector has to pick up after accepting (before auto-reopen). */
 export const RESERVATION_HOURS = 6;

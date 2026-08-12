@@ -25,7 +25,7 @@ import {
 	type PublicOffer,
 	type PublicRecurringOffer,
 } from "../lib/api";
-import { formatItemsShort } from "../lib/pfand-ui";
+import { formatItemsShort, formatRecurringPfandLabel } from "../lib/pfand-ui";
 import { weekdayLabel } from "../lib/labels";
 import { searchAddress, type GeocodeResult } from "../lib/geocode";
 import { DEFAULT_MAP_CENTER } from "../hooks/useGeolocation";
@@ -199,7 +199,7 @@ const RecurringMarker = memo(function RecurringMarker({
 }) {
 	const items = formatItemsShort(offer.items);
 	const title = offer.title?.trim() || items || "Wöchentliches Pfand";
-	const pfand = centsToEuro(offer.pfand_value_cents);
+	const pfand = formatRecurringPfandLabel(offer.pfand_value_cents);
 	const day = weekdayLabel(offer.weekday);
 
 	return (
@@ -207,7 +207,7 @@ const RecurringMarker = memo(function RecurringMarker({
 			<Popup>
 				<div className="map-popup map-popup-recurring">
 					<div className="map-popup-head">
-						<div className="map-popup-value">{pfand} €</div>
+						<div className="map-popup-value">{pfand}</div>
 						<span className="map-popup-kind badge">Wöchentlich</span>
 					</div>
 					<strong className="map-popup-title">{title}</strong>

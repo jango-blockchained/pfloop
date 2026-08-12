@@ -9,6 +9,8 @@ import { releaseExpiredReservations } from "./cron";
 import { resolveSessionUser } from "./lib/auth";
 import {
 	MIN_PFAND_CENTS,
+	MIN_RECURRING_PFAND_CENTS,
+	RECURRING_VALUE_THRESHOLD,
 	RESERVATION_HOURS,
 	MAX_UNFINISHED_RESERVATIONS_PER_USER,
 	MAX_MAP_OFFERS,
@@ -54,6 +56,8 @@ app.get("/api/health", (c) =>
 		time: new Date().toISOString(),
 		rules: {
 			min_pfand_cents: MIN_PFAND_CENTS,
+			min_recurring_pfand_cents: MIN_RECURRING_PFAND_CENTS,
+			recurring_value_threshold: RECURRING_VALUE_THRESHOLD,
 			reservation_hours: RESERVATION_HOURS,
 			max_unfinished_reservations: MAX_UNFINISHED_RESERVATIONS_PER_USER,
 			max_map_offers: MAX_MAP_OFFERS,
@@ -64,7 +68,7 @@ app.get("/api/health", (c) =>
 			handover:
 				"collector_marks_collected_then_poster_confirms; unfinished blocks new accept",
 			recurring:
-				"apply_then_poster_selects; assigned_hidden_until_unassign; min_same_as_one_shot",
+				"apply_then_poster_selects; assigned_hidden_until_unassign; estimate_min_2_50; actual_down_to_50pct",
 		},
 	}),
 );

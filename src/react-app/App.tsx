@@ -8,6 +8,9 @@ import { AuthVerify } from "./pages/AuthVerify";
 import { OfferDetail } from "./pages/OfferDetail";
 import { RecurringDetail } from "./pages/RecurringDetail";
 import { Profile } from "./pages/Profile";
+import { Impressum } from "./pages/Impressum";
+import { Datenschutz } from "./pages/Datenschutz";
+import { Agb } from "./pages/Agb";
 
 export default function App() {
 	return (
@@ -21,6 +24,9 @@ export default function App() {
 					<Route path="auth/verify" element={<AuthVerify />} />
 					<Route path="angebot/:id" element={<OfferDetail />} />
 					<Route path="woche/:id" element={<RecurringDetail />} />
+					<Route path="impressum" element={<Impressum />} />
+					<Route path="datenschutz" element={<Datenschutz />} />
+					<Route path="agb" element={<Agb />} />
 				</Route>
 			</Routes>
 		</AuthProvider>

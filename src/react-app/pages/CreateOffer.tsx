@@ -18,11 +18,13 @@ import { useAuth } from "../lib/auth-context";
 import { weekdayLabel } from "../lib/labels";
 import {
 	MIN_PFAND_CENTS,
+	MIN_RECURRING_PFAND_CENTS,
 	centsUntilMinimum,
 	quantitiesToItems,
 	totalFromQuantities,
 } from "../lib/pfand-ui";
 import { AreaSelect } from "../components/AreaSelect";
+import { OfferTips } from "../components/OfferTips";
 import { WeeklyTips } from "../components/WeeklyTips";
 import {
 	canonicalizePublicArea,
@@ -107,19 +109,22 @@ export function CreateOffer() {
 		[quantities],
 	);
 
+	const minPfandCents =
+		mode === "recurring" ? MIN_RECURRING_PFAND_CENTS : MIN_PFAND_CENTS;
+
 	const items = useMemo(() => quantitiesToItems(quantities), [quantities]);
 	const missingItems = items.length === 0;
-	const belowMin = totalCents < MIN_PFAND_CENTS;
+	const belowMin = totalCents < minPfandCents;
 	const missingAddress = !addressText.trim();
 	const missingArea = !addressHint || !isPublicArea(addressHint);
 	const missingPin = !pick;
-	const restToMin = centsUntilMinimum(totalCents);
+	const restToMin = centsUntilMinimum(totalCents, minPfandCents);
 
 	const publishBlockedReason = useMemo(() => {
 		if (saving) return "Wird gerade veröffentlicht…";
 		if (missingItems) return "Bitte Stückzahlen eintragen";
 		if (belowMin) {
-			return `Noch ${centsToEuroDe(restToMin)} € bis zu den ${centsToEuroDe(MIN_PFAND_CENTS)} € Minimum`;
+			return `Noch ${centsToEuroDe(restToMin)} € bis zu den ${centsToEuroDe(minPfandCents)} € Minimum`;
 		}
 		if (missingAddress) return "Die Adresse fehlt noch";
 		if (missingArea) return "Stadtteil / Gegend aus der Liste wählen";
@@ -130,6 +135,7 @@ export function CreateOffer() {
 		missingItems,
 		belowMin,
 		restToMin,
+		minPfandCents,
 		missingAddress,
 		missingArea,
 		missingPin,
@@ -153,7 +159,9 @@ export function CreateOffer() {
 		}
 		if (belowMin) {
 			setError(
-				`Mindestens ${centsToEuroDe(MIN_PFAND_CENTS)} € Pfand – du hast gerade ${centsToEuroDe(totalCents)} €.`,
+				mode === "recurring"
+					? `Mindestens ${centsToEuroDe(minPfandCents)} € Schätzung pro Woche – du hast gerade ${centsToEuroDe(totalCents)} €.`
+					: `Mindestens ${centsToEuroDe(minPfandCents)} € Pfand – du hast gerade ${centsToEuroDe(totalCents)} €.`,
 			);
 			return;
 		}
@@ -252,9 +260,11 @@ export function CreateOffer() {
 			<header className="page-header">
 				<h1>Angebot erstellen</h1>
 				<p className="page-lede muted">
-					Stückzahlen nach deutschem Pfandsystem (mind.{" "}
-					{centsToEuroDe(MIN_PFAND_CENTS)} €). Die genaue Adresse bleibt privat,
-					bis jemand annimmt – oder bis du beim Wöchentlichen jemanden auswählst.
+					Stückzahlen nach deutschem Pfandsystem (einmalig mind.{" "}
+					{centsToEuroDe(MIN_PFAND_CENTS)} €, wöchentlich Schätzung mind.{" "}
+					{centsToEuroDe(MIN_RECURRING_PFAND_CENTS)} €, bis −50 %). Die genaue
+					Adresse bleibt privat, bis jemand annimmt – oder bis du beim
+					Wöchentlichen jemanden auswählst.
 				</p>
 			</header>
 
@@ -293,6 +303,16 @@ export function CreateOffer() {
 							</span>
 						</label>
 					</div>
+					{mode === "once" && (
+						<>
+							<div className="banner info handover-hint">
+								<strong>So läuft’s einmalig:</strong> Jemand nimmt an, sieht
+								die Adresse und hat 6 Stunden. Abholer meldet „Abgeholt“, du
+								bestätigst – erst dann ist alles erledigt.
+							</div>
+							<OfferTips variant="create" />
+						</>
+					)}
 					{mode === "recurring" && (
 						<>
 							<div className="banner info handover-hint">
@@ -309,12 +329,16 @@ export function CreateOffer() {
 				<section className="form-section">
 					<h2 className="form-section-title">1. Pfand-Stückliste</h2>
 					<p className="muted small form-section-hint">
-						Mengen eintragen – der Pfandwert berechnet sich automatisch.
+						{mode === "recurring"
+							? "Typische Wochenmenge schätzen – niemand kennt den genauen künftigen Pfand."
+							: "Mengen eintragen – der Pfandwert berechnet sich automatisch."}
 					</p>
 					<PfandQuantityForm
 						quantities={quantities}
 						onChange={setQuantities}
 						totalCents={totalCents}
+						minCents={minPfandCents}
+						recurring={mode === "recurring"}
 					/>
 					{attempted && missingItems && (
 						<p className="banner error">
