@@ -207,7 +207,8 @@ export function Agb() {
 					<p>
 						Fragen zu diesen Bedingungen: siehe{" "}
 						<Link to="/impressum">Impressum</Link>. Datenschutz:{" "}
-						<Link to="/datenschutz">Datenschutzerklärung</Link>.
+						<Link to="/datenschutz">Datenschutzerklärung</Link>. Cookies:{" "}
+						<Link to="/cookies">Cookie-Richtlinie</Link>.
 					</p>
 				</section>
 			</div>

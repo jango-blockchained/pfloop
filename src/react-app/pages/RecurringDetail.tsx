@@ -281,7 +281,9 @@ export function RecurringDetail() {
 							offer.status === "open" && (
 								<>
 									<strong>Bewerben:</strong> Der Inserent sucht jemanden aus.
-									Die Adresse siehst du erst, wenn du dran bist.
+									Die Adresse siehst du erst, wenn du dran bist. Der gelistete
+									Pfandwert ist eine <strong>Schätzung</strong> – realistisch
+									kann er bis −50 % darunter liegen.
 								</>
 							)}
 					</div>
@@ -450,6 +452,17 @@ export function RecurringDetail() {
 			<div className="actions sticky-actions action-stack">
 				{canApply && (
 					<div className="apply-form">
+						<div className="banner info apply-threshold-hint">
+							<strong>Pfand-Schätzung &amp; Schwankung:</strong> ca.{" "}
+							{centsToEuro(offer.pfand_value_cents)} € pro Woche – künftiges
+							Pfand kennt niemand genau. Rechne mit bis zu{" "}
+							<strong>−50 %</strong> (realistisch ab ca.{" "}
+							{centsToEuro(
+								offer.pfand_floor_cents ??
+									recurringFloorCents(offer.pfand_value_cents),
+							)}{" "}
+							€). Das ist keine feste Zusicherung einer Auszahlung.
+						</div>
 						<label>
 							Kurze Nachricht (optional)
 							<textarea

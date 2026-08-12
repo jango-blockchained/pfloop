@@ -95,6 +95,7 @@ function tipsFor(variant: Variant): string[] {
 	if (variant === "applicant") {
 		return [
 			amountVaries,
+			"Beim Bewerben gilt: der angezeigte Wert ist eine Schätzung, kein garantierter Mindestbetrag pro Woche.",
 			"Der Inserent wählt jemanden aus. Die Adresse siehst du erst, wenn du dran bist.",
 			"Danach gilt ein fester Wochentag (und oft eine Uhrzeit). Kurze Absprachen halten den Aufwand klein.",
 			confirmRule,

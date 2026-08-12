@@ -11,6 +11,7 @@ import { Profile } from "./pages/Profile";
 import { Impressum } from "./pages/Impressum";
 import { Datenschutz } from "./pages/Datenschutz";
 import { Agb } from "./pages/Agb";
+import { Cookies } from "./pages/Cookies";
 
 export default function App() {
 	return (
@@ -26,6 +27,7 @@ export default function App() {
 					<Route path="woche/:id" element={<RecurringDetail />} />
 					<Route path="impressum" element={<Impressum />} />
 					<Route path="datenschutz" element={<Datenschutz />} />
+					<Route path="cookies" element={<Cookies />} />
 					<Route path="agb" element={<Agb />} />
 				</Route>
 			</Routes>

@@ -130,6 +130,7 @@ export function Impressum() {
 					<h2>Weitere rechtliche Hinweise</h2>
 					<nav className="legal-crosslinks" aria-label="Weitere Rechtstexte">
 						<Link to="/datenschutz">Datenschutz</Link>
+						<Link to="/cookies">Cookies</Link>
 						<Link to="/agb">Nutzungsbedingungen (AGB)</Link>
 					</nav>
 				</section>

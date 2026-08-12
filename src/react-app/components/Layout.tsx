@@ -1,5 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
+import { openCookiePreferences } from "../lib/cookie-consent";
+import { CookieConsent } from "./CookieConsent";
 import { InstallPrompt } from "./InstallPrompt";
 import { OfflineBanner } from "./OfflineBanner";
 
@@ -65,13 +67,28 @@ export function Layout() {
 						<span className="site-footer-sep" aria-hidden>
 							·
 						</span>
+						<NavLink to="/cookies">Cookies</NavLink>
+						<span className="site-footer-sep" aria-hidden>
+							·
+						</span>
 						<NavLink to="/agb">AGB</NavLink>
+						<span className="site-footer-sep" aria-hidden>
+							·
+						</span>
+						<button
+							type="button"
+							className="site-footer-cookie-btn"
+							onClick={() => openCookiePreferences()}
+						>
+							Cookie-Einstellungen
+						</button>
 					</nav>
 					<p className="site-footer-meta">
 						© {new Date().getFullYear()} GrabMe · kostenloser Pfand-Dienst
 					</p>
 				</div>
 			</footer>
+			<CookieConsent />
 			<InstallPrompt />
 		</div>
 	);

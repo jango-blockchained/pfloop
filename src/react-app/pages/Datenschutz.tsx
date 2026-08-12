@@ -146,17 +146,32 @@ export function Datenschutz() {
 				<section>
 					<h2>7. Cookies und lokale Speicherung (TTDSG)</h2>
 					<p>
-						Wir setzen <strong>technisch notwendige</strong> Cookies bzw.
-						Speicher ein, insbesondere die{" "}
-						<strong>Sitzungs-Cookie</strong> nach dem Login. Ohne sie
-						funktioniert die Anmeldung nicht. Es gibt derzeit{" "}
-						<strong>kein</strong> Marketing-Tracking und keine
-						Werbe-Cookies von Dritten über GrabMe.
+						Wir unterscheiden <strong>notwendige</strong> und{" "}
+						<strong>optionale</strong> Cookies / Speicher. Optionale Kategorien
+						(Präferenzen, Statistik) setzen wir nur mit deiner Einwilligung.
+						Details, Kategorien und Steuerung:{" "}
+						<Link to="/cookies">Cookie-Richtlinie</Link>.
 					</p>
+					<ul>
+						<li>
+							<strong>Notwendig:</strong> u. a. Sitzungs-Cookie nach dem Login
+							(ohne sie funktioniert die Anmeldung nicht), Speichern deiner
+							Cookie-Wahl, PWA-/Service-Worker-Cache.
+						</li>
+						<li>
+							<strong>Präferenzen (optional):</strong> z. B. Ausblenden des
+							Installations-Hinweises.
+						</li>
+						<li>
+							<strong>Statistik (optional):</strong> datenschutzfreundliche
+							Messung (z. B. Cloudflare Web Analytics), nur bei Einwilligung
+							und wenn konfiguriert – keine Werbeprofile.
+						</li>
+					</ul>
 					<p>
-						Zusätzlich kann der Browser lokale Daten der Progressive Web App
-						(PWA) speichern (z. B. Offline-/Cache-Funktionen des Service
-						Workers), soweit vom Gerät unterstützt.
+						Es gibt <strong>kein</strong> Marketing-Tracking und keine
+						Werbe-Cookies von Dritten über GrabMe. Deine Wahl kannst du jederzeit
+						über „Cookie-Einstellungen“ im Fußbereich ändern.
 					</p>
 				</section>
 
@@ -218,6 +233,7 @@ export function Datenschutz() {
 					<h2>13. Weitere Rechtstexte</h2>
 					<nav className="legal-crosslinks" aria-label="Weitere Rechtstexte">
 						<Link to="/impressum">Impressum</Link>
+						<Link to="/cookies">Cookies</Link>
 						<Link to="/agb">Nutzungsbedingungen (AGB)</Link>
 					</nav>
 				</section>

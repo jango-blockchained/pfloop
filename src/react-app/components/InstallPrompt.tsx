@@ -1,11 +1,14 @@
 import { useEffect, useId, useRef, useState } from "react";
+import {
+	PREF_INSTALL_DISMISS_KEY,
+	persistPreference,
+	readPreference,
+} from "../lib/cookie-consent";
 
 type BeforeInstallPromptEvent = Event & {
 	prompt: () => Promise<void>;
 	userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
-
-const DISMISS_KEY = "grabme_install_dismissed";
 
 export function InstallPrompt() {
 	const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
@@ -19,7 +22,8 @@ export function InstallPrompt() {
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
-		if (localStorage.getItem(DISMISS_KEY) === "1") return;
+		// Only honor dismiss when preferences consent allows storage
+		if (readPreference(PREF_INSTALL_DISMISS_KEY) === "1") return;
 		// Already standalone
 		if (
 			window.matchMedia("(display-mode: standalone)").matches ||
@@ -48,7 +52,8 @@ export function InstallPrompt() {
 	if (!visible || !deferred) return null;
 
 	const dismiss = () => {
-		localStorage.setItem(DISMISS_KEY, "1");
+		// Only persists if preferences consent is granted
+		persistPreference(PREF_INSTALL_DISMISS_KEY, "1");
 		setVisible(false);
 	};
 
