@@ -1,4 +1,4 @@
--- GrabMe domain schema
+-- Pfloop domain schema
 -- Rules:
 --   * pfand_value_cents >= 500 (€5 minimum)
 --   * reservation deadline = accepted_at + 6 hours

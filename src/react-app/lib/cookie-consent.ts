@@ -1,5 +1,5 @@
 /**
- * EU ePrivacy / GDPR / TTDSG cookie & local-storage consent for GrabMe.
+ * EU ePrivacy / GDPR / TTDSG cookie & local-storage consent for Pfloop.
  *
  * Categories:
  * - necessary   — always on (session, consent record, security)
@@ -9,13 +9,13 @@
  * Marketing trackers are not used.
  */
 
-export const COOKIE_CONSENT_KEY = "grabme-cookie-consent";
+export const COOKIE_CONSENT_KEY = "pfloop-cookie-consent";
 export const COOKIE_CONSENT_VERSION = 1 as const;
-export const COOKIE_CONSENT_EVENT = "grabme:cookie-consent";
-export const COOKIE_OPEN_PREFERENCES_EVENT = "grabme:cookie-open-preferences";
+export const COOKIE_CONSENT_EVENT = "pfloop:cookie-consent";
+export const COOKIE_OPEN_PREFERENCES_EVENT = "pfloop:cookie-open-preferences";
 
 /** Preference key: PWA install banner dismissed (only with preferences consent). */
-export const PREF_INSTALL_DISMISS_KEY = "grabme_install_dismissed";
+export const PREF_INSTALL_DISMISS_KEY = "pfloop_install_dismissed";
 
 export type CookieCategoryId = "necessary" | "preferences" | "analytics";
 

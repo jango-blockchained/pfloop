@@ -17,7 +17,7 @@ export function Layout() {
 			</a>
 			<OfflineBanner />
 			<header className="topbar">
-				<Link to="/" className="brand" aria-label="GrabMe Startseite">
+				<Link to="/" className="brand" aria-label="Pfloop Startseite">
 					<img
 						className="brand-mark"
 						src="/logo-mark.svg"
@@ -27,7 +27,7 @@ export function Layout() {
 						decoding="async"
 					/>
 					<span className="brand-text">
-						<span className="brand-name">GrabMe</span>
+						<span className="brand-name">Pfloop</span>
 					</span>
 				</Link>
 				<nav className="nav" aria-label="Hauptnavigation">
@@ -87,7 +87,7 @@ export function Layout() {
 						</button>
 					</nav>
 					<p className="site-footer-meta">
-						© {new Date().getFullYear()} GrabMe · kostenloser Pfand-Dienst
+						© {new Date().getFullYear()} Pfloop · kostenloser Pfand-Dienst
 					</p>
 				</div>
 			</footer>

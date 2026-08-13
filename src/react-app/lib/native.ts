@@ -16,7 +16,7 @@ export async function initNativeShell(): Promise<void> {
 			]);
 
 		await StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
-		await StatusBar.setBackgroundColor({ color: "#0f172a" }).catch(() => {});
+		await StatusBar.setBackgroundColor({ color: "#0f1221" }).catch(() => {});
 		await SplashScreen.hide().catch(() => {});
 
 		// Magic-link / external https URLs that open the app (Android App Links)

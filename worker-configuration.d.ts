@@ -5,7 +5,7 @@ interface __BaseEnv_Env {
 	DB: D1Database;
 	ASSETS: Fetcher;
 	APP_URL: "http://localhost:5173";
-	EMAIL_FROM: "GrabMe <onboarding@resend.dev>";
+	EMAIL_FROM: "Pfloop <onboarding@resend.dev>";
 }
 declare namespace Cloudflare {
 	interface GlobalProps {

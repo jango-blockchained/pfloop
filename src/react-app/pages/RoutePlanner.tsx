@@ -1152,8 +1152,8 @@ export function RoutePlanner() {
 										center={[o.lat, o.lng]}
 										radius={11}
 										pathOptions={{
-											color: "#0f766e",
-											fillColor: "#14b8a6",
+											color: "#5B4FE9",
+											fillColor: "#818CF8",
 											fillOpacity: 0.95,
 											weight: 2,
 										}}
@@ -1215,7 +1215,7 @@ export function RoutePlanner() {
 							{routeCoords && routeCoords.length > 1 && (
 								<Polyline
 									positions={routeCoords}
-									pathOptions={{ color: "#0f766e", weight: 5, opacity: 0.85 }}
+									pathOptions={{ color: "#5B4FE9", weight: 5, opacity: 0.85 }}
 								/>
 							)}
 						</MapContainer>

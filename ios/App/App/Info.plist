@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>de</string>
 	<key>CFBundleDisplayName</key>
-	<string>GrabMe</string>
+	<string>Pfloop</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -38,9 +38,9 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>GrabMe nutzt deinen Standort, um Pfand-Angebote in der Nähe auf der Karte zu zeigen und den Pin beim Inserieren zu setzen.</string>
+	<string>Pfloop nutzt deinen Standort, um Pfand-Angebote in der Nähe auf der Karte zu zeigen und den Pin beim Inserieren zu setzen.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>GrabMe nutzt deinen Standort, um Pfand-Angebote in der Nähe auf der Karte zu zeigen.</string>
+	<string>Pfloop nutzt deinen Standort, um Pfand-Angebote in der Nähe auf der Karte zu zeigen.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

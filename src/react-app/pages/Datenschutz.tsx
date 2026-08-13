@@ -9,7 +9,7 @@ export function Datenschutz() {
 				<h1>Datenschutzerklärung</h1>
 				<p className="page-lede muted">
 					Informationen zur Verarbeitung personenbezogener Daten bei Nutzung
-					von GrabMe (DSGVO / TTDSG).
+					von Pfloop (DSGVO / TTDSG).
 				</p>
 				<p className="legal-updated muted">Stand: {UPDATED}</p>
 			</header>
@@ -22,18 +22,18 @@ export function Datenschutz() {
 						<Link to="/impressum">Impressum</Link>-Seite genannte
 						Diensteanbieter. Kontakt:{" "}
 						<a href="mailto:login@hoox.sh">login@hoox.sh</a> (Betreff
-						„Datenschutz GrabMe“).
+						„Datenschutz Pfloop“).
 					</p>
 				</section>
 
 				<section>
-					<h2>2. Überblick: wofür GrabMe Daten braucht</h2>
+					<h2>2. Überblick: wofür Pfloop Daten braucht</h2>
 					<p>
-						GrabMe vermittelt <strong>Pfand-Abholungen</strong> zwischen
+						Pfloop vermittelt <strong>Pfand-Abholungen</strong> zwischen
 						Inserenten und Abholern. Dafür sind u. a. Konto, Standortangaben
 						und Angebotsinhalte erforderlich. Der Dienst ist derzeit{" "}
 						<strong>kostenlos</strong>; es findet keine Zahlungsabwicklung über
-						GrabMe statt.
+						Pfloop statt.
 					</p>
 				</section>
 
@@ -170,7 +170,7 @@ export function Datenschutz() {
 					</ul>
 					<p>
 						Es gibt <strong>kein</strong> Marketing-Tracking und keine
-						Werbe-Cookies von Dritten über GrabMe. Deine Wahl kannst du jederzeit
+						Werbe-Cookies von Dritten über Pfloop. Deine Wahl kannst du jederzeit
 						über „Cookie-Einstellungen“ im Fußbereich ändern.
 					</p>
 				</section>

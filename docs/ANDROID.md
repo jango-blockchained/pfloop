@@ -1,6 +1,6 @@
-# GrabMe — Android (Capacitor)
+# Pfloop — Android (Capacitor)
 
-Native Android shell around the GrabMe PWA. By default the WebView loads the
+Native Android shell around the Pfloop PWA. By default the WebView loads the
 **live** app at `https://grabme.cryptolinx.workers.dev` so magic-link sessions
 (HttpOnly cookies) and `/api` stay same-origin.
 
@@ -9,7 +9,7 @@ iOS counterpart: **[IOS.md](./IOS.md)**.
 | | |
 |---|---|
 | **Package** | `dev.cryptolinx.grabme` |
-| **App name** | GrabMe |
+| **App name** | Pfloop |
 | **Min SDK** | 24 (Android 7) |
 | **Target SDK** | 36 |
 
@@ -50,7 +50,7 @@ In Android Studio:
 CLI (with SDK + JDK 21 installed):
 
 ```bash
-# One-shot debug APK → exports/GrabMe-debug.apk
+# One-shot debug APK → exports/Pfloop-debug.apk
 npm run android:apk
 
 # Or manually:
@@ -62,7 +62,7 @@ cd android
 Install on a phone (USB debugging):
 
 ```bash
-adb install -r exports/GrabMe-debug.apk
+adb install -r exports/Pfloop-debug.apk
 ```
 
 ## npm scripts
@@ -128,8 +128,8 @@ keytool -list -v -keystore ~/.android/debug.keystore \
 
 Default Capacitor icons ship under `android/app/src/main/res/mipmap-*`.
 Replace with branded assets (e.g. Android Studio **Image Asset** studio, or
-`@capacitor/assets`). Brand colors live in `res/values/colors.xml` (teal
-`#0f766e`, dark `#0f172a`).
+`@capacitor/assets`). Brand colors live in `res/values/colors.xml` (primary
+`#5B4FE9`, accent `#6D63F0`, dark chrome `#0f1221`).
 
 ## Architecture note
 

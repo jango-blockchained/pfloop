@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" role="img" aria-label="Pfloop Farbpalette">
+  <!-- Brand kit swatch — primary identity colors -->
+  <rect width="640" height="200" fill="#f4f5f7"/>
+  <text x="24" y="36" font-family="system-ui,sans-serif" font-size="18" font-weight="700" fill="#0f1221">Pfloop · Brand palette</text>
+
+  <!-- Primary -->
+  <rect x="24" y="56" width="100" height="100" rx="12" fill="#5B4FE9"/>
+  <text x="24" y="178" font-family="system-ui,sans-serif" font-size="11" fill="#0f1221">brand #5B4FE9</text>
+
+  <!-- Hover -->
+  <rect x="140" y="56" width="100" height="100" rx="12" fill="#6D63F0"/>
+  <text x="140" y="178" font-family="system-ui,sans-serif" font-size="11" fill="#0f1221">hover #6D63F0</text>
+
+  <!-- Deep -->
+  <rect x="256" y="56" width="100" height="100" rx="12" fill="#4538C7"/>
+  <text x="256" y="178" font-family="system-ui,sans-serif" font-size="11" fill="#0f1221">deep #4538C7</text>
+
+  <!-- Soft -->
+  <rect x="372" y="56" width="100" height="100" rx="12" fill="#EEEDFE" stroke="#C7C3F9"/>
+  <text x="372" y="178" font-family="system-ui,sans-serif" font-size="11" fill="#0f1221">soft #EEEDFE</text>
+
+  <!-- Cap accent -->
+  <rect x="488" y="56" width="100" height="100" rx="12" fill="#F59E0B"/>
+  <text x="488" y="178" font-family="system-ui,sans-serif" font-size="11" fill="#0f1221">cap #F59E0B</text>
+
+  <!-- Dark strip -->
+  <rect x="24" y="188" width="564" height="8" rx="4" fill="#0f1221"/>
+</svg>

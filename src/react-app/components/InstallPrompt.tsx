@@ -84,7 +84,7 @@ export function InstallPrompt() {
 			</span>
 			<div className="install-copy">
 				<strong id={titleId} className="install-title">
-					GrabMe aufs Handy legen?
+					Pfloop aufs Handy legen?
 				</strong>
 				<p id={descId} className="install-desc muted small">
 					Als App auf dem Homescreen – schneller Start, und die Oberfläche geht

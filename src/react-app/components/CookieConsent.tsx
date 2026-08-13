@@ -189,7 +189,7 @@ export function CookieConsent() {
 
 				<div className="cookie-banner-body">
 					<p id={`${baseId}-desc`} className="cookie-banner-text">
-						Wir nutzen notwendige Cookies und Speicher, damit GrabMe
+						Wir nutzen notwendige Cookies und Speicher, damit Pfloop
 						funktioniert (z. B. Login). Optionale Präferenzen und Statistik nur
 						mit deiner Einwilligung. Du kannst das jederzeit ändern.{" "}
 						<Link to="/datenschutz">Datenschutz</Link>

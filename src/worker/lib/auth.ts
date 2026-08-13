@@ -4,7 +4,7 @@ import { randomToken, sha256Hex } from "./crypto";
 import { nowIso } from "./time";
 import { MAX_DISPLAY_NAME_LEN } from "./constants";
 
-export const SESSION_COOKIE = "grabme_session";
+export const SESSION_COOKIE = "pfloop_session";
 const SESSION_DAYS = 30;
 const MAGIC_LINK_MINUTES = 15;
 
@@ -271,7 +271,7 @@ export async function sendMagicLinkEmail(
 		return "dev_log";
 	}
 
-	const from = env.EMAIL_FROM ?? "GrabMe <onboarding@resend.dev>";
+	const from = env.EMAIL_FROM ?? "Pfloop <onboarding@resend.dev>";
 	const res = await fetch("https://api.resend.com/emails", {
 		method: "POST",
 		headers: {
@@ -281,9 +281,9 @@ export async function sendMagicLinkEmail(
 		body: JSON.stringify({
 			from,
 			to: [to],
-			subject: "Dein Login-Link für GrabMe",
-			text: `Hi!\n\nHier ist dein Login-Link für GrabMe (einmalig, ca. 15 Minuten gültig):\n\n${link}\n\nFalls du das nicht warst, einfach ignorieren.\n`,
-			html: `<p>Hi!</p><p><a href="${link}">Jetzt bei GrabMe anmelden</a></p><p>Der Link gilt einmal und etwa 15 Minuten.</p><p>Falls du das nicht angefordert hast, kannst du die Mail ignorieren.</p>`,
+			subject: "Dein Login-Link für Pfloop",
+			text: `Hi!\n\nHier ist dein Login-Link für Pfloop (einmalig, ca. 15 Minuten gültig):\n\n${link}\n\nFalls du das nicht warst, einfach ignorieren.\n`,
+			html: `<p>Hi!</p><p><a href="${link}">Jetzt bei Pfloop anmelden</a></p><p>Der Link gilt einmal und etwa 15 Minuten.</p><p>Falls du das nicht angefordert hast, kannst du die Mail ignorieren.</p>`,
 		}),
 	});
 

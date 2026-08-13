@@ -8,7 +8,7 @@ export function Agb() {
 			<header className="page-header">
 				<h1>Nutzungsbedingungen</h1>
 				<p className="page-lede muted">
-					Allgemeine Bedingungen für die Nutzung von GrabMe (AGB-ähnlich).
+					Allgemeine Bedingungen für die Nutzung von Pfloop (AGB-ähnlich).
 				</p>
 				<p className="legal-updated muted">Stand: {UPDATED}</p>
 			</header>
@@ -18,7 +18,7 @@ export function Agb() {
 					<h2>1. Geltungsbereich</h2>
 					<p>
 						Diese Nutzungsbedingungen regeln die Nutzung der App und Website{" "}
-						<strong>GrabMe</strong> (nachfolgend „Dienst“). Mit der Nutzung
+						<strong>Pfloop</strong> (nachfolgend „Dienst“). Mit der Nutzung
 						oder Registrierung erkennst du diese Bedingungen an.
 					</p>
 					<p>
@@ -31,7 +31,7 @@ export function Agb() {
 				<section>
 					<h2>2. Leistungsbeschreibung</h2>
 					<p>
-						GrabMe ist eine Plattform, über die Nutzer{" "}
+						Pfloop ist eine Plattform, über die Nutzer{" "}
 						<strong>Pfand-Angebote</strong> (Flaschen, Dosen, Kästen nach
 						deutschem Pfandsystem) inserieren und Abholungen vereinbaren
 						können – einmalig oder wöchentlich.
@@ -52,7 +52,7 @@ export function Agb() {
 						</li>
 					</ul>
 					<p>
-						GrabMe ist <strong>kein</strong> Zahlungsdienst und vermittelt
+						Pfloop ist <strong>kein</strong> Zahlungsdienst und vermittelt
 						keinen Geldaustausch. „Gegenleistung“ ist der Pfandwert der
 						mitgenommenen Gebinde, der beim Rückgabeautomaten bzw. Händler
 						entsteht.
@@ -107,7 +107,7 @@ export function Agb() {
 				<section>
 					<h2>6. Vermittlerrolle – keine Garantie</h2>
 					<p>
-						GrabMe stellt nur die technische Vermittlung bereit. Verträge
+						Pfloop stellt nur die technische Vermittlung bereit. Verträge
 						über die Übergabe des Pfands kommen – soweit überhaupt –
 						ausschließlich zwischen den Nutzern zustande. Wir prüfen
 						Angebote und Nutzer nicht vollständig und übernehmen keine

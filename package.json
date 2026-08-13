@@ -1,6 +1,6 @@
 {
-	"name": "grabme",
-	"description": "GrabMe — Pfand-Abhol-PWA (Cloudflare Workers + D1)",
+	"name": "pfloop",
+	"description": "Pfloop — Pfand-Abhol-PWA (Cloudflare Workers + D1)",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -18,7 +18,7 @@
 		"android:add": "npx cap add android",
 		"android:copy": "npx cap copy android",
 		"android:update": "npx cap update android",
-		"android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug && mkdir -p ../exports && cp -f app/build/outputs/apk/debug/app-debug.apk ../exports/GrabMe-debug.apk && ls -lh ../exports/GrabMe-debug.apk",
+		"android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug && mkdir -p ../exports && cp -f app/build/outputs/apk/debug/app-debug.apk ../exports/Pfloop-debug.apk && ls -lh ../exports/Pfloop-debug.apk",
 		"ios:sync": "npm run build && npx cap sync ios",
 		"ios:open": "npx cap open ios",
 		"ios:add": "npx cap add ios",

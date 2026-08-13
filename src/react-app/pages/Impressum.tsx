@@ -17,7 +17,7 @@ export function Impressum() {
 				<section>
 					<h2>Diensteanbieter</h2>
 					<p>
-						<strong>GrabMe</strong>
+						<strong>Pfloop</strong>
 						<br />
 						Betrieb / Marke: CryptoLinx
 						<br />
@@ -41,7 +41,7 @@ export function Impressum() {
 						E-Mail:{" "}
 						<a href="mailto:login@hoox.sh">login@hoox.sh</a>
 						<br />
-						(Login- und allgemeine Anfragen; bitte „GrabMe“ im Betreff
+						(Login- und allgemeine Anfragen; bitte „Pfloop“ im Betreff
 						angeben)
 					</p>
 					<p className="muted small">

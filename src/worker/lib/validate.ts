@@ -1,5 +1,5 @@
 /**
- * Input validation helpers for the GrabMe Worker API.
+ * Input validation helpers for the Pfloop Worker API.
  * All client-facing messages are German.
  */
 

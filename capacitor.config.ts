@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 /**
- * Native shells for GrabMe (Android + iOS via Capacitor).
+ * Native shells for Pfloop (Android + iOS via Capacitor).
  *
  * Default: load the live production origin so magic-link cookies, /api, and
  * the PWA stay same-origin (HttpOnly session works in the WebView).
@@ -19,18 +19,18 @@ const remoteUrl = (process.env.CAP_SERVER_URL ??
 
 const config: CapacitorConfig = {
 	appId: "dev.cryptolinx.grabme",
-	appName: "GrabMe",
+	appName: "Pfloop",
 	// Cloudflare/Vite client build output (see wrangler assets.directory)
 	webDir: "dist/client",
 	android: {
 		allowMixedContent: false,
-		backgroundColor: "#0f172a",
+		backgroundColor: "#0f1221",
 	},
 	ios: {
 		// Matches production HTTPS scheme; content from server.url
-		scheme: "GrabMe",
+		scheme: "Pfloop",
 		contentInset: "automatic",
-		backgroundColor: "#0f172a",
+		backgroundColor: "#0f1221",
 		// Preferred for remote URL + cookies
 		allowsLinkPreview: false,
 		scrollEnabled: true,
@@ -39,13 +39,13 @@ const config: CapacitorConfig = {
 		SplashScreen: {
 			launchShowDuration: 1200,
 			launchAutoHide: true,
-			backgroundColor: "#0f172a",
+			backgroundColor: "#0f1221",
 			showSpinner: false,
 			androidScaleType: "CENTER_CROP",
 		},
 		StatusBar: {
 			style: "DARK",
-			backgroundColor: "#0f172a",
+			backgroundColor: "#0f1221",
 		},
 	},
 	server: {

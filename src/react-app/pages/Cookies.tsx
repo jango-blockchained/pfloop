@@ -10,7 +10,7 @@ export function Cookies() {
 				<h1>Cookie-Richtlinie</h1>
 				<p className="page-lede muted">
 					Informationen zu Cookies und vergleichbaren Technologien (EU-ePrivacy /
-					TTDSG / DSGVO) bei GrabMe.
+					TTDSG / DSGVO) bei Pfloop.
 				</p>
 				<p className="legal-updated muted">Stand: {UPDATED}</p>
 			</header>
@@ -19,7 +19,7 @@ export function Cookies() {
 				<section>
 					<h2>1. Was sind Cookies und ähnliche Technologien?</h2>
 					<p>
-						Neben HTTP-Cookies nutzt GrabMe ggf. lokalen Browser-Speicher
+						Neben HTTP-Cookies nutzt Pfloop ggf. lokalen Browser-Speicher
 						(localStorage) und den Service Worker der Progressive Web App
 						(PWA). Diese Richtlinie gilt für alle diese Speicherarten. Wir
 						setzen <strong>keine</strong> Werbe- oder Marketing-Tracker ein und

@@ -10,7 +10,7 @@ import {
 	type CookieConsentState,
 } from "./cookie-consent";
 
-const BEACON_ID = "grabme-cf-web-analytics";
+const BEACON_ID = "pfloop-cf-web-analytics";
 
 function beaconToken(): string | undefined {
 	const t = import.meta.env.VITE_CF_WEB_ANALYTICS_TOKEN as string | undefined;

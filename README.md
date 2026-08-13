@@ -1,6 +1,9 @@
-# GrabMe
+# Pfloop
 
 PWA zum **Inserieren und Abholen von Flaschenpfand** (deutsches Pfandsystem).
+
+> Rebrand von **GrabMe** → **Pfloop**. Live-URL, Cloudflare Worker- und D1-Name
+> bleiben vorerst `grabme` (kein Production-Cutover).
 
 - Inserenten stellen Angebote (Flaschen, Dosen, Kästen) mit Adresse und Pfandwert ein
 - Abholer sehen Angebote auf einer Karte, nehmen an und holen innerhalb von **6 Stunden** ab
@@ -115,7 +118,7 @@ damit Login-Cookies und API same-origin bleiben.
 # Android (Linux/Mac + Android SDK)
 npm run android:sync
 npm run android:open    # Android Studio
-npm run android:apk     # → exports/GrabMe-debug.apk
+npm run android:apk     # → exports/Pfloop-debug.apk
 
 # iOS (macOS + Xcode required to build/run)
 npm run ios:sync

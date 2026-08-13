@@ -17,12 +17,12 @@ export default defineConfig({
 				"apple-touch-icon.png",
 			],
 			manifest: {
-				name: "GrabMe – Pfand abholen",
-				short_name: "GrabMe",
+				name: "Pfloop – Pfand abholen",
+				short_name: "Pfloop",
 				description:
 					"Pfand-Angebote in der Nähe finden und selbst einstellen",
-				theme_color: "#0f766e",
-				background_color: "#0f172a",
+				theme_color: "#5B4FE9",
+				background_color: "#0f1221",
 				display: "standalone",
 				orientation: "portrait-primary",
 				lang: "de",

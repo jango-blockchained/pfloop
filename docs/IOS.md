@@ -1,13 +1,13 @@
-# GrabMe — iOS (Capacitor)
+# Pfloop — iOS (Capacitor)
 
-Native iOS shell around the GrabMe PWA. Same approach as Android: the WKWebView
+Native iOS shell around the Pfloop PWA. Same approach as Android: the WKWebView
 loads the **live** app at `https://grabme.cryptolinx.workers.dev` so magic-link
 sessions and `/api` stay same-origin.
 
 | | |
 |---|---|
 | **Bundle ID** | `dev.cryptolinx.grabme` |
-| **Display name** | GrabMe |
+| **Display name** | Pfloop |
 | **Min iOS** | 15.0 |
 | **Project** | `ios/App/App.xcodeproj` |
 
@@ -61,10 +61,10 @@ CLI sketch (Mac, with signing configured):
 cd ios/App
 xcodebuild -scheme App -configuration Release \
   -destination 'generic/platform=iOS' \
-  -archivePath ../../exports/GrabMe.xcarchive archive
+  -archivePath ../../exports/Pfloop.xcarchive archive
 
 xcodebuild -exportArchive \
-  -archivePath ../../exports/GrabMe.xcarchive \
+  -archivePath ../../exports/Pfloop.xcarchive \
   -exportPath ../../exports \
   -exportOptionsPlist ExportOptions.plist
 ```
@@ -86,7 +86,7 @@ xcodebuild -exportArchive \
 
 - `webDir`: `dist/client`
 - `server.url`: live origin (default production)
-- `ios.scheme`: `GrabMe`
+- `ios.scheme`: `Pfloop`
 
 Local web while developing (Simulator):
 
@@ -133,7 +133,7 @@ Fallback scheme: `grabme://auth/verify?...` (always works without AASA).
 ## Icons & splash
 
 Assets live under `ios/App/App/Assets.xcassets/`. Replace **AppIcon** and
-**Splash** via Xcode or `@capacitor/assets`. Brand background: `#0f172a`, teal `#0f766e`.
+**Splash** via Xcode or `@capacitor/assets`. Brand background: `#0f1221`, primary `#5B4FE9`.
 
 ## Architecture
 

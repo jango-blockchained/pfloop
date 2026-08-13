@@ -1,7 +1,7 @@
 :root {
 	color-scheme: light dark;
 	/* Surfaces */
-	--bg: #0f172a;
+	--bg: #0f1221;
 	--bg-elevated: #1e293b;
 	--bg-app: #f4f5f7;
 	--bg-pattern: url("/bg-pattern.jpg");
@@ -14,19 +14,20 @@
 	--surface-muted: #f1f5f9;
 	--surface-glass: rgba(255, 255, 255, 0.92);
 	/* Text */
-	--text: #0f172a;
+	--text: #0f1221;
 	--text-on-dark: #f1f5f9;
 	--text-on-brand: #ffffff;
 	--muted: #64748b;
 	--muted-on-dark: #94a3b8;
 	/* Brand */
-	--brand: #0f766e;
-	--brand-hover: #0d9488;
-	--brand-deep: #0b5f58;
-	--brand-soft: #ecfdf5;
-	--brand-soft-border: #a7f3d0;
-	--brand-ring: rgba(15, 118, 110, 0.35);
-	--brand-gradient: linear-gradient(145deg, #14b8a6 0%, #0f766e 55%, #0b5f58 100%);
+	--brand: #5B4FE9;
+	--brand-hover: #6D63F0;
+	--brand-deep: #4538C7;
+	--brand-soft: #EEEDFE;
+	--brand-soft-border: #C7C3F9;
+	--brand-bright: #818CF8;
+	--brand-ring: rgba(91, 79, 233, 0.35);
+	--brand-gradient: linear-gradient(145deg, #818CF8 0%, #5B4FE9 55%, #4538C7 100%);
 	/* Semantic */
 	--danger: #b91c1c;
 	--danger-bg: #fef2f2;
@@ -47,7 +48,7 @@
 	--shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
 	--shadow-md: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.05);
 	--shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.14), 0 4px 12px rgba(15, 23, 42, 0.06);
-	--shadow-brand: 0 2px 8px rgba(15, 118, 110, 0.28), 0 1px 2px rgba(15, 118, 110, 0.12);
+	--shadow-brand: 0 2px 8px rgba(91, 79, 233, 0.28), 0 1px 2px rgba(91, 79, 233, 0.12);
 	--radius-sm: 0.4rem;
 	--radius: 0.55rem;
 	--radius-md: 0.7rem;
@@ -134,8 +135,8 @@ body {
 .topbar :focus-visible,
 .brand:focus-visible,
 .nav a:focus-visible {
-	outline-color: #5eead4;
-	box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.35);
+	outline-color: #A5B4FC;
+	box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.35);
 }
 
 a {
@@ -178,7 +179,7 @@ select {
 .skip-link:focus,
 .skip-link:focus-visible {
 	transform: translateY(0);
-	outline: 2px solid #5eead4;
+	outline: 2px solid #A5B4FC;
 	outline-offset: 2px;
 	text-decoration: none;
 	color: var(--text-on-brand);
@@ -216,12 +217,12 @@ select {
 	padding-top: max(0.55rem, env(safe-area-inset-top));
 	padding-left: max(1rem, env(safe-area-inset-left));
 	padding-right: max(1rem, env(safe-area-inset-right));
-	background: linear-gradient(180deg, #0f172a 0%, #111827 70%, #0c1222 100%);
+	background: linear-gradient(180deg, #0f1221 0%, #14182b 70%, #0c0f1c 100%);
 	color: var(--text-on-dark);
 	border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 	box-shadow:
-		0 1px 0 rgba(15, 23, 42, 0.5),
-		0 4px 16px rgba(15, 23, 42, 0.18);
+		0 1px 0 rgba(15, 18, 33, 0.5),
+		0 4px 16px rgba(15, 18, 33, 0.18);
 	z-index: 1000;
 	position: relative;
 }
@@ -262,7 +263,7 @@ select {
 	/* SVG already has tile + shadow; light ring for dark topbar */
 	box-shadow:
 		0 0 0 1px rgba(255, 255, 255, 0.1),
-		0 2px 8px rgba(15, 118, 110, 0.35);
+		0 2px 8px rgba(91, 79, 233, 0.35);
 }
 
 .brand-name {
@@ -301,16 +302,16 @@ select {
 }
 
 .nav a.active {
-	background: rgba(15, 118, 110, 0.42);
+	background: rgba(91, 79, 233, 0.42);
 	color: #fff;
 	box-shadow:
-		0 0 0 1px rgba(94, 234, 212, 0.22) inset,
-		0 1px 4px rgba(15, 118, 110, 0.2);
+		0 0 0 1px rgba(199, 195, 249, 0.22) inset,
+		0 1px 4px rgba(91, 79, 233, 0.2);
 	text-decoration: none;
 }
 
 .nav a.active:hover {
-	background: rgba(15, 118, 110, 0.52);
+	background: rgba(91, 79, 233, 0.52);
 }
 
 .main {
@@ -442,7 +443,7 @@ select {
 	gap: 0.75rem;
 	padding: 0.65rem 1rem;
 	border-bottom: 1px solid var(--border);
-	background: rgba(15, 118, 110, 0.06);
+	background: rgba(91, 79, 233, 0.06);
 }
 
 .cookie-banner-kicker {
@@ -1368,6 +1369,10 @@ select {
 		gap: 0.95rem;
 	}
 
+	.route-planner-page {
+		gap: 0.95rem;
+	}
+
 	.legal-body section {
 		padding: 0.85rem 0.9rem;
 	}
@@ -1444,7 +1449,7 @@ select {
 }
 
 .list-item:hover {
-	background: rgba(15, 118, 110, 0.04);
+	background: rgba(91, 79, 233, 0.04);
 }
 
 .list-item > div:first-child {
@@ -1495,7 +1500,7 @@ select {
 .badge-ok {
 	background: var(--ok-bg);
 	color: var(--ok);
-	border-color: #a7f3d0;
+	border-color: #6ee7b7;
 }
 
 .badge-muted {
@@ -1754,6 +1759,29 @@ select {
 	gap: 1.15rem;
 }
 
+/* Route planner: space between stacked panel containers */
+.route-planner-page {
+	display: flex;
+	flex-direction: column;
+	gap: 1.15rem;
+}
+
+.route-planner-page > .back {
+	margin-bottom: 0;
+}
+
+.route-planner-page > .page-header {
+	margin-bottom: 0;
+}
+
+.route-planner-page > .banner {
+	margin: 0;
+}
+
+.route-planner-page > .panel-block {
+	margin: 0;
+}
+
 .profile-page > .back {
 	margin-bottom: 0;
 }
@@ -1842,7 +1870,7 @@ select {
 
 .form select option {
 	background: #fff;
-	color: var(--text, #0f172a);
+	color: var(--text, #0f1221);
 }
 
 .form input:hover,
@@ -2129,9 +2157,9 @@ select {
 }
 
 .btn-primary:hover:not(:disabled) {
-	background: linear-gradient(180deg, #14b8a6 0%, var(--brand-hover) 100%);
+	background: linear-gradient(180deg, var(--brand-bright) 0%, var(--brand-hover) 100%);
 	filter: none;
-	box-shadow: 0 3px 12px rgba(15, 118, 110, 0.32);
+	box-shadow: 0 3px 12px rgba(91, 79, 233, 0.32);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -2152,7 +2180,7 @@ select {
 }
 
 .btn-sm.btn-primary {
-	box-shadow: 0 1px 3px rgba(15, 118, 110, 0.22);
+	box-shadow: 0 1px 3px rgba(91, 79, 233, 0.22);
 }
 
 .btn:disabled,
@@ -2230,7 +2258,7 @@ select {
 .banner.ok {
 	background: var(--ok-bg);
 	color: var(--ok);
-	border-color: #a7f3d0;
+	border-color: #6ee7b7;
 }
 
 /* Geo / error banners: under the search toolbar, not on the bottom sheet edge */
@@ -2291,7 +2319,7 @@ code {
 }
 
 .back a:hover {
-	background: rgba(15, 118, 110, 0.08);
+	background: rgba(91, 79, 233, 0.08);
 	text-decoration: none;
 }
 
@@ -2582,7 +2610,7 @@ code {
 	padding: 1rem 1.1rem;
 	border-radius: var(--radius-md);
 	border: 1px solid var(--brand-soft-border);
-	background: linear-gradient(135deg, var(--brand-soft) 0%, #f0fdf9 100%);
+	background: linear-gradient(135deg, var(--brand-soft) 0%, #f5f4ff 100%);
 	box-shadow: var(--shadow-xs);
 }
 
@@ -2825,10 +2853,10 @@ code {
 
 .mode-option.active {
 	border-color: var(--brand);
-	background: var(--brand-soft, #ecfdf5);
+	background: var(--brand-soft, #EEEDFE);
 	box-shadow:
 		0 0 0 1px var(--brand),
-		0 2px 8px rgba(15, 118, 110, 0.12);
+		0 2px 8px rgba(91, 79, 233, 0.12);
 }
 
 .mode-option.active:hover {
@@ -3071,7 +3099,7 @@ code {
 
 /* —— Selection —— */
 ::selection {
-	background: rgba(15, 118, 110, 0.22);
+	background: rgba(91, 79, 233, 0.22);
 	color: var(--text);
 }
 

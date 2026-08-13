@@ -1,4 +1,4 @@
-/** Domain rules for GrabMe (Pfand pickup). */
+/** Domain rules for Pfloop (Pfand pickup). */
 
 /** Minimum one-shot offer value in euro cents (€3.00). */
 export const MIN_PFAND_CENTS = 300;

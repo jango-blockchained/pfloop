@@ -53,7 +53,7 @@ app.notFound((c) => c.json({ error: "Gibt’s hier nicht" }, 404));
 app.get("/api/health", (c) =>
 	c.json({
 		ok: true,
-		service: "grabme",
+		service: "pfloop",
 		free: true,
 		// Additive meta — safe, no secrets.
 		time: new Date().toISOString(),
