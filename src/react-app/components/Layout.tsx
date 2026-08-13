@@ -37,6 +37,9 @@ export function Layout() {
 					<NavLink to="/neu" className="nav-link">
 						Angebot
 					</NavLink>
+					<NavLink to="/route" className="nav-link">
+						Route
+					</NavLink>
 					{!loading && user ? (
 						<NavLink
 							to="/profil"

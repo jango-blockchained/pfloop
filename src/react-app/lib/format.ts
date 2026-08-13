@@ -47,6 +47,57 @@ export function mapsLinks(
 	};
 }
 
+export type MapsDirPoint = { lat: number; lng: number; label?: string };
+
+/**
+ * Multi-stop driving directions deep-links (Google + Apple).
+ * `waypoints` are intermediate stops between origin and destination.
+ */
+export function mapsDirLinks(
+	origin: MapsDirPoint,
+	destination: MapsDirPoint,
+	waypoints: MapsDirPoint[] = [],
+): { google: string; apple: string; label: string } {
+	const fmt = (p: MapsDirPoint) => `${p.lat},${p.lng}`;
+	const o = fmt(origin);
+	const d = fmt(destination);
+	const wps = waypoints.filter(Boolean);
+
+	const googleParams = new URLSearchParams({
+		api: "1",
+		origin: o,
+		destination: d,
+		travelmode: "driving",
+	});
+	if (wps.length > 0) {
+		googleParams.set("waypoints", wps.map(fmt).join("|"));
+	}
+
+	// Apple: saddr + daddr chain (multi-leg via " to:" where supported)
+	const appleParts = [`saddr=${encodeURIComponent(o)}`];
+	if (wps.length > 0) {
+		const chain = [...wps.map(fmt), d].join(" to:");
+		appleParts.push(`daddr=${encodeURIComponent(chain)}`);
+	} else {
+		appleParts.push(`daddr=${encodeURIComponent(d)}`);
+	}
+	appleParts.push("dirflg=d");
+
+	const label = [
+		origin.label,
+		...wps.map((w) => w.label),
+		destination.label,
+	]
+		.filter(Boolean)
+		.join(" → ");
+
+	return {
+		google: `https://www.google.com/maps/dir/?${googleParams.toString()}`,
+		apple: `https://maps.apple.com/?${appleParts.join("&")}`,
+		label: label || "Route",
+	};
+}
+
 /** Lightweight e-mail shape check (client-side only). */
 export function isValidEmail(email: string): boolean {
 	const t = email.trim();

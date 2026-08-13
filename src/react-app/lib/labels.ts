@@ -52,7 +52,8 @@ const RESERVATION: Record<string, string> = {
 const OFFER_HINT: Record<string, string> = {
 	open: "Kann angenommen werden. Die Adresse siehst du erst danach.",
 	reserved: "Jemand holt ab – innerhalb von 6 Stunden.",
-	collected: "Der Abholer war da. Du musst die Übergabe nur noch bestätigen.",
+	collected:
+		"Der Abholer war da. Bitte innerhalb von 24 Stunden bestätigen – sonst storniert das System.",
 	completed: "Alles erledigt.",
 	cancelled: "Wurde storniert.",
 };
@@ -92,7 +93,7 @@ export function offerNextStep(
 			return "Dein Angebot ist online. Warte einfach, bis sich jemand meldet.";
 		}
 		if (role === "public") {
-			return "Nimm es an – dann siehst du die Adresse und hast 6 Stunden zum Abholen.";
+			return "Nimm es an – dann siehst du die Adresse und hast 6 Stunden zum Abholen. Tageslimit und offene Abholungen beachten.";
 		}
 		return null;
 	}
@@ -107,12 +108,12 @@ export function offerNextStep(
 	}
 	if (status === "collected") {
 		if (role === "own") {
-			return "Bitte bestätige die Übergabe – dann ist alles erledigt.";
+			return "Bitte innerhalb von 24 Stunden bestätigen – sonst wird storniert.";
 		}
 		if (role === "collector") {
-			return "Fast geschafft. Der Inserent muss nur noch bestätigen. Bis dahin kein neues Angebot.";
+			return "Fast geschafft. Der Inserent hat 24 Stunden zum Bestätigen.";
 		}
-		return "Wartet noch auf die Bestätigung.";
+		return "Wartet noch auf die Bestätigung (max. 24 Std.).";
 	}
 	if (status === "completed") {
 		return "Passt – Abholung erledigt.";

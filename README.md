@@ -7,6 +7,9 @@ PWA zum **Inserieren und Abholen von Flaschenpfand** (deutsches Pfandsystem).
 - „Bezahlung“ ist der **Pfandwert** selbst
 - **Mindest-Pfandwert:** einmalig **3 €**, wöchentlich Schätzung ab **2,50 €** (bis −50 % Schwankung)
 - **Wöchentliche Angebote:** bis 2 pro Nutzer, Bewerben → Inserent wählt Abholer
+- **Abholer-Tageslimit:** neu 1/Tag, wächst bis **5/Tag** bei bestätigten Abholungen
+- **Bestätigung:** Inserent hat **24 Std.** nach „Abgeholt“ – sonst Storno
+- **Routenplaner:** Start/Ziel + Stopps, Optimierung für bis zu 5 Abholungen
 - Service zunächst **kostenlos**
 - Hosting & DB: **Cloudflare Workers + D1**
 

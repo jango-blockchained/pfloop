@@ -41,7 +41,8 @@ export function Agb() {
 							<strong>Einmalig:</strong> Annahme durch einen Abholer, Abholung
 							innerhalb der angezeigten Frist (derzeit 6 Stunden),
 							Zwei-Schritt-Abschluss (Abholer meldet abgeholt, Inserent
-							bestätigt).
+							bestätigt innerhalb von 24 Stunden; sonst Storno). Abholer
+							haben ein progressives Tageslimit (1–5 Annahmen).
 						</li>
 						<li>
 							<strong>Wöchentlich:</strong> Bewerbungen, Auswahl eines festen

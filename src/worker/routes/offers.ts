@@ -2,9 +2,13 @@ import { Hono } from "hono";
 import { assertMinPfand } from "../lib/money";
 import { isPast, nowIso, reservationDeadlineIso } from "../lib/time";
 import {
+	ensureCollectorQuota,
+	recordCollectorAccept,
+	recordCollectorConfirm,
+} from "../lib/collector-quota";
+import {
 	MAX_MAP_OFFERS,
 	MAX_MINE_OFFERS,
-	MAX_UNFINISHED_RESERVATIONS_PER_USER,
 	MIN_PFAND_CENTS,
 } from "../lib/constants";
 import {
@@ -322,7 +326,17 @@ offersRoutes.post("/:id/accept", async (c) => {
 		return jsonError(c, "Das Angebot ist leider schon weg", 409);
 	}
 
-	// Block new accept while previous handover is unfinished (active or awaiting poster confirm).
+	const quota = await ensureCollectorQuota(c.env.DB, userId);
+
+	if (quota.remaining_today <= 0) {
+		return jsonError(
+			c,
+			`Tageslimit erreicht (${quota.daily_limit} Abholungen heute). Morgen kann sich dein Limit ändern – je nachdem, wie viele heute bestätigt wurden.`,
+			400,
+		);
+	}
+
+	// Concurrent unfinished handovers limited by today's daily limit.
 	const unfinished = await c.env.DB.prepare(
 		`SELECT COUNT(*) AS n FROM reservations
 		 WHERE collector_id = ? AND status IN ('active', 'collected')`,
@@ -330,10 +344,10 @@ offersRoutes.post("/:id/accept", async (c) => {
 		.bind(userId)
 		.first<{ n: number }>();
 
-	if ((unfinished?.n ?? 0) >= MAX_UNFINISHED_RESERVATIONS_PER_USER) {
+	if ((unfinished?.n ?? 0) >= quota.max_unfinished) {
 		return jsonError(
 			c,
-			"Du hast noch eine offene Abholung. Schließ die erst ab (abholen + bestätigen lassen), bevor du was Neues annimmst.",
+			`Du hast schon ${quota.max_unfinished} offene Abholung(en). Schließ welche ab (abholen + bestätigen lassen), bevor du mehr annimmst.`,
 			400,
 		);
 	}
@@ -386,15 +400,13 @@ offersRoutes.post("/:id/accept", async (c) => {
 		 ORDER BY accepted_at ASC
 		 LIMIT ?`,
 	)
-		.bind(userId, MAX_UNFINISHED_RESERVATIONS_PER_USER + 5)
+		.bind(userId, quota.max_unfinished + 5)
 		.all<{ id: string }>();
 
 	const unfinishedList = unfinishedRows.results ?? [];
-	if (unfinishedList.length > MAX_UNFINISHED_RESERVATIONS_PER_USER) {
+	if (unfinishedList.length > quota.max_unfinished) {
 		const keep = new Set(
-			unfinishedList
-				.slice(0, MAX_UNFINISHED_RESERVATIONS_PER_USER)
-				.map((r) => r.id),
+			unfinishedList.slice(0, quota.max_unfinished).map((r) => r.id),
 		);
 		if (!keep.has(reservationId)) {
 			await c.env.DB.batch([
@@ -409,7 +421,7 @@ offersRoutes.post("/:id/accept", async (c) => {
 			]);
 			return jsonError(
 				c,
-				"Du hast noch eine offene Abholung. Schließ die erst ab (abholen + bestätigen lassen), bevor du was Neues annimmst.",
+				`Du hast schon ${quota.max_unfinished} offene Abholung(en). Schließ welche ab, bevor du mehr annimmst.`,
 				400,
 			);
 		}
@@ -430,10 +442,18 @@ offersRoutes.post("/:id/accept", async (c) => {
 		);
 	}
 
+	await recordCollectorAccept(c.env.DB, userId);
+	const quotaAfter = await ensureCollectorQuota(c.env.DB, userId);
+
 	return c.json({
 		reservation_id: reservationId,
 		deadline_at: deadlineAt,
 		address_text: offer.address_text,
+		quota: {
+			daily_limit: quotaAfter.daily_limit,
+			accepted_today: quotaAfter.accepted_today,
+			remaining_today: quotaAfter.remaining_today,
+		},
 	});
 });
 
@@ -534,7 +554,7 @@ offersRoutes.post("/:id/collect", async (c) => {
 		ok: true,
 		status: "collected",
 		message:
-			"Super, gemeldet. Der Inserent muss noch bestätigen – erst dann kannst du was Neues annehmen.",
+			"Super, gemeldet. Der Inserent muss innerhalb von 24 Stunden bestätigen – sonst wird das Angebot storniert.",
 	});
 });
 
@@ -584,11 +604,11 @@ offersRoutes.post("/:id/confirm", async (c) => {
 	}
 
 	const reservation = await c.env.DB.prepare(
-		`SELECT id FROM reservations
+		`SELECT id, collector_id FROM reservations
 		 WHERE offer_id = ? AND status = 'collected'`,
 	)
 		.bind(offerId)
-		.first<{ id: string }>();
+		.first<{ id: string; collector_id: string }>();
 
 	if (!reservation) {
 		return jsonError(
@@ -617,6 +637,8 @@ offersRoutes.post("/:id/confirm", async (c) => {
 			409,
 		);
 	}
+
+	await recordCollectorConfirm(c.env.DB, reservation.collector_id);
 
 	return c.json({ ok: true, status: "completed" });
 });

@@ -20,11 +20,24 @@ export const RECURRING_VALUE_THRESHOLD = 0.5;
 export const RESERVATION_HOURS = 6;
 
 /**
- * Unfinished reservations block new accepts.
- * unfinished = active (accepted, not yet collected) OR collected (waiting for poster).
- * Max 1 so the last offer must be finished before the next.
+ * After collector marks “collected”, poster has this long to confirm.
+ * Otherwise cron cancels the offer and releases the reservation.
  */
-export const MAX_UNFINISHED_RESERVATIONS_PER_USER = 1;
+export const CONFIRM_HOURS = 24;
+
+/**
+ * Progressive daily accept limit for collectors (calendar day, Europe/Berlin).
+ * New users start at MIN; successful full days grow by +1 up to MAX.
+ * If fewer pickups are confirmed than the day’s limit, next day = confirmed count (floored at MIN).
+ */
+export const COLLECTOR_DAILY_LIMIT_MIN = 1;
+export const COLLECTOR_DAILY_LIMIT_MAX = 5;
+
+/**
+ * Absolute cap on concurrent unfinished handovers (active + collected).
+ * Effective concurrent max is min(this, collector’s current daily limit).
+ */
+export const MAX_UNFINISHED_RESERVATIONS_PER_USER = COLLECTOR_DAILY_LIMIT_MAX;
 
 /** Max active (open or assigned) recurring weekly offers per poster. */
 export const MAX_RECURRING_OFFERS_PER_USER = 2;

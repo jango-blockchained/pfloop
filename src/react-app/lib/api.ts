@@ -114,6 +114,7 @@ export type ReservationRow = {
 	accepted_at: string;
 	deadline_at: string;
 	completed_at: string | null;
+	collected_at?: string | null;
 	offer_id: string;
 	title: string;
 	description: string;
@@ -123,6 +124,20 @@ export type ReservationRow = {
 	address_hint: string;
 	address_text: string;
 	offer_status: string;
+};
+
+/** Progressive daily accept quota for collectors. */
+export type CollectorQuota = {
+	daily_limit: number;
+	day: string;
+	accepted_today: number;
+	confirmed_today: number;
+	remaining_today: number;
+	max_unfinished: number;
+	unfinished: number;
+	limit_min: number;
+	limit_max: number;
+	confirm_hours: number;
 };
 
 export type AuthUser = {
@@ -265,6 +280,10 @@ export async function fetchMyReservations() {
 	return json<{ reservations: ReservationRow[] }>(
 		await apiFetch("/api/reservations/mine"),
 	);
+}
+
+export async function fetchCollectorQuota() {
+	return json<CollectorQuota>(await apiFetch("/api/reservations/quota"));
 }
 
 export async function createOffer(body: {

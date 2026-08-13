@@ -925,6 +925,18 @@ select {
 	right: 0.4rem;
 }
 
+.route-planner-map.map-wrap,
+.form-map-inner.route-planner-map {
+	min-height: 320px;
+	height: 360px;
+}
+
+.form-map-inner.route-planner-map .map-wrap,
+.form-map-inner.route-planner-map .map {
+	min-height: 320px;
+	height: 360px;
+}
+
 .map-loading {
 	display: grid;
 	place-items: center;
@@ -2765,6 +2777,10 @@ code {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 0.55rem;
+}
+
+.mode-toggle-3 {
+	grid-template-columns: 1fr 1fr 1fr;
 }
 
 .mode-option {

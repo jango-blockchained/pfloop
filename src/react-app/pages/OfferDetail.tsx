@@ -338,8 +338,8 @@ export function OfferDetail() {
 				{!offer.address_text && offer.status === "open" && (
 					<p className="muted small address-privacy-hint">
 						Die genaue Adresse siehst du erst nach der Annahme. Danach hast du
-						6 Stunden zum Abholen. Danach: du tippst „Abgeholt“, der Inserent
-						bestätigt – fertig.
+						6 Stunden zum Abholen. Dann: du tippst „Abgeholt“, der Inserent
+						bestätigt innerhalb von 24 Stunden – fertig.
 					</p>
 				)}
 
@@ -378,15 +378,15 @@ export function OfferDetail() {
 				{isCollectorView && offer.status === "reserved" && (
 					<div className="banner info handover-hint status-banner">
 						<strong>Schritt 1:</strong> Hol das Pfand ab und tipp auf „Abgeholt“.
-						Der Inserent bestätigt danach – erst dann kannst du was Neues
-						annehmen.
+						Der Inserent hat 24 Stunden zum Bestätigen – sonst wird storniert.
 					</div>
 				)}
 
 				{isCollectorView && offer.status === "collected" && (
 					<div className="banner info handover-hint status-banner">
 						<strong>Fast geschafft:</strong> Du hast abgeholt. Bitte den
-						Inserenten, in der App zu bestätigen. Bis dahin kein neues Angebot.
+						Inserenten, in der App zu bestätigen (24 Std.). Ohne Bestätigung
+						wird das Angebot storniert.
 					</div>
 				)}
 
@@ -401,7 +401,8 @@ export function OfferDetail() {
 				{canConfirm && (
 					<div className="banner info handover-hint status-banner">
 						<strong>Deine Bestätigung:</strong> Der Abholer sagt, er war da.
-						Bestätige bitte, dass das Pfand wirklich weg ist.
+						Bestätige bitte innerhalb von 24 Stunden, dass das Pfand wirklich
+						weg ist – sonst storniert das System.
 					</div>
 				)}
 

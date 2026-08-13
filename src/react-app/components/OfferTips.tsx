@@ -64,9 +64,9 @@ function tipsFor(variant: Variant): string[] {
 	const addressPrivacy =
 		"Die genaue Adresse bleibt privat, bis jemand annimmt – auf der Karte siehst du nur die Gegend.";
 	const twoStep =
-		"Übergabe in 2 Schritten: 1) Abholer tippt „Abgeholt“, 2) Inserent bestätigt. Ohne Bestätigung gilt die Abholung als offen.";
+		"Übergabe in 2 Schritten: 1) Abholer tippt „Abgeholt“, 2) Inserent bestätigt innerhalb von 24 Stunden. Ohne Bestätigung storniert das System das Angebot.";
 	const blockRule =
-		"Solange eine Abholung bei dir offen ist (angenommen oder abgeholt, aber nicht bestätigt), kannst du kein neues einmaliges Angebot annehmen.";
+		"Neue Abholer starten mit 1 Annahme pro Tag. Wenn alles bestätigt wird, steigt das Limit (max. 5/Tag). Weniger Bestätigungen = niedrigeres Limit am nächsten Tag.";
 	const readyHint =
 		"Stell das Pfand bereit, sobald es reserviert ist – idealerweise an der Tür, im Hof oder wo ihr es kurz und klar findet.";
 

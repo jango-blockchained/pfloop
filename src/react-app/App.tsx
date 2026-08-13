@@ -8,6 +8,7 @@ import { AuthVerify } from "./pages/AuthVerify";
 import { OfferDetail } from "./pages/OfferDetail";
 import { RecurringDetail } from "./pages/RecurringDetail";
 import { Profile } from "./pages/Profile";
+import { RoutePlanner } from "./pages/RoutePlanner";
 import { Impressum } from "./pages/Impressum";
 import { Datenschutz } from "./pages/Datenschutz";
 import { Agb } from "./pages/Agb";
@@ -20,6 +21,7 @@ export default function App() {
 				<Route element={<Layout />}>
 					<Route index element={<MapHome />} />
 					<Route path="neu" element={<CreateOffer />} />
+					<Route path="route" element={<RoutePlanner />} />
 					<Route path="login" element={<Login />} />
 					<Route path="profil" element={<Profile />} />
 					<Route path="auth/verify" element={<AuthVerify />} />

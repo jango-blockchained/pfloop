@@ -8,9 +8,11 @@ import {
 	fetchMyOffers,
 	fetchMyRecurringApplications,
 	fetchMyRecurringOffers,
+	fetchCollectorQuota,
 	fetchMyReservations,
 	fetchOffersInBbox,
 	fetchRecurringInBbox,
+	type CollectorQuota,
 	type MyRecurringApplication,
 	type OwnOffer,
 	type OwnRecurringOffer,
@@ -59,6 +61,7 @@ export function MapHome() {
 		MyRecurringApplication[]
 	>([]);
 	const [reservations, setReservations] = useState<ReservationRow[]>([]);
+	const [quota, setQuota] = useState<CollectorQuota | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [mapLoading, setMapLoading] = useState(false);
 	const [mapLoadedOnce, setMapLoadedOnce] = useState(false);
@@ -95,21 +98,24 @@ export function MapHome() {
 			setMineRecurring([]);
 			setMyRecurringApps([]);
 			setReservations([]);
+			setQuota(null);
 			setSideLoading(false);
 			return;
 		}
 		setSideLoading(true);
 		try {
-			const [m, r, mr, ma] = await Promise.all([
+			const [m, r, mr, ma, q] = await Promise.all([
 				fetchMyOffers(),
 				fetchMyReservations(),
 				fetchMyRecurringOffers(),
 				fetchMyRecurringApplications(),
+				fetchCollectorQuota(),
 			]);
 			setMine(m.offers);
 			setReservations(r.reservations);
 			setMineRecurring(mr.offers);
 			setMyRecurringApps(ma.applications);
+			setQuota(q);
 		} catch (e) {
 			console.warn(e);
 		} finally {
@@ -561,11 +567,16 @@ export function MapHome() {
 					<section className="panel-block panel-section">
 						<div className="panel-head">
 							<h2>Meine Abholungen</h2>
-							{user && unfinishedReservations.length > 0 && (
+							{user && unfinishedReservations.length > 0 ? (
 								<span className="muted small panel-head-meta">
-									{unfinishedReservations.length} offen
+									{unfinishedReservations.length} offen ·{" "}
+									<Link to="/route">Route</Link>
 								</span>
-							)}
+							) : user ? (
+								<span className="muted small panel-head-meta">
+									<Link to="/route">Routenplaner</Link>
+								</span>
+							) : null}
 						</div>
 						{user && sideLoading && unfinishedReservations.length === 0 && (
 							<p className="muted" role="status">
@@ -652,9 +663,17 @@ export function MapHome() {
 						)}
 					</section>
 
+					{user && quota && (
+						<p className="muted small quota-hint">
+							Heute: {quota.accepted_today}/{quota.daily_limit} angenommen ·{" "}
+							{quota.remaining_today} frei · {quota.unfinished} offen · Limit
+							wächst bis {quota.limit_max}/Tag, wenn bestätigt wird
+						</p>
+					)}
 					<p className="footnote">
-						Kostenlos · nur eine offene Abholung · Abholer meldet, Inserent
-						bestätigt · wöchentlich: feste Zeit hält den Aufwand klein
+						Kostenlos · Tageslimit 1–5 (nach Bestätigungen) · Abholer meldet,
+						Inserent bestätigt in 24 Std. ·{" "}
+						<Link to="/route">Routenplaner</Link>
 					</p>
 				</div>
 			</aside>
