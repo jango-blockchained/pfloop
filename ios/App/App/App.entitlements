@@ -5,7 +5,7 @@
 	<!-- Universal Links for magic-link auth + deep links into the shell -->
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:grabme.cryptolinx.workers.dev</string>
+		<string>applinks:pfloop.cryptolinx.workers.dev</string>
 	</array>
 </dict>
 </plist>

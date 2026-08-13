@@ -31,7 +31,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="grabme.cryptolinx.workers.dev"
+                    android:host="pfloop.cryptolinx.workers.dev"
                     android:pathPrefix="/" />
             </intent-filter>
 

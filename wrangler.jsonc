@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "grabme",
+	"name": "pfloop",
 	"main": "./src/worker/index.ts",
 	// Keep current when creating new projects; bump periodically.
 	"compatibility_date": "2026-08-05",
@@ -32,7 +32,7 @@
 	// Non-secret config. Secrets: wrangler secret put RESEND_API_KEY
 	// Local: override APP_URL via .dev.vars → http://localhost:5173
 	"vars": {
-		"APP_URL": "https://grabme.cryptolinx.workers.dev",
+		"APP_URL": "https://pfloop.cryptolinx.workers.dev",
 		"EMAIL_FROM": "Pfloop <login@hoox.sh>"
 	}
 }

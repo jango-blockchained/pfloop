@@ -1,7 +1,7 @@
 # Pfloop — Android (Capacitor)
 
 Native Android shell around the Pfloop PWA. By default the WebView loads the
-**live** app at `https://grabme.cryptolinx.workers.dev` so magic-link sessions
+**live** app at `https://pfloop.cryptolinx.workers.dev` so magic-link sessions
 (HttpOnly cookies) and `/api` stay same-origin.
 
 iOS counterpart: **[IOS.md](./IOS.md)**.
@@ -104,7 +104,7 @@ Declared in `AndroidManifest.xml`:
 
 Intent filters open:
 
-- `https://grabme.cryptolinx.workers.dev/*` (App Links, `autoVerify`)
+- `https://pfloop.cryptolinx.workers.dev/*` (App Links, `autoVerify`)
 - `grabme://auth/...` (custom scheme fallback)
 
 ### Verified App Links (optional but recommended)
@@ -120,7 +120,7 @@ keytool -list -v -keystore ~/.android/debug.keystore \
 
 2. Put the fingerprint into `public/.well-known/assetlinks.json`
 3. Deploy the Worker (`npm run deploy`) so  
-   `https://grabme.cryptolinx.workers.dev/.well-known/assetlinks.json` is live
+   `https://pfloop.cryptolinx.workers.dev/.well-known/assetlinks.json` is live
 4. Reinstall the app and verify:  
    `adb shell pm get-app-links dev.cryptolinx.grabme`
 

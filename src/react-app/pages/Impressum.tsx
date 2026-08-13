@@ -26,11 +26,11 @@ export function Impressum() {
 					<p>
 						Web:{" "}
 						<a
-							href="https://grabme.cryptolinx.workers.dev"
+							href="https://pfloop.cryptolinx.workers.dev"
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							grabme.cryptolinx.workers.dev
+							pfloop.cryptolinx.workers.dev
 						</a>
 					</p>
 				</section>

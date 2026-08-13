@@ -15,7 +15,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
  *   CAP_SERVER_URL=http://localhost:5173 npm run ios:sync     # iOS Simulator → host
  */
 const remoteUrl = (process.env.CAP_SERVER_URL ??
-	"https://grabme.cryptolinx.workers.dev").trim();
+	"https://pfloop.cryptolinx.workers.dev").trim();
 
 const config: CapacitorConfig = {
 	appId: "dev.cryptolinx.grabme",
@@ -53,7 +53,7 @@ const config: CapacitorConfig = {
 		iosScheme: "https",
 		// Allow deep links / magic-link redirects on our origin
 		allowNavigation: [
-			"grabme.cryptolinx.workers.dev",
+			"pfloop.cryptolinx.workers.dev",
 			"*.cryptolinx.workers.dev",
 		],
 		...(remoteUrl

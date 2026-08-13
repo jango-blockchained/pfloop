@@ -2,8 +2,8 @@
 
 PWA zum **Inserieren und Abholen von Flaschenpfand** (deutsches Pfandsystem).
 
-> Rebrand von **GrabMe** → **Pfloop**. Live-URL, Cloudflare Worker- und D1-Name
-> bleiben vorerst `grabme` (kein Production-Cutover).
+> Rebrand von **GrabMe** → **Pfloop**. Live-Worker: `pfloop` ·  
+> https://pfloop.cryptolinx.workers.dev (D1 DB-Name bleibt `grabme`).
 
 - Inserenten stellen Angebote (Flaschen, Dosen, Kästen) mit Adresse und Pfandwert ein
 - Abholer sehen Angebote auf einer Karte, nehmen an und holen innerhalb von **6 Stunden** ab
@@ -72,7 +72,7 @@ curl http://localhost:5173/api/health
 
 ## Live
 
-- **App:** https://grabme.cryptolinx.workers.dev  
+- **App:** https://pfloop.cryptolinx.workers.dev  
 - **D1:** `grabme` (`6ecf6cda-1c19-4e40-9de6-ca838565f852`)  
 - **Cron:** alle 5 Min. (Reservierungen freigeben)
 

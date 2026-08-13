@@ -1,7 +1,7 @@
 # Pfloop — iOS (Capacitor)
 
 Native iOS shell around the Pfloop PWA. Same approach as Android: the WKWebView
-loads the **live** app at `https://grabme.cryptolinx.workers.dev` so magic-link
+loads the **live** app at `https://pfloop.cryptolinx.workers.dev` so magic-link
 sessions and `/api` stay same-origin.
 
 | | |
@@ -116,16 +116,16 @@ CAP_SERVER_URL=http://192.168.x.x:5173 npm run ios:sync
 ## Universal Links (magic link → app)
 
 1. Entitlements already include:
-   `applinks:grabme.cryptolinx.workers.dev`
+   `applinks:pfloop.cryptolinx.workers.dev`
 2. In Apple Developer → Identifiers → your App ID → enable **Associated Domains**
 3. Replace `TEAMID` in `public/.well-known/apple-app-site-association` with your
    10-character Team ID (Membership details in developer.apple.com)
 4. Deploy: `npm run deploy` so  
-   `https://grabme.cryptolinx.workers.dev/.well-known/apple-app-site-association` is live
+   `https://pfloop.cryptolinx.workers.dev/.well-known/apple-app-site-association` is live
 5. Reinstall the app; verify with:
    ```bash
    # Mac
-   swcutil verify -d grabme.cryptolinx.workers.dev -j AASA.json
+   swcutil verify -d pfloop.cryptolinx.workers.dev -j AASA.json
    ```
 
 Fallback scheme: `grabme://auth/verify?...` (always works without AASA).

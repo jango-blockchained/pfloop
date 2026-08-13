@@ -182,7 +182,7 @@ Prefer **pfloop** for new user-facing keys. Infra that would break live deploy m
 | Capacitor `appName` | Pfloop | |
 | App ID / schemes | keep or migrate carefully | Store listings & deep links |
 | CF Worker / D1 name | keep `grabme` until cutover | Avoid orphaning production DB/URL |
-| Production host | `grabme.cryptolinx.workers.dev` until cutover | Document in Impressum if still live |
+| Production host | `pfloop.cryptolinx.workers.dev` until cutover | Document in Impressum if still live |
 
 ## Asset export sizes
 
