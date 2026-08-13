@@ -1,11 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { useLocale, useT } from "../i18n";
 import { getErrorMessage, requestMagicLink } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
 import { isValidEmail } from "../lib/format";
 
 export function Login() {
 	const { user, logout, loading } = useAuth();
+	const t = useT();
+	const { locale } = useLocale();
 	const [email, setEmail] = useState("");
 	const [displayName, setDisplayName] = useState("");
 	const [message, setMessage] = useState<string | null>(null);
@@ -18,7 +21,7 @@ export function Login() {
 	const emailOk = isValidEmail(emailTrimmed);
 	const emailHint =
 		emailTouched && emailTrimmed.length > 0 && !emailOk
-			? "Das sieht noch nicht nach einer gültigen E-Mail aus."
+			? t("login.emailInvalidHint")
 			: null;
 
 	async function onSubmit(e: FormEvent) {
@@ -29,7 +32,7 @@ export function Login() {
 		setDevLink(null);
 
 		if (!emailOk) {
-			setError("Bitte gib eine gültige E-Mail ein.");
+			setError(t("login.emailInvalidError"));
 			return;
 		}
 		if (sending) return;
@@ -39,14 +42,12 @@ export function Login() {
 			const res = await requestMagicLink(
 				emailTrimmed,
 				displayName.trim() || undefined,
+				locale,
 			);
-			setMessage(
-				res.message ||
-					"Wenn die Adresse stimmt, schicken wir dir einen Login-Link.",
-			);
+			setMessage(res.message || t("login.sentFallback"));
 			if (res.magic_link) setDevLink(res.magic_link);
 		} catch (err) {
-			setError(getErrorMessage(err, "Senden hat nicht geklappt"));
+			setError(getErrorMessage(err, t("login.sendFailed")));
 		} finally {
 			setSending(false);
 		}
@@ -56,7 +57,7 @@ export function Login() {
 		return (
 			<div className="page auth-page">
 				<p className="muted" role="status">
-					Einen Moment…
+					{t("common.loadingMoment")}
 				</p>
 			</div>
 		);
@@ -66,7 +67,7 @@ export function Login() {
 		return (
 			<div className="page auth-page">
 				<header className="page-header">
-					<h1>Du bist angemeldet</h1>
+					<h1>{t("login.alreadyTitle")}</h1>
 				</header>
 				<div className="banner info profile-user-card">
 					<span className="profile-user-info">
@@ -81,17 +82,17 @@ export function Login() {
 						className="btn btn-sm"
 						onClick={() => void logout()}
 					>
-						Abmelden
+						{t("auth.logout")}
 					</button>
 				</div>
 				<nav className="auth-footer-links">
-					<Link to="/profil">Konto & Adressen</Link>
+					<Link to="/profil">{t("login.link.profile")}</Link>
 					<span aria-hidden> · </span>
-					<Link to="/neu">Angebot erstellen</Link>
+					<Link to="/neu">{t("login.link.create")}</Link>
 					<span aria-hidden> · </span>
-					<Link to="/">Zur Karte</Link>
+					<Link to="/">{t("common.toMap")}</Link>
 					<span aria-hidden> · </span>
-					<Link to="/datenschutz">Datenschutz</Link>
+					<Link to="/datenschutz">{t("legal.privacy")}</Link>
 				</nav>
 			</div>
 		);
@@ -100,24 +101,21 @@ export function Login() {
 	return (
 		<div className="page auth-page">
 			<header className="page-header">
-				<h1>Anmelden</h1>
-				<p className="page-lede muted">
-					Ganz ohne Passwort: Wir schicken dir einen Link per E-Mail. Der gilt
-					einmal und etwa 15 Minuten.
-				</p>
+				<h1>{t("login.title")}</h1>
+				<p className="page-lede muted">{t("login.lede")}</p>
 			</header>
 
 			<form className="form auth-form" onSubmit={onSubmit} noValidate>
 				<section className="form-section">
 					<label>
-						E-Mail
+						{t("login.emailLabel")}
 						<input
 							type="email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							onBlur={() => setEmailTouched(true)}
 							required
-							placeholder="du@example.de"
+							placeholder={t("login.emailPlaceholder")}
 							autoComplete="email"
 							inputMode="email"
 							aria-invalid={Boolean(emailHint)}
@@ -125,11 +123,11 @@ export function Login() {
 						{emailHint && <span className="field-error">{emailHint}</span>}
 					</label>
 					<label>
-						Anzeigename (optional, beim ersten Mal)
+						{t("login.displayNameLabel")}
 						<input
 							value={displayName}
 							onChange={(e) => setDisplayName(e.target.value)}
-							placeholder="Alex"
+							placeholder={t("login.displayNamePlaceholder")}
 							autoComplete="nickname"
 							maxLength={80}
 						/>
@@ -141,51 +139,43 @@ export function Login() {
 						type="submit"
 						disabled={sending || (emailTouched && !emailOk)}
 					>
-						{sending ? "Link wird gesendet…" : "Login-Link senden"}
+						{sending ? t("login.sending") : t("login.submit")}
 					</button>
 				</div>
 			</form>
 
 			{message && (
 				<div className="banner info auth-feedback">
-					<strong>Schau in dein Postfach.</strong>
+					<strong>{t("login.checkInbox")}</strong>
 					<br />
 					{message}
 					<br />
-					<small className="muted">
-						Nichts da? Spam checken oder nochmal anfordern. Der Link geht nur
-						einmal und nicht ewig.
-					</small>
+					<small className="muted">{t("login.spamHint")}</small>
 				</div>
 			)}
 			{error && <p className="banner error auth-feedback">{error}</p>}
 			{devLink && (
 				<div className="banner info dev-link auth-feedback">
-					<strong>Entwickler-Modus</strong>
-					<p className="muted small dev-link-hint">
-						Keine E-Mail eingerichtet – hier ist der Link direkt:
-					</p>
+					<strong>{t("login.devMode")}</strong>
+					<p className="muted small dev-link-hint">{t("login.devHint")}</p>
 					<p className="dev-link-url">
 						<a href={devLink}>{devLink}</a>
 					</p>
 					<p className="dev-link-action">
 						<a className="btn btn-sm btn-primary" href={devLink}>
-							Jetzt anmelden
+							{t("login.devLogin")}
 						</a>
 					</p>
 				</div>
 			)}
 
-			<p className="muted small auth-footnote">
-				Wenn du angemeldet bist, kannst du Angebote einstellen, annehmen und die
-				Übergabe abschließen.
-			</p>
+			<p className="muted small auth-footnote">{t("login.footnote")}</p>
 			<nav className="auth-footer-links muted small">
-				<Link to="/impressum">Impressum</Link>
+				<Link to="/impressum">{t("legal.imprint")}</Link>
 				<span aria-hidden> · </span>
-				<Link to="/datenschutz">Datenschutz</Link>
+				<Link to="/datenschutz">{t("legal.privacy")}</Link>
 				<span aria-hidden> · </span>
-				<Link to="/agb">AGB</Link>
+				<Link to="/agb">{t("legal.terms")}</Link>
 			</nav>
 		</div>
 	);

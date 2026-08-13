@@ -1,3 +1,6 @@
+import { useT } from "../i18n";
+import type { MessageParams } from "../i18n";
+
 type Variant = "create" | "poster" | "collector" | "applicant" | "public";
 
 type Props = {
@@ -7,18 +10,21 @@ type Props = {
 	compact?: boolean;
 };
 
+type TFn = (key: string, params?: MessageParams) => string;
+
 /**
- * Practical tips for weekly (recurring) Pfand pickups – human German.
+ * Practical tips for weekly (recurring) Pfand pickups.
  */
 export function WeeklyTips({ variant = "public", compact = false }: Props) {
+	const t = useT();
 	const title =
 		variant === "create" || variant === "poster"
-			? "Tipps für den wöchentlichen Ablauf"
+			? t("tips.weekly.title.create")
 			: variant === "collector"
-				? "Tipps für dich als fester Abholer"
-				: "So läuft wöchentliches Pfand am besten";
+				? t("tips.weekly.title.collector")
+				: t("tips.weekly.title.public");
 
-	const items = tipsFor(variant);
+	const items = tipsFor(variant, t);
 
 	if (compact) {
 		const [lead, ...rest] = items;
@@ -29,12 +35,12 @@ export function WeeklyTips({ variant = "public", compact = false }: Props) {
 				{rest.length > 0 && (
 					<details className="weekly-tips-more">
 						<summary className="weekly-tips-more-summary">
-							Weitere Tipps
+							{t("tips.more")}
 						</summary>
 						<ul className="weekly-tips-list">
-							{rest.map((t) => (
-								<li key={t} className="weekly-tips-item">
-									{t}
+							{rest.map((tip) => (
+								<li key={tip} className="weekly-tips-item">
+									{tip}
 								</li>
 							))}
 						</ul>
@@ -48,9 +54,9 @@ export function WeeklyTips({ variant = "public", compact = false }: Props) {
 		<div className="banner info handover-hint weekly-tips">
 			<strong className="weekly-tips-title">{title}</strong>
 			<ul className="weekly-tips-list">
-				{items.map((t) => (
-					<li key={t} className="weekly-tips-item">
-						{t}
+				{items.map((tip) => (
+					<li key={tip} className="weekly-tips-item">
+						{tip}
 					</li>
 				))}
 			</ul>
@@ -58,50 +64,45 @@ export function WeeklyTips({ variant = "public", compact = false }: Props) {
 	);
 }
 
-function tipsFor(variant: Variant): string[] {
-	const timeReady =
-		"Stell das Pfand immer zur vereinbarten Uhrzeit bereit – dann dauert der Stopp für beide nur kurz.";
-	const outdoor =
-		"Nach Absprache kannst du es auch draußen hinstellen (Hof, bei den Mülltonnen o. Ä.) – bitte zur festen Zeit, damit niemand warten muss.";
-	const fixedTimeBoth =
-		"Ein fester Wochentag plus Uhrzeit spart Hin und Her. Kurz und unaufwendig hält den Rhythmus am Laufen.";
-	const confirmRule =
-		"Wichtig: Der Abholer meldet die Abholung selbst in der App. Ohne Meldung und Bestätigung des Inserenten bleibt die Abholung offen – und blockiert (wie bei normalen Angeboten) neue Annahmen.";
-
-	const amountVaries =
-		"Die Mengen sind eine Schätzung – künftiges Pfand kennt niemand genau. Rechne mit bis zu −50 % (z. B. 5 € → ab ca. 2,50 €).";
-
+function tipsFor(variant: Variant, t: TFn): string[] {
 	if (variant === "create" || variant === "poster") {
+		// Preserve previous order (note tip before confirm rule)
 		return [
-			"Trag eine typische Wochenmenge ein (mind. 2,50 € Schätzung). Die echte Menge kann bis −50 % darunter liegen.",
-			timeReady,
-			outdoor,
-			fixedTimeBoth,
-			"Schreib Uhrzeit und Ort gerne in den Hinweis (z. B. „ab 18 Uhr im Hof“).",
-			confirmRule,
+			t("tips.weekly.create.1"),
+			t("tips.weekly.readyTime"),
+			t("tips.weekly.outside"),
+			t("tips.weekly.rhythm"),
+			t("tips.weekly.create.6"),
+			t("tips.weekly.confirm"),
 		];
 	}
 
 	if (variant === "collector") {
 		return [
-			amountVaries,
-			"Komm zur vereinbarten Zeit – der Inserent stellt das Pfand dann bereit, damit es schnell geht.",
-			"Steht das Pfand draußen (Hof, Mülltonnen, …), nimm es mit – so entfällt das Klingeln, wenn ihr das so vereinbart habt.",
-			confirmRule,
-			"Kläre Unklarheiten einmal kurz – danach läuft der wöchentliche Rhythmus von allein.",
+			t("tips.weekly.collector.1"),
+			t("tips.weekly.collector.2"),
+			t("tips.weekly.collector.3"),
+			t("tips.weekly.collector.4"),
+			t("tips.weekly.collector.5"),
 		];
 	}
 
 	if (variant === "applicant") {
 		return [
-			amountVaries,
-			"Beim Bewerben gilt: der angezeigte Wert ist eine Schätzung, kein garantierter Mindestbetrag pro Woche.",
-			"Der Inserent wählt jemanden aus. Die Adresse siehst du erst, wenn du dran bist.",
-			"Danach gilt ein fester Wochentag (und oft eine Uhrzeit). Kurze Absprachen halten den Aufwand klein.",
-			confirmRule,
+			t("tips.weekly.public.1"),
+			t("tips.weekly.public.2"),
+			t("tips.weekly.public.3"),
+			t("tips.weekly.public.4"),
+			t("tips.weekly.public.5"),
 		];
 	}
 
-	// public / open listing
-	return [amountVaries, fixedTimeBoth, timeReady, outdoor, confirmRule];
+	// public / open listing — previous compact set (not full public.1–5)
+	return [
+		t("tips.weekly.estimate"),
+		t("tips.weekly.rhythm"),
+		t("tips.weekly.readyTime"),
+		t("tips.weekly.outside"),
+		t("tips.weekly.confirm"),
+	];
 }

@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { useT } from "../i18n";
 import {
 	PREF_INSTALL_DISMISS_KEY,
 	persistPreference,
@@ -11,6 +12,7 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 export function InstallPrompt() {
+	const t = useT();
 	const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
 		null,
 	);
@@ -84,11 +86,10 @@ export function InstallPrompt() {
 			</span>
 			<div className="install-copy">
 				<strong id={titleId} className="install-title">
-					Pfloop aufs Handy legen?
+					{t("install.title")}
 				</strong>
 				<p id={descId} className="install-desc muted small">
-					Als App auf dem Homescreen – schneller Start, und die Oberfläche geht
-					auch offline.
+					{t("install.desc")}
 				</p>
 			</div>
 			<div className="install-actions">
@@ -98,7 +99,7 @@ export function InstallPrompt() {
 					onClick={dismiss}
 					disabled={installing}
 				>
-					Später
+					{t("install.later")}
 				</button>
 				<button
 					ref={primaryRef}
@@ -108,7 +109,7 @@ export function InstallPrompt() {
 					disabled={installing}
 					aria-busy={installing}
 				>
-					Installieren
+					{t("install.action")}
 				</button>
 			</div>
 		</div>

@@ -1,26 +1,30 @@
+import { t } from "../i18n/translate";
+
 /**
- * Remaining time until a deadline (German, compact).
+ * Remaining time until a deadline (locale-aware, compact).
  * Handles overdue, sub-minute, and multi-hour windows.
  */
 export function formatCountdown(deadlineIso: string, now = Date.now()): string {
 	const end = new Date(deadlineIso).getTime();
-	if (Number.isNaN(end)) return "—";
+	if (Number.isNaN(end)) return t("common.emDash");
 
 	const ms = end - now;
-	if (ms <= 0) return "Zeit um";
+	if (ms <= 0) return t("time.overdue");
 
 	const totalSec = Math.floor(ms / 1000);
-	if (totalSec < 60) return "unter 1 Min.";
+	if (totalSec < 60) return t("time.underOneMin");
 
 	const totalMin = Math.floor(totalSec / 60);
 	const h = Math.floor(totalMin / 60);
 	const m = totalMin % 60;
 
 	if (h > 0) {
-		return m > 0 ? `${h} Std. ${m} Min.` : `${h} Std.`;
+		return m > 0
+			? t("time.hoursMins", { h, m })
+			: t("time.hoursOnly", { h });
 	}
-	if (totalMin === 1) return "1 Min.";
-	return `${totalMin} Min.`;
+	if (totalMin === 1) return t("time.oneMin");
+	return t("time.mins", { n: totalMin });
 }
 
 /** True when the deadline has passed (or is invalid → treat as not overdue). */
@@ -94,7 +98,7 @@ export function mapsDirLinks(
 	return {
 		google: `https://www.google.com/maps/dir/?${googleParams.toString()}`,
 		apple: `https://maps.apple.com/?${appleParts.join("&")}`,
-		label: label || "Route",
+		label: label || t("nav.route"),
 	};
 }
 

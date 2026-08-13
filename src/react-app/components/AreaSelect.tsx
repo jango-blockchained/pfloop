@@ -9,6 +9,7 @@ import {
 	type MouseEvent,
 } from "react";
 import { filterAreaGroups } from "../../shared/areas";
+import { useT } from "../i18n";
 
 type Props = {
 	id?: string;
@@ -34,10 +35,11 @@ export function AreaSelect({
 	onChange,
 	required = false,
 	disabled = false,
-	placeholder = "Stadtteil suchen…",
+	placeholder,
 	"aria-invalid": ariaInvalid,
 	className,
 }: Props) {
+	const t = useT();
 	const autoId = useId();
 	const inputId = id ?? `area-${autoId}`;
 	const listboxId = `${inputId}-listbox`;
@@ -203,7 +205,7 @@ export function AreaSelect({
 					className="area-select-input"
 					value={display}
 					disabled={disabled}
-					placeholder={placeholder}
+					placeholder={placeholder ?? t("area.placeholder")}
 					autoComplete="off"
 					autoCorrect="off"
 					spellCheck={false}
@@ -233,7 +235,7 @@ export function AreaSelect({
 					<button
 						type="button"
 						className="area-select-clear"
-						aria-label="Auswahl löschen"
+						aria-label={t("area.clearAria")}
 						onMouseDown={clear}
 					>
 						×
@@ -250,11 +252,11 @@ export function AreaSelect({
 					id={listboxId}
 					role="listbox"
 					className="area-select-list"
-					aria-label="Stadtteile"
+					aria-label={t("area.listAria")}
 				>
 					{flat.length === 0 && (
 						<li className="area-select-empty" role="presentation">
-							Keine Treffer – anderen Begriff versuchen
+							{t("area.empty")}
 						</li>
 					)}
 					{groupsWithIndex.map((g) => (

@@ -25,6 +25,8 @@ import {
 	type ReservationRow,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
+import { useT } from "../i18n";
+import { t as translate, getLocale } from "../i18n/translate";
 import { mapsDirLinks } from "../lib/format";
 import { searchAddress, type GeocodeResult } from "../lib/geocode";
 import { fetchDrivingRoute } from "../lib/osrm";
@@ -76,16 +78,26 @@ function bboxAround(lat: number, lng: number, deltaDeg = 0.06) {
 
 function formatDuration(sec: number): string {
 	const totalMin = Math.round(sec / 60);
-	if (totalMin < 1) return "unter 1 Min.";
+	if (totalMin < 1) return translate("time.underOneMin");
 	const h = Math.floor(totalMin / 60);
 	const m = totalMin % 60;
-	if (h > 0) return m > 0 ? `${h} Std. ${m} Min.` : `${h} Std.`;
-	return totalMin === 1 ? "1 Min." : `${totalMin} Min.`;
+	if (h > 0) {
+		return m > 0
+			? translate("time.hoursMins", { h, m })
+			: translate("time.hoursOnly", { h });
+	}
+	return totalMin === 1
+		? translate("time.oneMin")
+		: translate("time.mins", { n: totalMin });
 }
 
 function formatKm(km: number): string {
-	if (km < 10) return `${km.toFixed(1).replace(".", ",")} km`;
-	return `${Math.round(km).toLocaleString("de-DE")} km`;
+	const loc = getLocale() === "en" ? "en-GB" : "de-DE";
+	const value =
+		km < 10
+			? km.toFixed(1).replace(".", loc.startsWith("de") ? "," : ".")
+			: Math.round(km).toLocaleString(loc);
+	return translate("route.km", { km: value });
 }
 
 function FitBounds({
@@ -112,6 +124,7 @@ function FitBounds({
 
 export function RoutePlanner() {
 	const { user, loading: authLoading } = useAuth();
+	const t = useT();
 	const {
 		center: geoCenter,
 		ready: geoReady,
@@ -158,9 +171,9 @@ export function RoutePlanner() {
 		setStartPoint({
 			lat: geoCenter[0],
 			lng: geoCenter[1],
-			label: geoFromUser ? "Mein Standort (GPS)" : "Berlin (Standard)",
+			label: geoFromUser ? t("route.start.gps") : t("route.berlinDefault"),
 		});
-	}, [geoReady, geoCenter, geoFromUser, startMode]);
+	}, [geoReady, geoCenter, geoFromUser, startMode, t]);
 
 	const loadReservations = useCallback(async () => {
 		setSideLoading(true);
@@ -189,11 +202,11 @@ export function RoutePlanner() {
 			}
 			setError(null);
 		} catch (e) {
-			setError(getErrorMessage(e, "Abholungen laden hat nicht geklappt"));
+			setError(getErrorMessage(e, t("route.loadPickupsFailed")));
 		} finally {
 			setSideLoading(false);
 		}
-	}, []);
+	}, [t]);
 
 	useEffect(() => {
 		if (user) void loadReservations();
@@ -241,7 +254,7 @@ export function RoutePlanner() {
 				return {
 					lat: origin.lat,
 					lng: origin.lng,
-					label: "Start (Rundfahrt)",
+					label: t("route.end.loop"),
 				};
 			}
 			if (endMode === "last_stop") {
@@ -251,7 +264,7 @@ export function RoutePlanner() {
 			}
 			return endPoint;
 		},
-		[endMode, endPoint],
+		[endMode, endPoint, t],
 	);
 
 	const clearRoute = useCallback(() => {
@@ -264,7 +277,7 @@ export function RoutePlanner() {
 	function addStop(stop: RouteStop) {
 		if (stops.some((s) => s.id === stop.id)) return;
 		if (stops.length >= MAX_STOPS) {
-			setError(`Maximal ${MAX_STOPS} Abholstopps`);
+			setError(t("route.maxStops", { n: MAX_STOPS }));
 			return;
 		}
 		setError(null);
@@ -302,7 +315,7 @@ export function RoutePlanner() {
 	) {
 		const q = query.trim();
 		if (q.length < 3) {
-			setError("Mindestens 3 Zeichen für die Adresssuche");
+			setError(t("route.search.minChars"));
 			return;
 		}
 		setSearching(kind);
@@ -312,10 +325,10 @@ export function RoutePlanner() {
 			if (kind === "start") setStartHits(hits);
 			else if (kind === "end") setEndHits(hits);
 			else setStopHits(hits);
-			if (hits.length === 0) setInfo("Keine Treffer – andere Adresse versuchen?");
+			if (hits.length === 0) setInfo(t("route.search.none"));
 			else setInfo(null);
 		} catch (e) {
-			setError(getErrorMessage(e, "Adresssuche hat nicht geklappt"));
+			setError(getErrorMessage(e, t("route.search.failed")));
 		} finally {
 			setSearching(null);
 		}
@@ -326,13 +339,13 @@ export function RoutePlanner() {
 		if (!origin) {
 			setError(
 				startMode === "first_stop"
-					? "Mindestens einen Stopp wählen (Start = erster Stopp)"
-					: "Startpunkt fehlt",
+					? t("route.needStopAsStart")
+					: t("route.needStart"),
 			);
 			return;
 		}
 		if (stops.length === 0) {
-			setError("Mindestens einen Abholstopp wählen");
+			setError(t("route.needStops"));
 			return;
 		}
 
@@ -377,7 +390,7 @@ export function RoutePlanner() {
 			} else {
 				const dest = resolveEnd(startPt, working);
 				if (!dest) {
-					setError("Zielpunkt fehlt – Adresse suchen oder Modus ändern");
+					setError(t("route.needEnd"));
 					setBusy(null);
 					return;
 				}
@@ -394,11 +407,9 @@ export function RoutePlanner() {
 			setStops(ordered);
 			setStraightKm(totalKm);
 			clearRoute();
-			setInfo(
-				`Reihenfolge optimiert · Luftlinie ca. ${formatKm(totalKm)}`,
-			);
+			setInfo(t("route.optimized", { km: formatKm(totalKm) }));
 		} catch (e) {
-			setError(getErrorMessage(e, "Optimieren hat nicht geklappt"));
+			setError(getErrorMessage(e, t("route.optimizeFailed")));
 		} finally {
 			setBusy(null);
 		}
@@ -409,13 +420,13 @@ export function RoutePlanner() {
 		if (!origin) {
 			setError(
 				startMode === "first_stop"
-					? "Mindestens einen Stopp wählen (Start = erster Stopp)"
-					: "Startpunkt fehlt",
+					? t("route.needStopAsStart")
+					: t("route.needStart"),
 			);
 			return;
 		}
 		if (stops.length === 0) {
-			setError("Mindestens einen Abholstopp wählen");
+			setError(t("route.needStops"));
 			return;
 		}
 
@@ -427,7 +438,7 @@ export function RoutePlanner() {
 
 		const dest = resolveEnd(origin, stops);
 		if (!dest) {
-			setError("Zielpunkt fehlt – Adresse suchen oder Modus ändern");
+			setError(t("route.needEnd"));
 			return;
 		}
 
@@ -446,7 +457,7 @@ export function RoutePlanner() {
 			points.push(p);
 		}
 		if (points.length < 2) {
-			setError("Start und Ziel sind identisch – keine Route nötig");
+			setError(t("route.identical"));
 			return;
 		}
 
@@ -461,9 +472,7 @@ export function RoutePlanner() {
 			const route = await fetchDrivingRoute(points, { signal: ac.signal });
 			if (ac.signal.aborted) return;
 			if (!route) {
-				setError(
-					"Route konnte nicht berechnet werden (OSRM). Später nochmal versuchen.",
-				);
+				setError(t("route.osrmFailed"));
 				setRouteCoords(null);
 				setRouteDistanceM(null);
 				setRouteDurationS(null);
@@ -479,10 +488,10 @@ export function RoutePlanner() {
 			setRouteDistanceM(route.distanceM);
 			setRouteDurationS(route.durationS);
 			setStraightKm(route.distanceM / 1000);
-			setInfo("Route berechnet (Straßennetz)");
+			setInfo(t("route.computed"));
 		} catch (e) {
 			if (ac.signal.aborted) return;
-			setError(getErrorMessage(e, "Route berechnen hat nicht geklappt"));
+			setError(getErrorMessage(e, t("route.computeFailed")));
 		} finally {
 			if (!ac.signal.aborted) setBusy(null);
 		}
@@ -549,7 +558,7 @@ export function RoutePlanner() {
 		return (
 			<div className="page">
 				<p className="muted" role="status">
-					Einen Moment…
+					{t("common.loadingMoment")}
 				</p>
 			</div>
 		);
@@ -561,22 +570,21 @@ export function RoutePlanner() {
 
 	const endResolvedLabel =
 		endMode === "start"
-			? "wie Start (Rundfahrt)"
+			? t("route.endLabel.loop")
 			: endMode === "last_stop"
-				? "letzter Stopp"
-				: endPoint?.label ?? "Adresse wählen";
+				? t("route.endLabel.last")
+				: endPoint?.label ?? t("route.endLabel.choose");
 
 	return (
 		<div className="page route-planner-page">
 			<p className="back">
-				<Link to="/">← Karte</Link>
+				<Link to="/">{t("common.backMap")}</Link>
 			</p>
 
 			<header className="page-header">
-				<h1>Routenplaner</h1>
+				<h1>{t("route.title")}</h1>
 				<p className="page-lede muted">
-					Bis zu {MAX_STOPS} Abholungen in sinnvoller Reihenfolge – Start,
-					Stopps und Ziel wählen, optimieren und die Fahrroute öffnen.
+					{t("route.lede", { max: MAX_STOPS })}
 				</p>
 			</header>
 
@@ -593,12 +601,12 @@ export function RoutePlanner() {
 
 			<section className="panel-block panel-section">
 				<div className="panel-head">
-					<h2>Start</h2>
+					<h2>{t("route.section.start")}</h2>
 				</div>
 				<div
 					className="mode-toggle mode-toggle-3"
 					role="radiogroup"
-					aria-label="Startpunkt"
+					aria-label={t("route.section.start")}
 				>
 					<label className={`mode-option ${startMode === "gps" ? "active" : ""}`}>
 						<input
@@ -611,7 +619,7 @@ export function RoutePlanner() {
 							}}
 						/>
 						<span>
-							<strong>GPS</strong>
+							<strong>{t("route.mode.gps")}</strong>
 						</span>
 					</label>
 					<label
@@ -627,7 +635,7 @@ export function RoutePlanner() {
 							}}
 						/>
 						<span>
-							<strong>Adresse</strong>
+							<strong>{t("route.mode.address")}</strong>
 						</span>
 					</label>
 					<label
@@ -643,21 +651,21 @@ export function RoutePlanner() {
 							}}
 						/>
 						<span>
-							<strong>Erster Stopp</strong>
+							<strong>{t("route.mode.firstStop")}</strong>
 						</span>
 					</label>
 				</div>
 				{startMode === "gps" && (
 					<p className="muted small">
 						{startPoint?.label ??
-							(geoReady ? "Standort…" : "Standort wird ermittelt…")}
+							(geoReady ? t("route.start.gps") : t("route.locating"))}
 					</p>
 				)}
 				{startMode === "first_stop" && (
 					<p className="muted small">
 						{stops[0]
-							? `Start an: ${stops[0].label}`
-							: "Wähle unten mindestens einen Stopp."}
+							? t("route.startAt", { label: stops[0].label })
+							: t("route.pickStop")}
 					</p>
 				)}
 				{startMode === "search" && (
@@ -669,12 +677,12 @@ export function RoutePlanner() {
 						}}
 					>
 						<label>
-							Startadresse
+							{t("route.startAddress")}
 							<input
 								type="search"
 								value={startSearch}
 								onChange={(e) => setStartSearch(e.target.value)}
-								placeholder="Straße, PLZ, Ort…"
+								placeholder={t("route.addressPlaceholder")}
 								autoComplete="street-address"
 							/>
 						</label>
@@ -683,7 +691,7 @@ export function RoutePlanner() {
 							className="btn btn-sm"
 							disabled={searching === "start"}
 						>
-							{searching === "start" ? "Suche…" : "Suchen"}
+							{searching === "start" ? t("common.searching") : t("common.search")}
 						</button>
 						{startHits.length > 0 && (
 							<ul className="list">
@@ -700,10 +708,10 @@ export function RoutePlanner() {
 												});
 												setStartHits([]);
 												clearRoute();
-												setInfo(`Start: ${h.label}`);
+												setInfo(t("route.info.start", { label: h.label }));
 											}}
 										>
-											Übernehmen
+											{t("route.take")}
 										</button>
 										<span className="list-item-meta muted small">{h.label}</span>
 									</li>
@@ -711,7 +719,9 @@ export function RoutePlanner() {
 							</ul>
 						)}
 						{startPoint && startMode === "search" && (
-							<p className="muted small">Aktuell: {startPoint.label}</p>
+							<p className="muted small">
+								{t("route.info.current", { label: startPoint.label })}
+							</p>
 						)}
 					</form>
 				)}
@@ -719,12 +729,12 @@ export function RoutePlanner() {
 
 			<section className="panel-block panel-section">
 				<div className="panel-head">
-					<h2>Ziel</h2>
+					<h2>{t("route.section.end")}</h2>
 				</div>
 				<div
 					className="mode-toggle mode-toggle-3"
 					role="radiogroup"
-					aria-label="Zielpunkt"
+					aria-label={t("route.section.end")}
 				>
 					<label className={`mode-option ${endMode === "start" ? "active" : ""}`}>
 						<input
@@ -737,7 +747,7 @@ export function RoutePlanner() {
 							}}
 						/>
 						<span>
-							<strong>Wie Start</strong>
+							<strong>{t("route.mode.likeStart")}</strong>
 						</span>
 					</label>
 					<label
@@ -753,7 +763,7 @@ export function RoutePlanner() {
 							}}
 						/>
 						<span>
-							<strong>Adresse</strong>
+							<strong>{t("route.mode.address")}</strong>
 						</span>
 					</label>
 					<label
@@ -769,11 +779,13 @@ export function RoutePlanner() {
 							}}
 						/>
 						<span>
-							<strong>Letzter Stopp</strong>
+							<strong>{t("route.mode.lastStop")}</strong>
 						</span>
 					</label>
 				</div>
-				<p className="muted small">Ziel: {endResolvedLabel}</p>
+				<p className="muted small">
+					{t("route.info.end", { label: endResolvedLabel })}
+				</p>
 				{endMode === "search" && (
 					<form
 						className="form"
@@ -783,12 +795,12 @@ export function RoutePlanner() {
 						}}
 					>
 						<label>
-							Zieladresse
+							{t("route.endAddress")}
 							<input
 								type="search"
 								value={endSearch}
 								onChange={(e) => setEndSearch(e.target.value)}
-								placeholder="Straße, PLZ, Ort…"
+								placeholder={t("route.addressPlaceholder")}
 								autoComplete="street-address"
 							/>
 						</label>
@@ -797,7 +809,7 @@ export function RoutePlanner() {
 							className="btn btn-sm"
 							disabled={searching === "end"}
 						>
-							{searching === "end" ? "Suche…" : "Suchen"}
+							{searching === "end" ? t("common.searching") : t("common.search")}
 						</button>
 						{endHits.length > 0 && (
 							<ul className="list">
@@ -814,10 +826,10 @@ export function RoutePlanner() {
 												});
 												setEndHits([]);
 												clearRoute();
-												setInfo(`Ziel: ${h.label}`);
+												setInfo(t("route.info.end", { label: h.label }));
 											}}
 										>
-											Übernehmen
+											{t("route.take")}
 										</button>
 										<span className="list-item-meta muted small">{h.label}</span>
 									</li>
@@ -830,7 +842,7 @@ export function RoutePlanner() {
 
 			<section className="panel-block panel-section">
 				<div className="panel-head">
-					<h2>Abholstopps</h2>
+					<h2>{t("route.section.stops")}</h2>
 					<span className="muted small panel-head-meta">
 						{stops.length}/{MAX_STOPS}
 					</span>
@@ -838,15 +850,12 @@ export function RoutePlanner() {
 
 				{sideLoading && stops.length === 0 && (
 					<p className="muted" role="status">
-						Lade deine Abholungen…
+						{t("route.loadingPickups")}
 					</p>
 				)}
 
 				{stops.length === 0 && !sideLoading && (
-					<p className="muted small">
-						Noch keine Stopps – wähle Abholungen, offene Angebote in der Nähe
-						oder suche eine Adresse.
-					</p>
+					<p className="muted small">{t("route.stopsEmpty")}</p>
 				)}
 
 				{stops.length > 0 && (
@@ -872,10 +881,10 @@ export function RoutePlanner() {
 								</div>
 								<div className="meta list-item-meta">
 									{s.source === "reservation"
-										? "Meine Abholung"
+										? t("route.stopSource.reservation")
 										: s.source === "offer"
-											? "Offenes Angebot"
-											: "Manuell"}
+											? t("route.stopSource.offer")
+											: t("route.stopSource.manual")}
 								</div>
 								<div className="list-item-actions">
 									<button
@@ -883,7 +892,7 @@ export function RoutePlanner() {
 										className="btn btn-sm"
 										disabled={idx === 0}
 										onClick={() => moveStop(s.id, -1)}
-										aria-label="Nach oben"
+										aria-label={t("route.moveUp")}
 									>
 										↑
 									</button>
@@ -892,7 +901,7 @@ export function RoutePlanner() {
 										className="btn btn-sm"
 										disabled={idx === stops.length - 1}
 										onClick={() => moveStop(s.id, 1)}
-										aria-label="Nach unten"
+										aria-label={t("route.moveDown")}
 									>
 										↓
 									</button>
@@ -901,7 +910,7 @@ export function RoutePlanner() {
 										className="btn btn-sm"
 										onClick={() => removeStop(s.id)}
 									>
-										Entfernen
+										{t("route.remove")}
 									</button>
 								</div>
 							</li>
@@ -911,7 +920,7 @@ export function RoutePlanner() {
 
 				{unusedReservations.length > 0 && (
 					<>
-						<h3 className="form-section-title">Aus meinen Abholungen</h3>
+						<h3 className="form-section-title">{t("route.fromPickups")}</h3>
 						<ul className="list">
 							{unusedReservations.map((r) => (
 								<li key={r.reservation_id} className="list-item">
@@ -943,7 +952,7 @@ export function RoutePlanner() {
 												})
 											}
 										>
-											+ Stopp
+											{t("route.addStop")}
 										</button>
 									</div>
 								</li>
@@ -954,7 +963,7 @@ export function RoutePlanner() {
 
 				<div className="panel-head" style={{ marginTop: "0.75rem" }}>
 					<h3 className="form-section-title" style={{ margin: 0 }}>
-						Offene Angebote in der Nähe
+						{t("route.nearbyOffers")}
 					</h3>
 					<button
 						type="button"
@@ -962,14 +971,14 @@ export function RoutePlanner() {
 						disabled={nearbyLoading}
 						onClick={() => void loadNearby()}
 					>
-						{nearbyLoading ? "…" : "Aktualisieren"}
+						{nearbyLoading ? "…" : t("route.nearby.refresh")}
 					</button>
 				</div>
 				{nearbyLoading && unusedNearby.length === 0 && (
-					<p className="muted small">Lade Angebote…</p>
+					<p className="muted small">{t("route.nearby.loading")}</p>
 				)}
 				{!nearbyLoading && unusedNearby.length === 0 && (
-					<p className="muted small">Keine weiteren offenen Angebote hier.</p>
+					<p className="muted small">{t("route.nearby.empty")}</p>
 				)}
 				{unusedNearby.length > 0 && (
 					<ul className="list">
@@ -977,14 +986,16 @@ export function RoutePlanner() {
 							<li key={o.id} className="list-item">
 								<div className="list-item-main">
 									<span className="list-item-title">
-										<strong>{o.title?.trim() || "Pfand-Angebot"}</strong>
+										<strong>
+											{o.title?.trim() || t("offer.fallbackTitle")}
+										</strong>
 									</span>
 									<span className="list-pfand">
 										{centsToEuro(o.pfand_value_cents)} €
 									</span>
 								</div>
 								<div className="meta list-item-meta">
-									{o.address_hint || "Ungefähre Lage"}
+									{o.address_hint || t("map.approxLocation")}
 								</div>
 								<div className="list-item-actions">
 									<button
@@ -996,14 +1007,15 @@ export function RoutePlanner() {
 												id: `offer-${o.id}`,
 												lat: o.lat,
 												lng: o.lng,
-												label: o.address_hint || o.title || "Angebot",
+												label:
+													o.address_hint || o.title || t("offer.fallbackTitle"),
 												source: "offer",
 												offerId: o.id,
 												pfandCents: o.pfand_value_cents,
 											})
 										}
 									>
-										+ Stopp
+										{t("route.addStop")}
 									</button>
 								</div>
 							</li>
@@ -1020,12 +1032,12 @@ export function RoutePlanner() {
 					}}
 				>
 					<label>
-						Stopp per Adresse
+						{t("route.stopAddress")}
 						<input
 							type="search"
 							value={stopSearch}
 							onChange={(e) => setStopSearch(e.target.value)}
-							placeholder="Adresse hinzufügen…"
+							placeholder={t("route.addAddressPlaceholder")}
 							autoComplete="street-address"
 						/>
 					</label>
@@ -1034,7 +1046,7 @@ export function RoutePlanner() {
 						className="btn btn-sm"
 						disabled={searching === "stop" || stops.length >= MAX_STOPS}
 					>
-						{searching === "stop" ? "Suche…" : "Suchen"}
+						{searching === "stop" ? t("common.searching") : t("common.search")}
 					</button>
 					{stopHits.length > 0 && (
 						<ul className="list">
@@ -1056,7 +1068,7 @@ export function RoutePlanner() {
 											setStopSearch("");
 										}}
 									>
-										+ Stopp
+										{t("route.addStop")}
 									</button>
 									<span className="list-item-meta muted small">{h.label}</span>
 								</li>
@@ -1068,7 +1080,7 @@ export function RoutePlanner() {
 
 			<section className="panel-block panel-section">
 				<div className="panel-head">
-					<h2>Route</h2>
+					<h2>{t("route.section.route")}</h2>
 				</div>
 				<div className="list-item-actions" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
 					<button
@@ -1077,7 +1089,9 @@ export function RoutePlanner() {
 						disabled={busy != null || stops.length === 0}
 						onClick={() => onOptimize()}
 					>
-						{busy === "optimize" ? "…" : "Optimieren"}
+						{busy === "optimize"
+							? t("route.actions.optimizing")
+							: t("route.actions.optimize")}
 					</button>
 					<button
 						type="button"
@@ -1085,7 +1099,9 @@ export function RoutePlanner() {
 						disabled={busy != null || stops.length === 0}
 						onClick={() => void onComputeRoute()}
 					>
-						{busy === "route" ? "Berechne…" : "Route berechnen"}
+						{busy === "route"
+							? t("route.actions.computing")
+							: t("route.actions.compute")}
 					</button>
 					{dirLinks && (
 						<a
@@ -1094,7 +1110,7 @@ export function RoutePlanner() {
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							In Google Maps öffnen
+							{t("route.openGoogle")}
 						</a>
 					)}
 					{dirLinks && (
@@ -1104,31 +1120,27 @@ export function RoutePlanner() {
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							In Apple Maps öffnen
+							{t("route.openApple")}
 						</a>
 					)}
 				</div>
 				{(routeDistanceM != null || straightKm != null) && (
 					<p className="muted" role="status">
-						{routeDistanceM != null && routeDurationS != null ? (
-							<>
-								Strecke ca.{" "}
-								<strong>{formatKm(routeDistanceM / 1000)}</strong>
-								{" · "}
-								Dauer ca. <strong>{formatDuration(routeDurationS)}</strong>
-							</>
-						) : straightKm != null ? (
-							<>
-								Luftlinie ca. <strong>{formatKm(straightKm)}</strong>
-							</>
-						) : null}
+						{routeDistanceM != null && routeDurationS != null
+							? t("route.stats.drive", {
+									km: formatKm(routeDistanceM / 1000),
+									dur: formatDuration(routeDurationS),
+								})
+							: straightKm != null
+								? t("route.stats.straight", { km: formatKm(straightKm) })
+								: null}
 					</p>
 				)}
 			</section>
 
 			<section className="panel-block panel-section">
 				<div className="panel-head">
-					<h2>Karte</h2>
+					<h2>{t("route.section.map")}</h2>
 				</div>
 				<div className="form-map-inner route-planner-map">
 					<div className="map-wrap">
@@ -1159,7 +1171,7 @@ export function RoutePlanner() {
 										}}
 									>
 										<Tooltip permanent direction="top" offset={[0, -8]}>
-											Start
+											{t("route.map.start")}
 										</Tooltip>
 									</CircleMarker>
 								);
@@ -1207,7 +1219,7 @@ export function RoutePlanner() {
 										}}
 									>
 										<Tooltip permanent direction="top" offset={[0, -8]}>
-											Ziel
+											{t("route.map.end")}
 										</Tooltip>
 									</CircleMarker>
 								);

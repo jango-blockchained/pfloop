@@ -33,16 +33,28 @@ authRoutes.post("/magic-link", async (c) => {
 	const parsed = await readJsonBody<{
 		email?: unknown;
 		display_name?: unknown;
+		locale?: unknown;
 	}>(c);
 	if (!parsed.ok) {
 		return jsonError(c, parsed.error, parsed.status);
 	}
 
+	const localeRaw = (asOptionalString(parsed.data.locale) ?? "de")
+		.trim()
+		.toLowerCase();
+	const locale = localeRaw.startsWith("en") ? "en" : "de";
+
 	const email = (asOptionalString(parsed.data.email) ?? "")
 		.trim()
 		.toLowerCase();
 	if (!isValidEmail(email)) {
-		return jsonError(c, "Bitte eine gültige E-Mail angeben", 400);
+		return jsonError(
+			c,
+			locale === "en"
+				? "Please enter a valid email address"
+				: "Bitte eine gültige E-Mail angeben",
+			400,
+		);
 	}
 
 	const displayName = clampDisplayName(
@@ -57,20 +69,28 @@ authRoutes.post("/magic-link", async (c) => {
 	const link = `${base}/auth/verify?token=${encodeURIComponent(token)}`;
 
 	try {
-		const mode = await sendMagicLinkEmail(c.env, email, link);
+		const mode = await sendMagicLinkEmail(c.env, email, link, { locale });
 		return c.json({
 			ok: true,
 			// In local/dev without RESEND_API_KEY, return link so UI can show it.
 			...(mode === "dev_log" ? { magic_link: link, dev: true } : {}),
 			message:
 				mode === "sent"
-					? "Login-Link ist unterwegs – schau in dein Postfach."
-					: "Dev-Modus: Kein E-Mail-Versand – Link siehst du unten.",
+					? locale === "en"
+						? "Login link is on its way – check your inbox."
+						: "Login-Link ist unterwegs – schau in dein Postfach."
+					: locale === "en"
+						? "Dev mode: no email sent – link shown below."
+						: "Dev-Modus: Kein E-Mail-Versand – Link siehst du unten.",
 		});
 	} catch (e) {
 		// Provider message is already sanitized in sendMagicLinkEmail.
 		const msg =
-			e instanceof Error ? e.message : "E-Mail konnte nicht gesendet werden";
+			e instanceof Error
+				? e.message
+				: locale === "en"
+					? "Email could not be sent"
+					: "E-Mail konnte nicht gesendet werden";
 		console.error(
 			JSON.stringify({ event: "magic_link_route_error", message: msg }),
 		);

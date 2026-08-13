@@ -257,6 +257,7 @@ export async function sendMagicLinkEmail(
 	env: Env,
 	to: string,
 	link: string,
+	options?: { locale?: string },
 ): Promise<"sent" | "dev_log"> {
 	// Optional secret: wrangler secret put RESEND_API_KEY
 	const apiKey = (env as Env & { RESEND_API_KEY?: string }).RESEND_API_KEY;
@@ -272,6 +273,19 @@ export async function sendMagicLinkEmail(
 	}
 
 	const from = env.EMAIL_FROM ?? "Pfloop <onboarding@resend.dev>";
+	const locale = options?.locale === "en" ? "en" : "de";
+	const mail =
+		locale === "en"
+			? {
+					subject: "Your Pfloop login link",
+					text: `Hi!\n\nHere is your login link for Pfloop (one-time, valid about 15 minutes):\n\n${link}\n\nIf you did not request this, you can ignore this email.\n`,
+					html: `<p>Hi!</p><p><a href="${link}">Sign in to Pfloop now</a></p><p>The link works once and for about 15 minutes.</p><p>If you did not request this, you can ignore this email.</p>`,
+				}
+			: {
+					subject: "Dein Login-Link für Pfloop",
+					text: `Hi!\n\nHier ist dein Login-Link für Pfloop (einmalig, ca. 15 Minuten gültig):\n\n${link}\n\nFalls du das nicht warst, einfach ignorieren.\n`,
+					html: `<p>Hi!</p><p><a href="${link}">Jetzt bei Pfloop anmelden</a></p><p>Der Link gilt einmal und etwa 15 Minuten.</p><p>Falls du das nicht angefordert hast, kannst du die Mail ignorieren.</p>`,
+				};
 	const res = await fetch("https://api.resend.com/emails", {
 		method: "POST",
 		headers: {
@@ -281,9 +295,9 @@ export async function sendMagicLinkEmail(
 		body: JSON.stringify({
 			from,
 			to: [to],
-			subject: "Dein Login-Link für Pfloop",
-			text: `Hi!\n\nHier ist dein Login-Link für Pfloop (einmalig, ca. 15 Minuten gültig):\n\n${link}\n\nFalls du das nicht warst, einfach ignorieren.\n`,
-			html: `<p>Hi!</p><p><a href="${link}">Jetzt bei Pfloop anmelden</a></p><p>Der Link gilt einmal und etwa 15 Minuten.</p><p>Falls du das nicht angefordert hast, kannst du die Mail ignorieren.</p>`,
+			subject: mail.subject,
+			text: mail.text,
+			html: mail.html,
 		}),
 	});
 

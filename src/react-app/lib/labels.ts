@@ -1,73 +1,43 @@
-/** German UI labels for offer / reservation status. */
+/** UI labels for offer / reservation status — locale-aware via t(). */
 
-const OFFER: Record<string, string> = {
-	open: "Frei",
-	reserved: "Reserviert",
-	collected: "Abgeholt – wartet auf dich",
-	completed: "Fertig",
-	cancelled: "Storniert",
-	assigned: "Abholer fest",
-};
-
-const WEEKDAY_LABELS: Record<number, string> = {
-	1: "Montag",
-	2: "Dienstag",
-	3: "Mittwoch",
-	4: "Donnerstag",
-	5: "Freitag",
-	6: "Samstag",
-	7: "Sonntag",
-};
-
-const RECURRING_APP: Record<string, string> = {
-	pending: "Offen",
-	selected: "Ausgewählt",
-	rejected: "Nicht genommen",
-	withdrawn: "Zurückgezogen",
-};
+import { t } from "../i18n/translate";
 
 export function weekdayLabel(weekday: number): string {
-	return WEEKDAY_LABELS[weekday] ?? `Tag ${weekday}`;
+	const key = `weekday.${weekday}`;
+	const label = t(key);
+	if (label !== key) return label;
+	return t("weekday.fallback", { n: weekday });
 }
 
 export function recurringAppStatusLabel(status: string): string {
-	return RECURRING_APP[status] ?? status;
+	const key = `status.recurringApp.${status}`;
+	const label = t(key);
+	return label !== key ? label : status;
 }
 
 export function recurringStatusLabel(status: string): string {
-	if (status === "open") return "Sucht Abholer";
-	if (status === "assigned") return "Abholer fest";
-	if (status === "cancelled") return "Storniert";
-	return OFFER[status] ?? status;
+	if (status === "open") return t("status.recurring.open");
+	if (status === "assigned") return t("status.recurring.assigned");
+	if (status === "cancelled") return t("status.recurring.cancelled");
+	return offerStatusLabel(status);
 }
 
-const RESERVATION: Record<string, string> = {
-	active: "Unterwegs (noch 6 Std.)",
-	collected: "Abgeholt – wartet auf Bestätigung",
-	completed: "Fertig",
-	released: "Freigegeben",
-};
-
-/** Short helper texts for status badges / lists. */
-const OFFER_HINT: Record<string, string> = {
-	open: "Kann angenommen werden. Die Adresse siehst du erst danach.",
-	reserved: "Jemand holt ab – innerhalb von 6 Stunden.",
-	collected:
-		"Der Abholer war da. Bitte innerhalb von 24 Stunden bestätigen – sonst storniert das System.",
-	completed: "Alles erledigt.",
-	cancelled: "Wurde storniert.",
-};
-
 export function offerStatusLabel(status: string): string {
-	return OFFER[status] ?? status;
+	const key = `status.offer.${status}`;
+	const label = t(key);
+	return label !== key ? label : status;
 }
 
 export function reservationStatusLabel(status: string): string {
-	return RESERVATION[status] ?? status;
+	const key = `status.reservation.${status}`;
+	const label = t(key);
+	return label !== key ? label : status;
 }
 
 export function offerStatusHint(status: string): string {
-	return OFFER_HINT[status] ?? "";
+	const key = `status.hint.${status}`;
+	const label = t(key);
+	return label !== key ? label : "";
 }
 
 export function offerStatusClass(status: string): string {
@@ -89,37 +59,21 @@ export function offerNextStep(
 	role: OfferRole,
 ): string | null {
 	if (status === "open") {
-		if (role === "own") {
-			return "Dein Angebot ist online. Warte einfach, bis sich jemand meldet.";
-		}
-		if (role === "public") {
-			return "Nimm es an – dann siehst du die Adresse und hast 6 Stunden zum Abholen. Tageslimit und offene Abholungen beachten.";
-		}
+		if (role === "own") return t("status.next.open.own");
+		if (role === "public") return t("status.next.open.public");
 		return null;
 	}
 	if (status === "reserved") {
-		if (role === "collector") {
-			return "Hol das Pfand ab und tipp danach auf „Abgeholt“.";
-		}
-		if (role === "own") {
-			return "Jemand ist unterwegs. Warte, bis er oder sie „Abgeholt“ tippt.";
-		}
-		return "Gerade reserviert.";
+		if (role === "collector") return t("status.next.reserved.collector");
+		if (role === "own") return t("status.next.reserved.own");
+		return t("status.next.reserved.other");
 	}
 	if (status === "collected") {
-		if (role === "own") {
-			return "Bitte innerhalb von 24 Stunden bestätigen – sonst wird storniert.";
-		}
-		if (role === "collector") {
-			return "Fast geschafft. Der Inserent hat 24 Stunden zum Bestätigen.";
-		}
-		return "Wartet noch auf die Bestätigung (max. 24 Std.).";
+		if (role === "own") return t("status.next.collected.own");
+		if (role === "collector") return t("status.next.collected.collector");
+		return t("status.next.collected.other");
 	}
-	if (status === "completed") {
-		return "Passt – Abholung erledigt.";
-	}
-	if (status === "cancelled") {
-		return "Das Angebot wurde storniert.";
-	}
+	if (status === "completed") return t("status.next.completed");
+	if (status === "cancelled") return t("status.next.cancelled");
 	return null;
 }

@@ -3,8 +3,11 @@ import {
 	centsToEuroDe,
 	type PfandItemType,
 } from "../../shared/pfand";
+import { useT } from "../i18n";
 import {
 	MIN_PFAND_CENTS,
+	hintForItemType,
+	labelForItemType,
 	minProgress,
 	minValueHint,
 	recurringFloorCents,
@@ -39,6 +42,7 @@ export function PfandQuantityForm({
 	minCents = MIN_PFAND_CENTS,
 	recurring = false,
 }: Props) {
+	const t = useT();
 	const flaschen = PFAND_CATALOG.filter((e) => e.category === "flasche");
 	const kaesten = PFAND_CATALOG.filter((e) => e.category === "kasten");
 	const meetsMin = totalCents >= minCents;
@@ -77,6 +81,8 @@ export function PfandQuantityForm({
 						const q = quantities[entry.type] ?? 0;
 						const line = q * entry.unit_cents;
 						const unitLabel = centsToEuroDe(entry.unit_cents);
+						const label = labelForItemType(entry.type);
+						const hint = hintForItemType(entry.type);
 						return (
 							<li
 								key={entry.type}
@@ -84,20 +90,20 @@ export function PfandQuantityForm({
 								data-item-type={entry.type}
 							>
 								<div className="pfand-row-info">
-									<strong className="pfand-row-label">{entry.label}</strong>
+									<strong className="pfand-row-label">{label}</strong>
 									<span className="pfand-row-meta muted small">
-										{entry.hint} · je {unitLabel} €
+										{hint} · {t("pfand.form.perUnit", { unit: unitLabel })}
 									</span>
 								</div>
 								<div
 									className="pfand-row-controls"
 									role="group"
-									aria-label={`Menge für ${entry.label}`}
+									aria-label={t("pfand.form.qtyGroupAria", { label })}
 								>
 									<button
 										type="button"
 										className="btn btn-sm qty-btn qty-btn-dec"
-										aria-label={`${entry.label} weniger`}
+										aria-label={t("pfand.form.decAria", { label })}
 										disabled={q <= 0}
 										onClick={() => step(entry.type, -1)}
 									>
@@ -112,12 +118,12 @@ export function PfandQuantityForm({
 										value={q === 0 ? "" : q}
 										placeholder="0"
 										onChange={(e) => setQty(entry.type, e.target.value)}
-										aria-label={`Stückzahl ${entry.label}`}
+										aria-label={t("pfand.form.qtyInputAria", { label })}
 									/>
 									<button
 										type="button"
 										className="btn btn-sm qty-btn qty-btn-inc"
-										aria-label={`${entry.label} mehr`}
+										aria-label={t("pfand.form.incAria", { label })}
 										onClick={() => step(entry.type, 1)}
 									>
 										+
@@ -126,8 +132,10 @@ export function PfandQuantityForm({
 										className={`pfand-line${q > 0 ? "" : " muted"}`}
 										aria-label={
 											q > 0
-												? `Zeilensumme ${centsToEuroDe(line)} Euro`
-												: "Keine Menge"
+												? t("pfand.form.lineSumAria", {
+														line: centsToEuroDe(line),
+													})
+												: t("pfand.form.noQtyAria")
 										}
 										title={
 											q > 0
@@ -135,7 +143,7 @@ export function PfandQuantityForm({
 												: undefined
 										}
 									>
-										{q > 0 ? `${centsToEuroDe(line)} €` : "—"}
+										{q > 0 ? `${centsToEuroDe(line)} €` : t("common.emDash")}
 									</span>
 								</div>
 							</li>
@@ -150,12 +158,12 @@ export function PfandQuantityForm({
 		<div className="pfand-form">
 			<p className="pfand-form-intro muted small">
 				{recurring
-					? "Typische Wochenmengen schätzen – den genauen künftigen Pfand kennt niemand. Abholer rechnen mit bis zu −50 %."
-					: "Einfach die Stückzahlen eintippen. Den Pfandwert rechnen wir fest nach deutschem Pfandsystem – den kannst du nicht frei ändern."}
+					? t("pfand.form.intro.recurring")
+					: t("pfand.form.intro.once")}
 			</p>
 			<div className="pfand-groups">
-				{renderGroup("Flaschen & Dosen", flaschen, "flaschen")}
-				{renderGroup("Kästen / Kisten", kaesten, "kaesten")}
+				{renderGroup(t("pfand.form.group.bottles"), flaschen, "flaschen")}
+				{renderGroup(t("pfand.form.group.crates"), kaesten, "kaesten")}
 			</div>
 
 			<div
@@ -164,9 +172,13 @@ export function PfandQuantityForm({
 			>
 				<div className="pfand-total-head">
 					<span className="label">
-						{recurring ? "Schätzung pro Woche" : "Pfandwert gesamt"}
+						{recurring
+							? t("pfand.form.total.recurring")
+							: t("pfand.form.total.once")}
 						{itemCount > 0 ? (
-							<span className="pfand-total-count"> · {itemCount} Stück</span>
+							<span className="pfand-total-count">
+								{t("pfand.form.itemCount", { count: itemCount })}
+							</span>
 						) : null}
 					</span>
 					<strong className="pfand-total-value">
@@ -175,8 +187,7 @@ export function PfandQuantityForm({
 				</div>
 				{recurring && totalCents > 0 && (
 					<div className="pfand-total-floor muted small">
-						Realistisch ab ca. {centsToEuroDe(floorCents)} € (−50 %
-						Schwankung)
+						{t("pfand.form.floor", { floor: centsToEuroDe(floorCents) })}
 					</div>
 				)}
 				<div
@@ -185,7 +196,7 @@ export function PfandQuantityForm({
 					aria-valuemin={0}
 					aria-valuemax={100}
 					aria-valuenow={progressPct}
-					aria-label="Fortschritt zum Mindestwert"
+					aria-label={t("pfand.form.progressAria")}
 				>
 					<span
 						className="pfand-min-bar-fill"

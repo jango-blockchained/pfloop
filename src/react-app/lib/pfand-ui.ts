@@ -6,6 +6,7 @@ import {
 	type PfandItemType,
 	type PfandLineComputed,
 } from "../../shared/pfand";
+import { t } from "../i18n/translate";
 
 /** Keep in sync with worker MIN_PFAND_CENTS (€3.00, one-shot). */
 export const MIN_PFAND_CENTS = 300;
@@ -53,8 +54,23 @@ export type OfferItemDto = {
 };
 
 export function labelForItemType(type: string): string {
-	if (isPfandItemType(type)) return getPfandEntry(type).label;
+	if (isPfandItemType(type)) {
+		const key = `pfand.catalog.${type}.label`;
+		const translated = t(key);
+		if (translated !== key) return translated;
+		return getPfandEntry(type).label;
+	}
 	return type;
+}
+
+export function hintForItemType(type: string): string {
+	if (isPfandItemType(type)) {
+		const key = `pfand.catalog.${type}.hint`;
+		const translated = t(key);
+		if (translated !== key) return translated;
+		return getPfandEntry(type).hint;
+	}
+	return "";
 }
 
 export function formatItemsShort(items: OfferItemDto[] | undefined): string {
@@ -95,25 +111,36 @@ export function minValueHint(
 ): string {
 	if (totalCents <= 0) {
 		return opts?.recurring
-			? `Mindestens ${centsToEuroDe(minCents)} € Schätzung nötig (wöchentliches Pfand schwankt)`
-			: `Mindestens ${centsToEuroDe(minCents)} € Pfand nötig`;
+			? t("pfand.minHint.recurringEmpty", { min: centsToEuroDe(minCents) })
+			: t("pfand.minHint.empty", { min: centsToEuroDe(minCents) });
 	}
 	const rest = centsUntilMinimum(totalCents, minCents);
 	if (rest === 0) {
 		if (opts?.recurring) {
 			const floor = recurringFloorCents(totalCents);
-			return `Passt – Schätzung ab ${centsToEuroDe(minCents)} € · realistisch ab ca. ${centsToEuroDe(floor)} € (−50 %)`;
+			return t("pfand.minHint.recurringOk", {
+				min: centsToEuroDe(minCents),
+				floor: centsToEuroDe(floor),
+			});
 		}
-		return `Passt – Mindestwert von ${centsToEuroDe(minCents)} € ist drin`;
+		return t("pfand.minHint.ok", { min: centsToEuroDe(minCents) });
 	}
-	return `Noch ${centsToEuroDe(rest)} € bis zu den ${centsToEuroDe(minCents)} € Minimum`;
+	return t("pfand.minHint.remaining", {
+		rest: centsToEuroDe(rest),
+		min: centsToEuroDe(minCents),
+	});
 }
 
 /** Short display for map/list: estimate + optional floor. */
 export function formatRecurringPfandLabel(estimateCents: number): string {
 	const floor = recurringFloorCents(estimateCents);
 	if (floor <= 0 || floor >= estimateCents) {
-		return `ca. ${centsToEuroDe(estimateCents)} €`;
+		return t("pfand.recurringLabel.simple", {
+			est: centsToEuroDe(estimateCents),
+		});
 	}
-	return `ca. ${centsToEuroDe(estimateCents)} € · ab ~${centsToEuroDe(floor)} €`;
+	return t("pfand.recurringLabel.withFloor", {
+		est: centsToEuroDe(estimateCents),
+		floor: centsToEuroDe(floor),
+	});
 }

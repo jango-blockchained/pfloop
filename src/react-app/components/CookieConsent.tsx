@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useId, useState } from "react";
 import { Link } from "react-router-dom";
+import { useT } from "../i18n";
 import {
-	COOKIE_CATEGORIES,
 	COOKIE_OPEN_PREFERENCES_EVENT,
 	acceptAllConsent,
 	defaultConsent,
+	getCookieCategories,
 	readConsent,
 	rejectOptionalConsent,
 	writeConsent,
@@ -50,6 +51,7 @@ function Toggle({
  * Shown until the visitor records a choice; re-open via footer or openCookiePreferences().
  */
 export function CookieConsent() {
+	const t = useT();
 	const baseId = useId();
 	const [hydrated, setHydrated] = useState(false);
 	const [visible, setVisible] = useState(false);
@@ -59,6 +61,9 @@ export function CookieConsent() {
 		preferences: false,
 		analytics: false,
 	});
+
+	// Locale-dependent category copy — recompute each render
+	const categories = getCookieCategories();
 
 	useEffect(() => {
 		return initAnalyticsConsentGate();
@@ -180,26 +185,24 @@ export function CookieConsent() {
 			<div className="cookie-banner-card">
 				<div className="cookie-banner-head">
 					<p id={`${baseId}-title`} className="cookie-banner-kicker">
-						Cookies &amp; Datenschutz
+						{t("cookies.banner.title")}
 					</p>
 					<Link to="/cookies" className="cookie-banner-policy-link">
-						Cookie-Richtlinie
+						{t("cookies.banner.policyLink")}
 					</Link>
 				</div>
 
 				<div className="cookie-banner-body">
 					<p id={`${baseId}-desc`} className="cookie-banner-text">
-						Wir nutzen notwendige Cookies und Speicher, damit Pfloop
-						funktioniert (z. B. Login). Optionale Präferenzen und Statistik nur
-						mit deiner Einwilligung. Du kannst das jederzeit ändern.{" "}
-						<Link to="/datenschutz">Datenschutz</Link>
+						{t("cookies.banner.body")}{" "}
+						<Link to="/datenschutz">{t("cookies.banner.linkPrivacy")}</Link>
 						{" · "}
-						<Link to="/cookies">Cookies</Link>
+						<Link to="/cookies">{t("cookies.banner.linkCookies")}</Link>
 					</p>
 
 					{panelOpen && (
 						<div className="cookie-categories">
-							{COOKIE_CATEGORIES.map((cat) => {
+							{categories.map((cat) => {
 								const toggleId = `${baseId}-${cat.id}`;
 								const checked =
 									cat.id === "necessary"
@@ -216,7 +219,7 @@ export function CookieConsent() {
 												</span>
 												{cat.required && (
 													<span className="cookie-category-badge">
-														Immer an
+														{t("cookies.badge.alwaysOn")}
 													</span>
 												)}
 											</div>
@@ -232,7 +235,7 @@ export function CookieConsent() {
 										<div className="cookie-category-toggle">
 											<Toggle
 												id={toggleId}
-												label={`${cat.label} erlauben`}
+												label={t("cookies.toggleAria", { label: cat.label })}
 												checked={checked}
 												disabled={cat.required}
 												onChange={(next) => {
@@ -257,7 +260,7 @@ export function CookieConsent() {
 								className="btn btn-sm cookie-btn-ghost"
 								onClick={onDismiss}
 							>
-								Schließen
+								{t("cookies.close")}
 							</button>
 						)}
 						<button
@@ -265,7 +268,7 @@ export function CookieConsent() {
 							className="btn btn-sm"
 							onClick={() => setPanelOpen((o) => !o)}
 						>
-							{panelOpen ? "Details ausblenden" : "Einstellungen"}
+							{panelOpen ? t("cookies.hideDetails") : t("cookies.settings")}
 						</button>
 						{panelOpen && (
 							<button
@@ -273,7 +276,7 @@ export function CookieConsent() {
 								className="btn btn-sm"
 								onClick={onSavePreferences}
 							>
-								Auswahl speichern
+								{t("cookies.save")}
 							</button>
 						)}
 						<button
@@ -281,14 +284,14 @@ export function CookieConsent() {
 							className="btn btn-sm"
 							onClick={onRejectOptional}
 						>
-							Nur notwendige
+							{t("cookies.rejectOptional")}
 						</button>
 						<button
 							type="button"
 							className="btn btn-sm btn-primary"
 							onClick={onAcceptAll}
 						>
-							Alle akzeptieren
+							{t("cookies.acceptAll")}
 						</button>
 					</div>
 				</div>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useT } from "../i18n";
 
 export function OfflineBanner() {
+	const t = useT();
 	const [offline, setOffline] = useState(
 		typeof navigator !== "undefined" ? !navigator.onLine : false,
 	);
@@ -29,10 +31,7 @@ export function OfflineBanner() {
 				!
 			</span>
 			<span className="offline-banner-body">
-				<span className="offline-banner-text">
-					Du bist offline. Karte und Angebote brauchen Internet – die App selbst
-					bleibt offen.
-				</span>
+				<span className="offline-banner-text">{t("offline.banner")}</span>
 			</span>
 		</div>
 	);

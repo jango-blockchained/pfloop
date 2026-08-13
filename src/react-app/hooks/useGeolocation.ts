@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { t } from "../i18n/translate";
 
 /** Berlin center — sensible default when permission denied or unavailable. */
 export const DEFAULT_MAP_CENTER: [number, number] = [52.52, 13.405];
@@ -33,10 +34,7 @@ export function useGeolocation(): {
 		}
 
 		if (!navigator.geolocation) {
-			finishFallback(
-				"Standort geht hier nicht – wir zeigen Berlin",
-				"unsupported",
-			);
+			finishFallback(t("geo.unsupported"), "unsupported");
 			return;
 		}
 
@@ -64,10 +62,7 @@ export function useGeolocation(): {
 				// so the user isn't teleported to a random city; ◎ can refine.
 				const acc = pos.coords.accuracy;
 				if (Number.isFinite(acc) && acc > 25_000) {
-					finishFallback(
-						"Standort nur grob erkannt – Karte zeigt Berlin. Tippe ◎ für deinen Standort.",
-						"granted",
-					);
+					finishFallback(t("geo.coarse"), "granted");
 					return;
 				}
 				setCenter([pos.coords.latitude, pos.coords.longitude]);
@@ -77,16 +72,15 @@ export function useGeolocation(): {
 				setReady(true);
 			},
 			(err) => {
-				let message = "Standort unklar – wir zeigen erstmal Berlin";
+				let message = t("geo.unknown");
 				let perm: GeoPermission = "prompt";
 				if (err.code === err.PERMISSION_DENIED) {
-					message =
-						"Standort blockiert – wir zeigen Berlin. Du kannst ihn später freigeben oder suchen.";
+					message = t("geo.denied");
 					perm = "denied";
 				} else if (err.code === err.POSITION_UNAVAILABLE) {
-					message = "Standort nicht gefunden – wir zeigen Berlin";
+					message = t("geo.unavailable");
 				} else if (err.code === err.TIMEOUT) {
-					message = "Standort dauert zu lange – wir zeigen Berlin";
+					message = t("geo.timeout");
 				}
 				finishFallback(message, perm);
 			},

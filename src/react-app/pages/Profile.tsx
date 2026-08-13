@@ -12,6 +12,7 @@ import {
 	type SavedAddress,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
+import { useT } from "../i18n";
 import {
 	canonicalizePublicArea,
 	isPublicArea,
@@ -28,6 +29,7 @@ const emptyForm = {
 
 export function Profile() {
 	const { user, loading, logout } = useAuth();
+	const t = useT();
 	const [addresses, setAddresses] = useState<SavedAddress[]>([]);
 	const [max, setMax] = useState(8);
 	const [listLoading, setListLoading] = useState(true);
@@ -46,11 +48,11 @@ export function Profile() {
 			setMax(data.max);
 			setError(null);
 		} catch (e) {
-			setError(getErrorMessage(e, "Adressen laden hat nicht geklappt"));
+			setError(getErrorMessage(e, t("profile.loadFailed")));
 		} finally {
 			setListLoading(false);
 		}
-	}, []);
+	}, [t]);
 
 	useEffect(() => {
 		if (user) void load();
@@ -95,15 +97,15 @@ export function Profile() {
 		const address_text = form.address_text.trim();
 		const address_hint = form.address_hint.trim();
 		if (!address_text) {
-			setError("Bitte die volle Adresse angeben.");
+			setError(t("profile.needAddress"));
 			return;
 		}
 		if (!address_hint || !isPublicArea(address_hint)) {
-			setError("Bitte Stadtteil / Gegend aus der Liste wählen.");
+			setError(t("profile.needArea"));
 			return;
 		}
 		if (form.lat == null || form.lng == null) {
-			setError("Setz bitte noch einen Punkt auf der Karte.");
+			setError(t("profile.needPin"));
 			return;
 		}
 
@@ -119,15 +121,15 @@ export function Profile() {
 			};
 			if (editingId) {
 				await updateAddress(editingId, body);
-				setOkMsg("Adresse gespeichert.");
+				setOkMsg(t("profile.saved"));
 			} else {
 				await createAddress(body);
-				setOkMsg("Adresse hinzugefügt.");
+				setOkMsg(t("profile.added"));
 			}
 			cancelForm();
 			await load();
 		} catch (err) {
-			setError(getErrorMessage(err, "Speichern hat nicht geklappt"));
+			setError(getErrorMessage(err, t("profile.saveFailed")));
 		} finally {
 			setSaving(false);
 		}
@@ -138,26 +140,26 @@ export function Profile() {
 		setError(null);
 		try {
 			await setDefaultAddress(id);
-			setOkMsg("Als Standard gesetzt – wird im Angebot-Formular vorausgefüllt.");
+			setOkMsg(t("profile.defaultSet"));
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Standard setzen hat nicht geklappt"));
+			setError(getErrorMessage(e, t("profile.defaultFailed")));
 		} finally {
 			setBusyId(null);
 		}
 	}
 
 	async function onDelete(id: string) {
-		if (!confirm("Diese Adresse wirklich löschen?")) return;
+		if (!confirm(t("profile.deleteConfirm"))) return;
 		setBusyId(id);
 		setError(null);
 		try {
 			await deleteAddress(id);
-			setOkMsg("Adresse gelöscht.");
+			setOkMsg(t("profile.deleted"));
 			if (editingId === id) cancelForm();
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Löschen hat nicht geklappt"));
+			setError(getErrorMessage(e, t("profile.deleteFailed")));
 		} finally {
 			setBusyId(null);
 		}
@@ -167,7 +169,7 @@ export function Profile() {
 		return (
 			<div className="page profile-page">
 				<p className="muted" role="status">
-					Einen Moment…
+					{t("common.loadingMoment")}
 				</p>
 			</div>
 		);
@@ -179,15 +181,16 @@ export function Profile() {
 
 	const pick: [number, number] | null =
 		form.lat != null && form.lng != null ? [form.lat, form.lng] : null;
+	const myLocationLabel = t("map.locate.myLocation");
 
 	return (
 		<div className="page profile-page">
 			<p className="back">
-				<Link to="/">← Karte</Link>
+				<Link to="/">{t("common.backMap")}</Link>
 			</p>
 
 			<header className="page-header">
-				<h1>Konto</h1>
+				<h1>{t("profile.title")}</h1>
 			</header>
 
 			<div className="banner info profile-user-card">
@@ -199,31 +202,30 @@ export function Profile() {
 					<small className="muted">{user.email}</small>
 				</span>
 				<button type="button" className="btn btn-sm" onClick={() => void logout()}>
-					Abmelden
+					{t("auth.logout")}
 				</button>
 			</div>
 
 			<section className="panel-block panel-section profile-addresses">
 				<div className="panel-head">
-					<h2>Gespeicherte Adressen</h2>
+					<h2>{t("profile.addresses.title")}</h2>
 					{!showForm && addresses.length < max && (
 						<button
 							type="button"
 							className="btn btn-sm btn-primary"
 							onClick={startCreate}
 						>
-							+ Adresse
+							{t("profile.addresses.add")}
 						</button>
 					)}
 				</div>
 				<p className="muted small panel-section-hint">
-					Adressen hier verwalten und im Angebot-Formular auswählen oder
-					automatisch vorausfüllen (Standard). Max. {max} Stück.
+					{t("profile.addresses.hint", { max })}
 				</p>
 
 				{listLoading && (
 					<p className="muted" role="status">
-						Lade Adressen…
+						{t("profile.addresses.loading")}
 					</p>
 				)}
 
@@ -232,17 +234,18 @@ export function Profile() {
 						<span className="empty-state-icon" aria-hidden>
 							🏠
 						</span>
-						<p className="empty-state-title">Noch keine Adresse</p>
+						<p className="empty-state-title">
+							{t("profile.addresses.emptyTitle")}
+						</p>
 						<p className="empty-state-text">
-							Speichere Zuhause oder Keller – beim Einstellen ist sie dann per
-							Klick da.
+							{t("profile.addresses.emptyText")}
 						</p>
 						<button
 							type="button"
 							className="btn btn-primary btn-sm"
 							onClick={startCreate}
 						>
-							Erste Adresse anlegen
+							{t("profile.addresses.first")}
 						</button>
 					</div>
 				)}
@@ -253,10 +256,12 @@ export function Profile() {
 							<li key={a.id} className="list-item address-card">
 								<div className="list-item-main address-card-head">
 									<strong className="list-item-title">
-										{a.label || "Adresse"}
+										{a.label || t("profile.addressFallback")}
 									</strong>
 									{a.is_default && (
-										<span className="badge badge-ok">Standard</span>
+										<span className="badge badge-ok">
+											{t("profile.badge.default")}
+										</span>
 									)}
 								</div>
 								<div className="meta list-item-meta address-card-text">
@@ -275,7 +280,7 @@ export function Profile() {
 											disabled={busyId === a.id}
 											onClick={() => void onDefault(a.id)}
 										>
-											Als Standard
+											{t("profile.asDefault")}
 										</button>
 									)}
 									<button
@@ -284,7 +289,7 @@ export function Profile() {
 										disabled={busyId === a.id}
 										onClick={() => startEdit(a)}
 									>
-										Bearbeiten
+										{t("common.edit")}
 									</button>
 									<button
 										type="button"
@@ -292,7 +297,7 @@ export function Profile() {
 										disabled={busyId === a.id}
 										onClick={() => void onDelete(a.id)}
 									>
-										Löschen
+										{t("common.delete")}
 									</button>
 								</div>
 							</li>
@@ -304,33 +309,35 @@ export function Profile() {
 					<form className="form address-form" onSubmit={onSave}>
 						<section className="form-section">
 							<h3 className="form-section-title">
-								{editingId ? "Adresse bearbeiten" : "Neue Adresse"}
+								{editingId
+									? t("profile.form.editTitle")
+									: t("profile.form.newTitle")}
 							</h3>
 							<label>
-								Kurzname
+								{t("profile.form.label")}
 								<input
 									value={form.label}
 									onChange={(e) =>
 										setForm((f) => ({ ...f, label: e.target.value }))
 									}
-									placeholder="z. B. Zuhause, Keller"
+									placeholder={t("profile.form.labelPlaceholder")}
 									maxLength={40}
 								/>
 							</label>
 							<label>
-								Volle Adresse
+								{t("profile.form.fullAddress")}
 								<input
 									value={form.address_text}
 									onChange={(e) =>
 										setForm((f) => ({ ...f, address_text: e.target.value }))
 									}
-									placeholder="Musterstraße 1, 10115 Berlin"
+									placeholder={t("create.addressPlaceholder")}
 									required
 									autoComplete="street-address"
 								/>
 							</label>
 							<label>
-								Stadtteil / Gegend (öffentlich)
+								{t("profile.form.area")}
 								<AreaSelect
 									value={form.address_hint}
 									required
@@ -338,14 +345,12 @@ export function Profile() {
 										setForm((f) => ({ ...f, address_hint: v }))
 									}
 								/>
-								<span className="muted small">
-									Wird auf der Karte angezeigt – aus der Liste wählen.
-								</span>
+								<span className="muted small">{t("profile.form.areaHelp")}</span>
 							</label>
 						</section>
 						<section className="form-section">
 							<div className="form-map">
-								<p className="label">Standort auf der Karte</p>
+								<p className="label">{t("profile.form.map")}</p>
 								<div className="form-map-inner">
 									<OfferMap
 										offers={[]}
@@ -362,7 +367,7 @@ export function Profile() {
 												if (
 													(!f.address_hint || !isPublicArea(f.address_hint)) &&
 													label &&
-													label !== "Mein Standort"
+													label !== myLocationLabel
 												) {
 													nextHint =
 														suggestPublicArea(label) ?? f.address_hint;
@@ -372,7 +377,7 @@ export function Profile() {
 													lat,
 													lng,
 													address_text:
-														label && label !== "Mein Standort"
+														label && label !== myLocationLabel
 															? label
 															: f.address_text,
 													address_hint: nextHint,
@@ -384,11 +389,14 @@ export function Profile() {
 								</div>
 								{pick ? (
 									<p className="muted small map-pin-status">
-										Standort: {pick[0].toFixed(5)}, {pick[1].toFixed(5)}
+										{t("create.pinStatus", {
+											lat: pick[0].toFixed(5),
+											lng: pick[1].toFixed(5),
+										})}
 									</p>
 								) : (
 									<p className="muted small map-pin-status">
-										Noch kein Punkt auf der Karte.
+										{t("create.noPin")}
 									</p>
 								)}
 							</div>
@@ -399,7 +407,7 @@ export function Profile() {
 								type="submit"
 								disabled={saving}
 							>
-								{saving ? "Speichern…" : "Speichern"}
+								{saving ? t("common.saving") : t("common.save")}
 							</button>
 							<button
 								type="button"
@@ -407,7 +415,7 @@ export function Profile() {
 								disabled={saving}
 								onClick={cancelForm}
 							>
-								Abbrechen
+								{t("common.cancel")}
 							</button>
 						</div>
 					</form>
@@ -418,15 +426,15 @@ export function Profile() {
 			{error && <p className="banner error">{error}</p>}
 
 			<nav className="profile-footer-links muted small">
-				<Link to="/neu">Angebot erstellen</Link>
+				<Link to="/neu">{t("home.createOffer")}</Link>
 				<span aria-hidden> · </span>
-				<Link to="/">Zur Karte</Link>
+				<Link to="/">{t("common.toMap")}</Link>
 				<span aria-hidden> · </span>
-				<Link to="/impressum">Impressum</Link>
+				<Link to="/impressum">{t("footer.imprint")}</Link>
 				<span aria-hidden> · </span>
-				<Link to="/datenschutz">Datenschutz</Link>
+				<Link to="/datenschutz">{t("footer.privacy")}</Link>
 				<span aria-hidden> · </span>
-				<Link to="/agb">AGB</Link>
+				<Link to="/agb">{t("footer.terms")}</Link>
 			</nav>
 		</div>
 	);

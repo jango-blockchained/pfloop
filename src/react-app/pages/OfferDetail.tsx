@@ -11,6 +11,7 @@ import {
 	type OfferDetail as OfferDetailType,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
+import { useT } from "../i18n";
 import {
 	formatCountdown,
 	isDeadlineOverdue,
@@ -31,6 +32,7 @@ type BusyAction = "accept" | "collect" | "confirm" | "cancel" | null;
 export function OfferDetail() {
 	const { id } = useParams<{ id: string }>();
 	const { user } = useAuth();
+	const t = useT();
 	const navigate = useNavigate();
 	const [offer, setOffer] = useState<OfferDetailType | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -49,11 +51,11 @@ export function OfferDetail() {
 			setLoadError(null);
 			setError(null);
 		} catch (e) {
-			setLoadError(getErrorMessage(e, "Laden hat nicht geklappt"));
+			setLoadError(getErrorMessage(e, t("detail.loadFailed")));
 		} finally {
 			setLoading(false);
 		}
-	}, [id]);
+	}, [id, t]);
 
 	useEffect(() => {
 		setLoading(true);
@@ -62,8 +64,8 @@ export function OfferDetail() {
 	}, [load]);
 
 	useEffect(() => {
-		const t = setInterval(() => setNow(Date.now()), 10_000);
-		return () => clearInterval(t);
+		const tick = setInterval(() => setNow(Date.now()), 10_000);
+		return () => clearInterval(tick);
 	}, []);
 
 	// When the 6h window ends, refresh so status can flip back to open.
@@ -86,7 +88,7 @@ export function OfferDetail() {
 			await fn();
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Das hat nicht geklappt"));
+			setError(getErrorMessage(e, t("detail.actionFailed")));
 		} finally {
 			setBusy(null);
 		}
@@ -105,11 +107,7 @@ export function OfferDetail() {
 
 	async function onCollect() {
 		if (!id) return;
-		if (
-			!confirm(
-				"Hast du das Pfand abgeholt?\n\nDer Inserent muss danach noch bestätigen. Erst dann kannst du ein neues Angebot annehmen.",
-			)
-		) {
+		if (!confirm(t("detail.confirm.collect"))) {
 			return;
 		}
 		await runAction("collect", async () => {
@@ -119,11 +117,7 @@ export function OfferDetail() {
 
 	async function onConfirm() {
 		if (!id) return;
-		if (
-			!confirm(
-				"Hat der Abholer das Pfand wirklich mitgenommen?\n\nDann ist die Abholung erledigt.",
-			)
-		) {
+		if (!confirm(t("detail.confirm.handover"))) {
 			return;
 		}
 		await runAction("confirm", async () => {
@@ -133,7 +127,7 @@ export function OfferDetail() {
 
 	async function onCancel() {
 		if (!id) return;
-		if (!confirm("Angebot wirklich stornieren?")) return;
+		if (!confirm(t("detail.confirm.cancel"))) return;
 		await runAction("cancel", async () => {
 			await cancelOffer(id);
 		});
@@ -145,16 +139,16 @@ export function OfferDetail() {
 			setCopied(true);
 			window.setTimeout(() => setCopied(false), 2000);
 		} catch {
-			setError("Adresse konnte nicht kopiert werden.");
+			setError(t("detail.copyFailed"));
 		}
 	}
 
 	if (!id) {
 		return (
 			<div className="page detail-page">
-				<p className="banner error">Hier fehlt die Angebots-ID.</p>
+				<p className="banner error">{t("detail.missingId")}</p>
 				<p className="back">
-					<Link to="/">Zurück zur Karte</Link>
+					<Link to="/">{t("detail.backToMap")}</Link>
 				</p>
 			</div>
 		);
@@ -164,23 +158,23 @@ export function OfferDetail() {
 		return (
 			<div className="page detail-page">
 				<p className="back">
-					<Link to="/">← Karte</Link>
+					<Link to="/">{t("common.backMap")}</Link>
 				</p>
 				<div className="detail-card detail-skeleton" aria-busy="true">
 					<div className="detail-hero">
-						<span className="label">Pfandwert</span>
+						<span className="label">{t("detail.label.pfand")}</span>
 						<span className="skeleton skeleton-title" />
 					</div>
 					<div className="detail-row">
-						<span className="label">Status</span>
+						<span className="label">{t("detail.label.status")}</span>
 						<span className="skeleton skeleton-text short" />
 					</div>
 					<div className="detail-row">
-						<span className="label">Gebiet</span>
+						<span className="label">{t("detail.label.area")}</span>
 						<span className="skeleton skeleton-text short" />
 					</div>
 					<div className="skeleton skeleton-block" />
-					<p className="muted small">Angebot wird geladen…</p>
+					<p className="muted small">{t("detail.loading")}</p>
 				</div>
 			</div>
 		);
@@ -190,10 +184,10 @@ export function OfferDetail() {
 		return (
 			<div className="page detail-page">
 				<p className="back">
-					<Link to="/">← Karte</Link>
+					<Link to="/">{t("common.backMap")}</Link>
 				</p>
 				<p className="banner error">
-					{loadError ?? "Das Angebot ließ sich nicht laden."}
+					{loadError ?? t("detail.notFound")}
 				</p>
 				<div className="actions sticky-actions">
 					<button
@@ -204,10 +198,10 @@ export function OfferDetail() {
 							void load();
 						}}
 					>
-						Nochmal versuchen
+						{t("common.retry")}
 					</button>
 					<Link className="btn" to="/">
-						Zur Karte
+						{t("common.toMap")}
 					</Link>
 				</div>
 			</div>
@@ -244,16 +238,16 @@ export function OfferDetail() {
 	return (
 		<div className="page detail-page">
 			<p className="back">
-				<Link to="/">← Karte</Link>
+				<Link to="/">{t("common.backMap")}</Link>
 			</p>
 
 			<header className="page-header">
-				<h1>{offer.title || "Pfand-Angebot"}</h1>
+				<h1>{offer.title || t("offer.fallbackTitle")}</h1>
 			</header>
 
 			{nextStep && (
 				<div className="banner info handover-hint status-banner">
-					<strong>Als Nächstes:</strong> {nextStep}
+					<strong>{t("detail.nextLabel")}</strong> {nextStep}
 				</div>
 			)}
 
@@ -265,7 +259,7 @@ export function OfferDetail() {
 
 			<div className="detail-card">
 				<div className="detail-hero detail-row">
-					<span className="label">Pfandwert</span>
+					<span className="label">{t("detail.label.pfand")}</span>
 					<strong className="pfand detail-hero-value">
 						{centsToEuro(offer.pfand_value_cents)} €
 					</strong>
@@ -273,14 +267,14 @@ export function OfferDetail() {
 
 				<div className="detail-section">
 					<div className="detail-desc">
-						<span className="label">Stückliste</span>
+						<span className="label">{t("detail.items")}</span>
 						<PfandItemsList items={offer.items ?? []} />
 					</div>
 				</div>
 
 				<div className="detail-section detail-facts">
 					<div className="detail-row">
-						<span className="label">Status</span>
+						<span className="label">{t("detail.label.status")}</span>
 						<span className={offerStatusClass(offer.status)}>
 							{offerStatusLabel(offer.status)}
 						</span>
@@ -291,14 +285,14 @@ export function OfferDetail() {
 						</p>
 					)}
 					<div className="detail-row">
-						<span className="label">Gebiet</span>
-						<span>{offer.address_hint || "—"}</span>
+						<span className="label">{t("detail.label.area")}</span>
+						<span>{offer.address_hint || t("common.emDash")}</span>
 					</div>
 				</div>
 
 				{offer.address_text && (
 					<div className="detail-section detail-desc address-block">
-						<span className="label">Adresse</span>
+						<span className="label">{t("detail.address")}</span>
 						<p className="address">{offer.address_text}</p>
 						<div className="address-actions">
 							<button
@@ -306,7 +300,7 @@ export function OfferDetail() {
 								className="btn btn-sm"
 								onClick={() => void onCopyAddress(offer.address_text!)}
 							>
-								{copied ? "Kopiert!" : "Adresse kopieren"}
+								{copied ? t("detail.copied") : t("detail.copyAddress")}
 							</button>
 							{maps && (
 								<>
@@ -316,7 +310,7 @@ export function OfferDetail() {
 										target="_blank"
 										rel="noopener noreferrer"
 									>
-										Google Maps
+										{t("maps.google")}
 									</a>
 									<a
 										className="btn btn-sm"
@@ -324,10 +318,10 @@ export function OfferDetail() {
 										target="_blank"
 										rel="noopener noreferrer"
 									>
-										Apple Karten
+										{t("maps.apple")}
 									</a>
 									<a className="btn btn-sm" href={maps.geo}>
-										Karten-App
+										{t("maps.geoApp")}
 									</a>
 								</>
 							)}
@@ -337,15 +331,13 @@ export function OfferDetail() {
 
 				{!offer.address_text && offer.status === "open" && (
 					<p className="muted small address-privacy-hint">
-						Die genaue Adresse siehst du erst nach der Annahme. Danach hast du
-						6 Stunden zum Abholen. Dann: du tippst „Abgeholt“, der Inserent
-						bestätigt innerhalb von 24 Stunden – fertig.
+						{t("detail.addressPrivacy")}
 					</p>
 				)}
 
 				{offer.description && (
 					<div className="detail-section detail-desc">
-						<span className="label">Hinweis</span>
+						<span className="label">{t("detail.note")}</span>
 						<p className="detail-note" style={{ whiteSpace: "pre-wrap" }}>
 							{offer.description}
 						</p>
@@ -356,15 +348,17 @@ export function OfferDetail() {
 					<div className="detail-row countdown-row">
 						<span className="label">
 							{offer.status === "reserved"
-								? "Zeit zum Abholen"
-								: "Reservierung"}
+								? t("detail.countdown.pickup")
+								: t("detail.countdown.reservation")}
 						</span>
 						<span
 							className={`badge ${overdue ? "badge-muted" : "badge-warn"} countdown-badge`}
 						>
 							{overdue
-								? "Zeit um – wir aktualisieren…"
-								: `Noch ${formatCountdown(deadline, now)}`}
+								? t("detail.countdown.overdue")
+								: t("detail.countdown.left", {
+										countdown: formatCountdown(deadline, now),
+									})}
 						</span>
 					</div>
 				)}
@@ -377,40 +371,31 @@ export function OfferDetail() {
 			<div className="status-banners">
 				{isCollectorView && offer.status === "reserved" && (
 					<div className="banner info handover-hint status-banner">
-						<strong>Schritt 1:</strong> Hol das Pfand ab und tipp auf „Abgeholt“.
-						Der Inserent hat 24 Stunden zum Bestätigen – sonst wird storniert.
+						{t("detail.banner.step1")}
 					</div>
 				)}
 
 				{isCollectorView && offer.status === "collected" && (
 					<div className="banner info handover-hint status-banner">
-						<strong>Fast geschafft:</strong> Du hast abgeholt. Bitte den
-						Inserenten, in der App zu bestätigen (24 Std.). Ohne Bestätigung
-						wird das Angebot storniert.
+						{t("detail.banner.almost")}
 					</div>
 				)}
 
 				{offer.is_own && offer.status === "reserved" && (
 					<div className="banner info handover-hint status-banner">
-						<strong>Abholung läuft:</strong> Jemand ist unterwegs (6 Stunden
-						Zeit). Sobald er oder sie „Abgeholt“ tippt, bestätigst du die
-						Übergabe.
+						{t("detail.banner.running")}
 					</div>
 				)}
 
 				{canConfirm && (
 					<div className="banner info handover-hint status-banner">
-						<strong>Deine Bestätigung:</strong> Der Abholer sagt, er war da.
-						Bestätige bitte innerhalb von 24 Stunden, dass das Pfand wirklich
-						weg ist – sonst storniert das System.
+						{t("detail.banner.yourConfirm")}
 					</div>
 				)}
 
 				{offer.is_own && offer.status === "open" && (
 					<div className="banner info handover-hint status-banner">
-						<strong>Dein Angebot ist online.</strong> Adresse und genaue
-						Position sehen andere erst nach der Annahme. Stornieren geht,
-						solange noch nicht alles erledigt ist.
+						{t("detail.banner.online")}
 					</div>
 				)}
 			</div>
@@ -423,9 +408,7 @@ export function OfferDetail() {
 						disabled={anyBusy}
 						onClick={() => void onAccept()}
 					>
-						{busy === "accept"
-							? "Wird angenommen…"
-							: "Annehmen (6 Stunden Zeit)"}
+						{busy === "accept" ? t("detail.accept.busy") : t("detail.accept")}
 					</button>
 				)}
 				{canCollect && (
@@ -435,7 +418,9 @@ export function OfferDetail() {
 						disabled={anyBusy}
 						onClick={() => void onCollect()}
 					>
-						{busy === "collect" ? "Wird gemeldet…" : "Abgeholt"}
+						{busy === "collect"
+							? t("detail.collect.busy")
+							: t("detail.collect")}
 					</button>
 				)}
 				{canConfirm && (
@@ -446,8 +431,8 @@ export function OfferDetail() {
 						onClick={() => void onConfirm()}
 					>
 						{busy === "confirm"
-							? "Wird bestätigt…"
-							: "Übergabe bestätigen"}
+							? t("detail.confirm.busy")
+							: t("detail.confirm")}
 					</button>
 				)}
 				{canCancel && (
@@ -457,16 +442,14 @@ export function OfferDetail() {
 						disabled={anyBusy}
 						onClick={() => void onCancel()}
 					>
-						{busy === "cancel" ? "Storniere…" : "Angebot stornieren"}
+						{busy === "cancel" ? t("detail.cancel.busy") : t("detail.cancel")}
 					</button>
 				)}
 				{offer.status === "completed" && (
-					<p className="muted action-done">
-						Passt – Abholung erledigt. Danke!
-					</p>
+					<p className="muted action-done">{t("detail.done")}</p>
 				)}
 				{offer.status === "cancelled" && (
-					<p className="muted action-done">Dieses Angebot wurde storniert.</p>
+					<p className="muted action-done">{t("detail.cancelled")}</p>
 				)}
 			</div>
 		</div>

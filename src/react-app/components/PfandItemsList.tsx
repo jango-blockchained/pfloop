@@ -1,6 +1,7 @@
 import { centsToEuro } from "../lib/api";
 import type { OfferItemDto } from "../lib/pfand-ui";
-import { getPfandEntry, isPfandItemType } from "../../shared/pfand";
+import { labelForItemType } from "../lib/pfand-ui";
+import { useT } from "../i18n";
 
 type Props = {
 	items: OfferItemDto[];
@@ -9,10 +10,12 @@ type Props = {
 };
 
 export function PfandItemsList({ items, showTotal = true }: Props) {
+	const t = useT();
+
 	if (!items.length) {
 		return (
 			<p className="pfand-items pfand-items-empty muted small">
-				Keine Stückliste angegeben.
+				{t("pfand.list.empty")}
 			</p>
 		);
 	}
@@ -23,9 +26,7 @@ export function PfandItemsList({ items, showTotal = true }: Props) {
 		<div className="pfand-items">
 			<ul className="pfand-breakdown">
 				{items.map((item) => {
-					const label = isPfandItemType(item.item_type)
-						? getPfandEntry(item.item_type).label
-						: item.item_type;
+					const label = labelForItemType(item.item_type);
 					return (
 						<li
 							key={`${item.item_type}-${item.quantity}-${item.unit_cents}`}
@@ -36,7 +37,9 @@ export function PfandItemsList({ items, showTotal = true }: Props) {
 								<strong className="pfand-item-label">{label}</strong>
 								<span className="pfand-item-unit muted small">
 									{" "}
-									à {centsToEuro(item.unit_cents)} €
+									{t("pfand.list.unit", {
+										unit: centsToEuro(item.unit_cents),
+									})}
 								</span>
 							</span>
 							<span className="pfand-item-line">
@@ -48,7 +51,9 @@ export function PfandItemsList({ items, showTotal = true }: Props) {
 			</ul>
 			{showTotal && items.length > 1 && (
 				<p className="pfand-items-total muted small">
-					<span className="pfand-items-total-label">Zusammen:</span>{" "}
+					<span className="pfand-items-total-label">
+						{t("pfand.list.totalLabel")}
+					</span>{" "}
 					<strong className="pfand-items-total-value">
 						{centsToEuro(totalCents)} €
 					</strong>

@@ -15,6 +15,7 @@ import {
 	type Weekday,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
+import { useT } from "../i18n";
 import { weekdayLabel } from "../lib/labels";
 import {
 	MIN_PFAND_CENTS,
@@ -38,6 +39,7 @@ const WEEKDAYS: Weekday[] = [1, 2, 3, 4, 5, 6, 7];
 export function CreateOffer() {
 	const navigate = useNavigate();
 	const { user, loading } = useAuth();
+	const t = useT();
 	const [mode, setMode] = useState<"once" | "recurring">("once");
 	const [note, setNote] = useState("");
 	const [quantities, setQuantities] = useState(emptyQuantities);
@@ -121,16 +123,20 @@ export function CreateOffer() {
 	const restToMin = centsUntilMinimum(totalCents, minPfandCents);
 
 	const publishBlockedReason = useMemo(() => {
-		if (saving) return "Wird gerade veröffentlicht…";
-		if (missingItems) return "Bitte Stückzahlen eintragen";
+		if (saving) return t("create.publishing");
+		if (missingItems) return t("create.needItems");
 		if (belowMin) {
-			return `Noch ${centsToEuroDe(restToMin)} € bis zu den ${centsToEuroDe(minPfandCents)} € Minimum`;
+			return t("create.needMin", {
+				rest: centsToEuroDe(restToMin),
+				min: centsToEuroDe(minPfandCents),
+			});
 		}
-		if (missingAddress) return "Die Adresse fehlt noch";
-		if (missingArea) return "Stadtteil / Gegend aus der Liste wählen";
-		if (missingPin) return "Setz bitte noch einen Punkt auf der Karte";
+		if (missingAddress) return t("create.needAddress");
+		if (missingArea) return t("create.needArea");
+		if (missingPin) return t("create.needPin");
 		return null;
 	}, [
+		t,
 		saving,
 		missingItems,
 		belowMin,
@@ -150,35 +156,41 @@ export function CreateOffer() {
 		setError(null);
 
 		if (!user) {
-			setError("Bitte melde dich zuerst an.");
+			setError(t("create.needLogin"));
 			return;
 		}
 		if (missingItems) {
-			setError("Trag bitte ein, wie viele Flaschen oder Kästen du hast.");
+			setError(t("create.itemsError"));
 			return;
 		}
 		if (belowMin) {
 			setError(
 				mode === "recurring"
-					? `Mindestens ${centsToEuroDe(minPfandCents)} € Schätzung pro Woche – du hast gerade ${centsToEuroDe(totalCents)} €.`
-					: `Mindestens ${centsToEuroDe(minPfandCents)} € Pfand – du hast gerade ${centsToEuroDe(totalCents)} €.`,
+					? t("create.minRecurringError", {
+							min: centsToEuroDe(minPfandCents),
+							total: centsToEuroDe(totalCents),
+						})
+					: t("create.minOnceError", {
+							min: centsToEuroDe(minPfandCents),
+							total: centsToEuroDe(totalCents),
+						}),
 			);
 			return;
 		}
 		if (missingAddress) {
 			setError(
 				mode === "recurring"
-					? "Bitte die volle Adresse – die sieht nur der gewählte Abholer."
-					: "Bitte die volle Adresse – die sieht man erst nach der Annahme.",
+					? t("create.addressRecurringError")
+					: t("create.addressOnceError"),
 			);
 			return;
 		}
 		if (missingArea) {
-			setError("Bitte Stadtteil / Gegend aus der Liste wählen.");
+			setError(t("create.areaError"));
 			return;
 		}
 		if (!pick) {
-			setError("Setz bitte noch einen Punkt auf der Karte.");
+			setError(t("create.pinError"));
 			return;
 		}
 
@@ -219,7 +231,7 @@ export function CreateOffer() {
 				navigate(`/angebot/${id}`);
 			}
 		} catch (err) {
-			setError(getErrorMessage(err, "Speichern hat nicht geklappt"));
+			setError(getErrorMessage(err, t("create.saveFailed")));
 		} finally {
 			setSaving(false);
 		}
@@ -229,7 +241,7 @@ export function CreateOffer() {
 		return (
 			<div className="page create-page">
 				<p className="muted" role="status">
-					Lade Sitzung…
+					{t("create.loadingSession")}
 				</p>
 			</div>
 		);
@@ -239,39 +251,44 @@ export function CreateOffer() {
 		return (
 			<div className="page create-page">
 				<header className="page-header">
-					<h1>Angebot erstellen</h1>
+					<h1>{t("create.title")}</h1>
 				</header>
 				<div className="empty-state">
 					<span className="empty-state-icon" aria-hidden>
 						🔐
 					</span>
-					<p className="empty-state-title">Anmeldung nötig</p>
+					<p className="empty-state-title">{t("create.authRequired")}</p>
 					<p className="empty-state-text">
-						Bitte <Link to="/login">anmelden</Link>, dann kannst du ein Angebot
-						einstellen.
+						{t("create.authText")}{" "}
+						<Link to="/login">{t("nav.login")}</Link>
 					</p>
 				</div>
 			</div>
 		);
 	}
 
+	const myLocationLabel = t("map.locate.myLocation");
+
 	return (
 		<div className="page create-page">
 			<header className="page-header">
-				<h1>Angebot erstellen</h1>
+				<h1>{t("create.title")}</h1>
 				<p className="page-lede muted">
-					Stückzahlen nach deutschem Pfandsystem (einmalig mind.{" "}
-					{centsToEuroDe(MIN_PFAND_CENTS)} €, wöchentlich Schätzung mind.{" "}
-					{centsToEuroDe(MIN_RECURRING_PFAND_CENTS)} €, bis −50 %). Die genaue
-					Adresse bleibt privat, bis jemand annimmt – oder bis du beim
-					Wöchentlichen jemanden auswählst.
+					{t("create.lede", {
+						once: centsToEuroDe(MIN_PFAND_CENTS),
+						rec: centsToEuroDe(MIN_RECURRING_PFAND_CENTS),
+					})}
 				</p>
 			</header>
 
 			<form className="form" onSubmit={onSubmit} noValidate>
 				<section className="form-section">
-					<h2 className="form-section-title">Art des Angebots</h2>
-					<div className="mode-toggle" role="radiogroup" aria-label="Angebotsart">
+					<h2 className="form-section-title">{t("create.section.kind")}</h2>
+					<div
+						className="mode-toggle"
+						role="radiogroup"
+						aria-label={t("create.modeAria")}
+					>
 						<label className={`mode-option ${mode === "once" ? "active" : ""}`}>
 							<input
 								type="radio"
@@ -280,10 +297,8 @@ export function CreateOffer() {
 								onChange={() => setMode("once")}
 							/>
 							<span>
-								<strong>Einmalig</strong>
-								<span className="muted small">
-									Jemand nimmt an und hat 6 Stunden Zeit
-								</span>
+								<strong>{t("create.mode.once")}</strong>
+								<span className="muted small">{t("create.mode.onceHint")}</span>
 							</span>
 						</label>
 						<label
@@ -296,9 +311,9 @@ export function CreateOffer() {
 								onChange={() => setMode("recurring")}
 							/>
 							<span>
-								<strong>Wöchentlich</strong>
+								<strong>{t("create.mode.recurring")}</strong>
 								<span className="muted small">
-									Bis 2 Stück · Leute bewerben sich, du wählst
+									{t("create.mode.recurringHint")}
 								</span>
 							</span>
 						</label>
@@ -306,9 +321,7 @@ export function CreateOffer() {
 					{mode === "once" && (
 						<>
 							<div className="banner info handover-hint">
-								<strong>So läuft’s einmalig:</strong> Jemand nimmt an, sieht
-								die Adresse und hat 6 Stunden. Abholer meldet „Abgeholt“, du
-								bestätigst – erst dann ist alles erledigt.
+								{t("create.banner.once")}
 							</div>
 							<OfferTips variant="create" />
 						</>
@@ -316,10 +329,7 @@ export function CreateOffer() {
 					{mode === "recurring" && (
 						<>
 							<div className="banner info handover-hint">
-								<strong>So läuft’s wöchentlich:</strong> Andere können sich
-								bewerben. Du suchst jemanden aus – danach ist das Angebot von der
-								Karte weg, bis du den Abholer wieder freigibst. Maximal zwei
-								aktive wöchentliche Angebote.
+								{t("create.banner.recurring")}
 							</div>
 							<WeeklyTips variant="create" />
 						</>
@@ -327,11 +337,11 @@ export function CreateOffer() {
 				</section>
 
 				<section className="form-section">
-					<h2 className="form-section-title">1. Pfand-Stückliste</h2>
+					<h2 className="form-section-title">{t("create.section.items")}</h2>
 					<p className="muted small form-section-hint">
 						{mode === "recurring"
-							? "Typische Wochenmenge schätzen – niemand kennt den genauen künftigen Pfand."
-							: "Mengen eintragen – der Pfandwert berechnet sich automatisch."}
+							? t("create.itemsHint.recurring")
+							: t("create.itemsHint.once")}
 					</p>
 					<PfandQuantityForm
 						quantities={quantities}
@@ -341,23 +351,26 @@ export function CreateOffer() {
 						recurring={mode === "recurring"}
 					/>
 					{attempted && missingItems && (
-						<p className="banner error">
-							Mindestens bei einer Sorte etwas eintragen.
-						</p>
+						<p className="banner error">{t("create.itemsValidation")}</p>
 					)}
 					{lines.length > 0 && (
 						<p className="muted small form-preview">
-							So sieht’s aus:{" "}
-							{lines.map((l) => `${l.quantity}× ${l.label}`).join(", ")}
+							{t("create.itemsPreview", {
+								preview: lines
+									.map((l) => `${l.quantity}× ${l.label}`)
+									.join(", "),
+							})}
 						</p>
 					)}
 				</section>
 
 				{mode === "recurring" && (
 					<section className="form-section">
-						<h2 className="form-section-title">2. Abholzeit</h2>
+						<h2 className="form-section-title">
+							{t("create.section.pickupTime")}
+						</h2>
 						<label>
-							Wochentag
+							{t("create.weekday")}
 							<select
 								value={weekday}
 								onChange={(e) =>
@@ -372,32 +385,31 @@ export function CreateOffer() {
 							</select>
 						</label>
 						<label>
-							Uhrzeit / Hinweis (optional)
+							{t("create.timeHint")}
 							<input
 								value={timeHint}
 								onChange={(e) => setTimeHint(e.target.value)}
-								placeholder="z. B. ab 18 Uhr im Hof, vormittags bei den Tonnen…"
+								placeholder={t("create.timePlaceholder")}
 								maxLength={80}
 							/>
-							<span className="muted small">
-								Feste Zeit und kurzer Ortshinweis machen die Abholung für beide
-								entspannt und schnell.
-							</span>
+							<span className="muted small">{t("create.timeHelp")}</span>
 						</label>
 					</section>
 				)}
 
 				<section className="form-section">
 					<h2 className="form-section-title">
-						{mode === "recurring" ? "3. Hinweise" : "2. Hinweise"}
+						{mode === "recurring"
+							? `3. ${t("create.section.notes")}`
+							: `2. ${t("create.section.notes")}`}
 					</h2>
 					<label>
-						Hinweis für den Abholer (optional)
+						{t("create.noteLabel")}
 						<textarea
 							value={note}
 							onChange={(e) => setNote(e.target.value)}
 							rows={2}
-							placeholder="z. B. im Hof, klingeln bei Müller…"
+							placeholder={t("create.notePlaceholder")}
 							maxLength={500}
 						/>
 					</label>
@@ -405,65 +417,65 @@ export function CreateOffer() {
 
 				<section className="form-section address-picker-section">
 					<h2 className="form-section-title">
-						{mode === "recurring" ? "4. Adresse" : "3. Adresse"}
+						{mode === "recurring"
+							? `4. ${t("create.section.address")}`
+							: `3. ${t("create.section.address")}`}
 					</h2>
 					<p className="muted small form-section-hint">
 						{mode === "recurring"
-							? "Volle Adresse sieht nur der gewählte Abholer. Stadtteil ist öffentlich."
-							: "Volle Adresse bleibt privat bis zur Annahme. Stadtteil ist öffentlich."}
+							? t("create.addressHint.recurring")
+							: t("create.addressHint.once")}
 					</p>
 
 					{savedAddresses.length > 0 && (
 						<label>
-							Gespeicherte Adresse
+							{t("create.savedAddress")}
 							<select
 								value={selectedAddressId}
 								onChange={(e) => onSelectSaved(e.target.value)}
 							>
-								<option value="">— manuell eingeben —</option>
+								<option value="">{t("create.manualAddress")}</option>
 								{savedAddresses.map((a) => (
 									<option key={a.id} value={a.id}>
 										{a.label || a.address_text}
-										{a.is_default ? " (Standard)" : ""}
+										{a.is_default ? ` ${t("create.defaultSuffix")}` : ""}
 									</option>
 								))}
 							</select>
 							<span className="muted small">
-								Verwalten unter{" "}
-								<Link to="/profil">Konto → Adressen</Link>
+								<Link to="/profil">{t("create.manageAddresses")}</Link>
 							</span>
 						</label>
 					)}
 
 					{savedAddresses.length === 0 && (
 						<p className="muted small address-picker-tip">
-							Tipp: Adressen im{" "}
-							<Link to="/profil">Konto</Link> speichern – dann sind sie hier
-							per Klick wählbar und die Standardadresse wird vorausgefüllt.
+							{t("create.addressTip")}{" "}
+							<Link to="/profil">{t("nav.account")}</Link>
 						</p>
 					)}
 
 					<label>
 						{mode === "recurring"
-							? "Volle Adresse (nur für den gewählten Abholer)"
-							: "Volle Adresse (privat bis zur Annahme)"}
+							? t("create.fullAddress.recurring")
+							: t("create.fullAddress.once")}
 						<input
 							value={addressText}
 							onChange={(e) => {
 								setAddressText(e.target.value);
 								setSelectedAddressId("");
 							}}
-							placeholder="Musterstraße 1, 10115 Berlin"
+							placeholder={t("create.addressPlaceholder")}
 							required
 							autoComplete="street-address"
 							aria-invalid={attempted && missingAddress}
 						/>
 						{attempted && missingAddress && (
-							<span className="field-error">Adresse angeben.</span>
+							<span className="field-error">{t("create.addressRequired")}</span>
 						)}
 					</label>
 					<label>
-						Stadtteil / Gegend (öffentlich)
+						{t("create.areaLabel")}
 						<AreaSelect
 							value={addressHint}
 							required
@@ -473,14 +485,9 @@ export function CreateOffer() {
 								setSelectedAddressId("");
 							}}
 						/>
-						<span className="muted small">
-							Auf der Karte sichtbar – tippen zum Suchen, z. B. „Linden“
-							oder „Hannover“.
-						</span>
+						<span className="muted small">{t("create.areaHelp")}</span>
 						{attempted && missingArea && (
-							<span className="field-error">
-								Stadtteil / Gegend wählen.
-							</span>
+							<span className="field-error">{t("create.areaRequired")}</span>
 						)}
 					</label>
 					<label className="checkbox-row">
@@ -489,18 +496,18 @@ export function CreateOffer() {
 							checked={saveAsNew}
 							onChange={(e) => setSaveAsNew(e.target.checked)}
 						/>
-						<span>Diese Adresse im Konto speichern</span>
+						<span>{t("create.saveAddress")}</span>
 					</label>
 				</section>
 
 				<section className="form-section">
 					<h2 className="form-section-title">
-						{mode === "recurring" ? "5. Standort auf der Karte" : "4. Standort auf der Karte"}
+						{mode === "recurring"
+							? `5. ${t("create.section.map")}`
+							: `4. ${t("create.section.map")}`}
 					</h2>
 					<div className="form-map">
-						<p className="label">
-							Adresse suchen, auf die Karte tippen oder ◎ für deinen Standort
-						</p>
+						<p className="label">{t("create.mapLabel")}</p>
 						<div className="form-map-inner">
 							<OfferMap
 								offers={[]}
@@ -515,7 +522,7 @@ export function CreateOffer() {
 								onLocationResolved={({ lat, lng, label }) => {
 									setPick([lat, lng]);
 									setSelectedAddressId("");
-									if (label && label !== "Mein Standort") {
+									if (label && label !== myLocationLabel) {
 										setAddressText(label);
 										if (!addressHint || !isPublicArea(addressHint)) {
 											const suggested = suggestPublicArea(label);
@@ -528,7 +535,10 @@ export function CreateOffer() {
 						</div>
 						{pick ? (
 							<p className="muted small map-pin-status">
-								Standort: {pick[0].toFixed(5)}, {pick[1].toFixed(5)}
+								{t("create.pinStatus", {
+									lat: pick[0].toFixed(5),
+									lng: pick[1].toFixed(5),
+								})}
 							</p>
 						) : (
 							<p
@@ -539,8 +549,8 @@ export function CreateOffer() {
 								}
 							>
 								{attempted && missingPin
-									? "Setz bitte noch einen Punkt auf der Karte."
-									: "Noch kein Punkt auf der Karte."}
+									? t("create.pinError")
+									: t("create.noPin")}
 							</p>
 						)}
 					</div>
@@ -556,10 +566,15 @@ export function CreateOffer() {
 						title={publishBlockedReason ?? undefined}
 					>
 						{saving
-							? "Wird veröffentlicht…"
+							? t("create.submitting")
 							: mode === "recurring"
-								? `Wöchentlich online stellen (${centsToEuroDe(totalCents)} € · ${weekdayLabel(weekday)})`
-								: `Angebot online stellen (${centsToEuroDe(totalCents)} €)`}
+								? t("create.submit.recurring", {
+										total: centsToEuroDe(totalCents),
+										weekday: weekdayLabel(weekday),
+									})
+								: t("create.submit.once", {
+										total: centsToEuroDe(totalCents),
+									})}
 					</button>
 					{!canPublish && !saving && (
 						<p className="muted small publish-hint">{publishBlockedReason}</p>

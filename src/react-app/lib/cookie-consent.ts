@@ -9,6 +9,8 @@
  * Marketing trackers are not used.
  */
 
+import { t } from "../i18n/translate";
+
 export const COOKIE_CONSENT_KEY = "pfloop-cookie-consent";
 export const COOKIE_CONSENT_VERSION = 1 as const;
 export const COOKIE_CONSENT_EVENT = "pfloop:cookie-consent";
@@ -36,36 +38,36 @@ export type CookieCategoryMeta = {
 	examples: string[];
 };
 
-export const COOKIE_CATEGORIES: readonly CookieCategoryMeta[] = [
-	{
-		id: "necessary",
-		label: "Notwendig",
-		description:
-			"Erforderlich für den sicheren Betrieb: Login-Sitzung, Speichern deiner Cookie-Wahl, Grundfunktionen der App.",
-		required: true,
-		examples: [
-			"Sitzungs-Cookie (Login, httpOnly)",
-			"Cookie-Einwilligung (localStorage)",
-			"Service-Worker / Offline-Cache der PWA",
-		],
-	},
-	{
-		id: "preferences",
-		label: "Präferenzen",
-		description:
-			"Speichert optionale Einstellungen auf deinem Gerät, z. B. ob der Installations-Hinweis ausgeblendet wurde.",
-		required: false,
-		examples: ["Installations-Hinweis ausblenden"],
-	},
-	{
-		id: "analytics",
-		label: "Statistik",
-		description:
-			"Hilft uns, aggregierte Nutzung zu verstehen (datenschutzfreundliche Messung, z. B. Cloudflare Web Analytics). Keine Werbung, kein Verkauf von Profilen.",
-		required: false,
-		examples: ["Cloudflare Web Analytics (falls aktiv)"],
-	},
-] as const;
+/** Locale-aware cookie category metadata for banners and policy. */
+export function getCookieCategories(): CookieCategoryMeta[] {
+	return [
+		{
+			id: "necessary",
+			label: t("cookies.cat.necessary.label"),
+			description: t("cookies.cat.necessary.desc"),
+			required: true,
+			examples: [
+				t("cookies.cat.necessary.ex1"),
+				t("cookies.cat.necessary.ex2"),
+				t("cookies.cat.necessary.ex3"),
+			],
+		},
+		{
+			id: "preferences",
+			label: t("cookies.cat.preferences.label"),
+			description: t("cookies.cat.preferences.desc"),
+			required: false,
+			examples: [t("cookies.cat.preferences.ex1")],
+		},
+		{
+			id: "analytics",
+			label: t("cookies.cat.analytics.label"),
+			description: t("cookies.cat.analytics.desc"),
+			required: false,
+			examples: [t("cookies.cat.analytics.ex1")],
+		},
+	];
+}
 
 export function defaultConsent(
 	partial?: Partial<Pick<CookieConsentState, "preferences" | "analytics">>,

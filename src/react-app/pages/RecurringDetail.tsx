@@ -12,6 +12,7 @@ import {
 	type RecurringDetail as RecurringDetailType,
 } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
+import { useT } from "../i18n";
 import { mapsLinks } from "../lib/format";
 import {
 	offerStatusClass,
@@ -26,6 +27,7 @@ import { WeeklyTips } from "../components/WeeklyTips";
 export function RecurringDetail() {
 	const { id } = useParams<{ id: string }>();
 	const { user } = useAuth();
+	const t = useT();
 	const navigate = useNavigate();
 	const [offer, setOffer] = useState<RecurringDetailType | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -42,12 +44,12 @@ export function RecurringDetail() {
 			setOffer(data.offer);
 			setLoadError(null);
 		} catch (e) {
-			setLoadError(getErrorMessage(e, "Laden hat nicht geklappt"));
+			setLoadError(getErrorMessage(e, t("recurring.loadFailed")));
 			setOffer(null);
 		} finally {
 			setLoading(false);
 		}
-	}, [id]);
+	}, [id, t]);
 
 	useEffect(() => {
 		setLoading(true);
@@ -66,7 +68,7 @@ export function RecurringDetail() {
 			await applyToRecurring(id, applyMsg.trim() || undefined);
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Bewerbung hat nicht geklappt"));
+			setError(getErrorMessage(e, t("recurring.actionFailed")));
 		} finally {
 			setBusy(null);
 		}
@@ -80,7 +82,7 @@ export function RecurringDetail() {
 			await withdrawRecurringApplication(id);
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Zurückziehen hat nicht geklappt"));
+			setError(getErrorMessage(e, t("recurring.withdrawFailed")));
 		} finally {
 			setBusy(null);
 		}
@@ -88,11 +90,7 @@ export function RecurringDetail() {
 
 	async function onSelect(applicantId: string) {
 		if (!id) return;
-		if (
-			!confirm(
-				"Diesen Abholer nehmen? Danach ist das Angebot für andere weg, bis du ihn wieder freigibst.",
-			)
-		) {
+		if (!confirm(t("recurring.confirm.select"))) {
 			return;
 		}
 		setBusy(`select-${applicantId}`);
@@ -101,7 +99,7 @@ export function RecurringDetail() {
 			await selectRecurringApplicant(id, { applicant_id: applicantId });
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Auswahl hat nicht geklappt"));
+			setError(getErrorMessage(e, t("recurring.actionFailed")));
 		} finally {
 			setBusy(null);
 		}
@@ -109,11 +107,7 @@ export function RecurringDetail() {
 
 	async function onUnassign() {
 		if (!id) return;
-		if (
-			!confirm(
-				"Abholer freigeben? Dann taucht das Angebot wieder auf der Karte auf und andere können sich bewerben.",
-			)
-		) {
+		if (!confirm(t("recurring.confirm.unassign"))) {
 			return;
 		}
 		setBusy("unassign");
@@ -122,7 +116,7 @@ export function RecurringDetail() {
 			await unassignRecurringCollector(id);
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Freigabe hat nicht geklappt"));
+			setError(getErrorMessage(e, t("recurring.actionFailed")));
 		} finally {
 			setBusy(null);
 		}
@@ -130,14 +124,14 @@ export function RecurringDetail() {
 
 	async function onCancel() {
 		if (!id) return;
-		if (!confirm("Wöchentliches Angebot wirklich stornieren?")) return;
+		if (!confirm(t("recurring.confirm.cancel"))) return;
 		setBusy("cancel");
 		setError(null);
 		try {
 			await cancelRecurringOffer(id);
 			await load();
 		} catch (e) {
-			setError(getErrorMessage(e, "Stornieren hat nicht geklappt"));
+			setError(getErrorMessage(e, t("recurring.actionFailed")));
 		} finally {
 			setBusy(null);
 		}
@@ -149,16 +143,16 @@ export function RecurringDetail() {
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
 		} catch {
-			setError("Kopieren hat nicht geklappt");
+			setError(t("recurring.copyFailed"));
 		}
 	}
 
 	if (!id) {
 		return (
 			<div className="page detail-page">
-				<p className="banner error">Hier fehlt die Angebots-ID.</p>
+				<p className="banner error">{t("detail.missingId")}</p>
 				<p className="back">
-					<Link to="/">Zurück zur Karte</Link>
+					<Link to="/">{t("detail.backToMap")}</Link>
 				</p>
 			</div>
 		);
@@ -168,23 +162,23 @@ export function RecurringDetail() {
 		return (
 			<div className="page detail-page">
 				<p className="back">
-					<Link to="/">← Karte</Link>
+					<Link to="/">{t("common.backMap")}</Link>
 				</p>
 				<div className="detail-card detail-skeleton" aria-busy="true">
 					<div className="detail-hero">
-						<span className="label">Pfandwert (ca.)</span>
+						<span className="label">{t("recurring.label.pfand")}</span>
 						<span className="skeleton skeleton-title" />
 					</div>
 					<div className="detail-row">
-						<span className="label">Status</span>
+						<span className="label">{t("recurring.label.status")}</span>
 						<span className="skeleton skeleton-text short" />
 					</div>
 					<div className="detail-row">
-						<span className="label">Wochentag</span>
+						<span className="label">{t("recurring.label.weekday")}</span>
 						<span className="skeleton skeleton-text short" />
 					</div>
 					<div className="skeleton skeleton-block" />
-					<p className="muted small">Wöchentliches Angebot wird geladen…</p>
+					<p className="muted small">{t("recurring.loading")}</p>
 				</div>
 			</div>
 		);
@@ -194,10 +188,10 @@ export function RecurringDetail() {
 		return (
 			<div className="page detail-page">
 				<p className="back">
-					<Link to="/">← Karte</Link>
+					<Link to="/">{t("common.backMap")}</Link>
 				</p>
 				<p className="banner error">
-					{loadError ?? "Das Angebot ließ sich nicht laden."}
+					{loadError ?? t("detail.notFound")}
 				</p>
 				<div className="actions sticky-actions">
 					<button
@@ -208,10 +202,10 @@ export function RecurringDetail() {
 							void load();
 						}}
 					>
-						Nochmal versuchen
+						{t("common.retry")}
 					</button>
 					<Link className="btn" to="/">
-						Zur Karte
+						{t("common.toMap")}
 					</Link>
 				</div>
 			</div>
@@ -230,17 +224,22 @@ export function RecurringDetail() {
 	const canWithdraw =
 		!offer.is_own && myApp?.status === "pending" && offer.status === "open";
 	const anyBusy = busy !== null;
+	const timeSuffix = offer.time_hint
+		? t("recurring.timeSuffix", { time: offer.time_hint })
+		: "";
+	const floorCents =
+		offer.pfand_floor_cents ?? recurringFloorCents(offer.pfand_value_cents);
 
 	return (
 		<div className="page detail-page">
 			<p className="back">
-				<Link to="/">← Karte</Link>
+				<Link to="/">{t("common.backMap")}</Link>
 			</p>
 
 			<header className="page-header">
-				<h1>{offer.title || "Wöchentliches Pfand"}</h1>
+				<h1>{offer.title || t("offer.recurringFallbackTitle")}</h1>
 				<p className="page-meta muted small">
-					<span className="badge">Wöchentlich</span>{" "}
+					<span className="badge">{t("recurring.badge")}</span>{" "}
 					{weekdayLabel(offer.weekday)}
 					{offer.time_hint ? ` · ${offer.time_hint}` : ""}
 				</p>
@@ -255,36 +254,28 @@ export function RecurringDetail() {
 				<div className="status-banners">
 					<div className="banner info handover-hint status-banner">
 						{offer.is_own && offer.status === "open" && (
-							<>
-								<strong>Als Nächstes:</strong> Warte auf Bewerbungen und such
-								dir jemanden aus. Danach ist das Angebot von der Karte weg.
-							</>
+							<>{t("recurring.banner.next")}</>
 						)}
 						{offer.is_own && offer.status === "assigned" && (
 							<>
-								<strong>Abholer steht fest:</strong> Andere sehen das Angebot
-								nicht mehr. Freigeben, wenn wieder Bewerbungen rein sollen.
-								Stell das Pfand bitte immer zur vereinbarten Zeit bereit.
+								{t("recurring.banner.assigned", {
+									weekday: weekdayLabel(offer.weekday),
+									time: timeSuffix,
+								})}
 							</>
 						)}
 						{offer.is_assigned_collector && (
 							<>
-								<strong>Du holst regelmäßig ab:</strong> Die Adresse siehst du.
-								Termin: {weekdayLabel(offer.weekday)}
-								{offer.time_hint ? `, ${offer.time_hint}` : ""}. Melde die
-								Abholung bitte selbst in der App – sonst blockiert eine offene
-								Abholung neue Angebote.
+								{t("recurring.banner.youCollect", {
+									weekday: weekdayLabel(offer.weekday),
+									time: timeSuffix,
+								})}
 							</>
 						)}
 						{!offer.is_own &&
 							!offer.is_assigned_collector &&
 							offer.status === "open" && (
-								<>
-									<strong>Bewerben:</strong> Der Inserent sucht jemanden aus.
-									Die Adresse siehst du erst, wenn du dran bist. Der gelistete
-									Pfandwert ist eine <strong>Schätzung</strong> – realistisch
-									kann er bis −50 % darunter liegen.
-								</>
+								<>{t("recurring.banner.apply")}</>
 							)}
 					</div>
 				</div>
@@ -298,50 +289,49 @@ export function RecurringDetail() {
 
 			<div className="detail-card">
 				<div className="detail-hero detail-row">
-					<span className="label">Pfand-Schätzung (pro Woche)</span>
+					<span className="label">{t("recurring.estimateLabel")}</span>
 					<strong className="pfand detail-hero-value">
-						ca. {centsToEuro(offer.pfand_value_cents)} €
+						{t("recurring.estimateValue", {
+							value: centsToEuro(offer.pfand_value_cents),
+						})}
 					</strong>
 				</div>
 				<p className="muted small detail-pfand-floor">
-					Künftiges Pfand schwankt – realistisch ab ca.{" "}
-					{centsToEuro(
-						offer.pfand_floor_cents ??
-							recurringFloorCents(offer.pfand_value_cents),
-					)}{" "}
-					€ (bis −50 %).
+					{t("recurring.floorHint", {
+						floor: centsToEuro(floorCents),
+					})}
 				</p>
 
 				<div className="detail-section">
 					<div className="detail-desc">
-						<span className="label">Typische Stückliste (Schätzung)</span>
+						<span className="label">{t("recurring.itemsLabel")}</span>
 						<PfandItemsList items={offer.items ?? []} />
 					</div>
 				</div>
 
 				<div className="detail-section detail-facts">
 					<div className="detail-row">
-						<span className="label">Status</span>
+						<span className="label">{t("recurring.label.status")}</span>
 						<span className={offerStatusClass(offer.status)}>
 							{recurringStatusLabel(offer.status)}
 						</span>
 					</div>
 					<div className="detail-row">
-						<span className="label">Wochentag</span>
+						<span className="label">{t("recurring.label.weekday")}</span>
 						<span>
 							{weekdayLabel(offer.weekday)}
 							{offer.time_hint ? ` · ${offer.time_hint}` : ""}
 						</span>
 					</div>
 					<div className="detail-row">
-						<span className="label">Gebiet</span>
-						<span>{offer.address_hint || "—"}</span>
+						<span className="label">{t("detail.label.area")}</span>
+						<span>{offer.address_hint || t("common.emDash")}</span>
 					</div>
 				</div>
 
 				{offer.address_text && (
 					<div className="detail-section detail-desc address-block">
-						<span className="label">Adresse</span>
+						<span className="label">{t("detail.address")}</span>
 						<p className="address">{offer.address_text}</p>
 						<div className="address-actions">
 							<button
@@ -349,7 +339,7 @@ export function RecurringDetail() {
 								className="btn btn-sm"
 								onClick={() => void onCopyAddress(offer.address_text!)}
 							>
-								{copied ? "Kopiert!" : "Adresse kopieren"}
+								{copied ? t("detail.copied") : t("detail.copyAddress")}
 							</button>
 							{maps && (
 								<>
@@ -359,7 +349,7 @@ export function RecurringDetail() {
 										target="_blank"
 										rel="noopener noreferrer"
 									>
-										Google Maps
+										{t("maps.google")}
 									</a>
 									<a
 										className="btn btn-sm"
@@ -367,7 +357,7 @@ export function RecurringDetail() {
 										target="_blank"
 										rel="noopener noreferrer"
 									>
-										Apple Karten
+										{t("maps.apple")}
 									</a>
 								</>
 							)}
@@ -377,7 +367,7 @@ export function RecurringDetail() {
 
 				{offer.description && (
 					<div className="detail-section detail-desc">
-						<span className="label">Hinweis</span>
+						<span className="label">{t("detail.note")}</span>
 						<p className="detail-note" style={{ whiteSpace: "pre-wrap" }}>
 							{offer.description}
 						</p>
@@ -391,7 +381,7 @@ export function RecurringDetail() {
 
 			{myApp && !offer.is_own && (
 				<div className="banner info status-banner">
-					<strong>Deine Bewerbung:</strong>{" "}
+					<strong>{t("recurring.myApp")}</strong>{" "}
 					{recurringAppStatusLabel(myApp.status)}
 					{myApp.message ? ` — „${myApp.message}“` : ""}
 				</div>
@@ -400,16 +390,18 @@ export function RecurringDetail() {
 			{offer.is_own && offer.applications && (
 				<section className="panel-block panel-section applicants-section">
 					<div className="panel-head">
-						<h2>Bewerbungen</h2>
+						<h2>{t("recurring.appsTitle")}</h2>
 						<span className="muted small panel-head-meta">
 							{offer.applications.length}
 						</span>
 					</div>
 					{offer.applications.length === 0 ? (
 						<div className="empty-state">
-							<p className="empty-state-title">Noch keine Bewerbungen</p>
+							<p className="empty-state-title">
+								{t("recurring.appsEmptyTitle")}
+							</p>
 							<p className="empty-state-text">
-								Sobald sich jemand meldet, erscheint die Person hier.
+								{t("recurring.appsEmptyText")}
 							</p>
 						</div>
 					) : (
@@ -437,8 +429,8 @@ export function RecurringDetail() {
 												onClick={() => void onSelect(a.applicant_id)}
 											>
 												{busy === `select-${a.applicant_id}`
-													? "Wird gewählt…"
-													: "Als Abholer nehmen"}
+													? t("recurring.select.busy")
+													: t("recurring.select")}
 											</button>
 										</div>
 									)}
@@ -453,24 +445,19 @@ export function RecurringDetail() {
 				{canApply && (
 					<div className="apply-form">
 						<div className="banner info apply-threshold-hint">
-							<strong>Pfand-Schätzung &amp; Schwankung:</strong> ca.{" "}
-							{centsToEuro(offer.pfand_value_cents)} € pro Woche – künftiges
-							Pfand kennt niemand genau. Rechne mit bis zu{" "}
-							<strong>−50 %</strong> (realistisch ab ca.{" "}
-							{centsToEuro(
-								offer.pfand_floor_cents ??
-									recurringFloorCents(offer.pfand_value_cents),
-							)}{" "}
-							€). Das ist keine feste Zusicherung einer Auszahlung.
+							{t("recurring.applyThreshold", {
+								estimate: centsToEuro(offer.pfand_value_cents),
+								floor: centsToEuro(floorCents),
+							})}
 						</div>
 						<label>
-							Kurze Nachricht (optional)
+							{t("recurring.messageLabel")}
 							<textarea
 								value={applyMsg}
 								onChange={(e) => setApplyMsg(e.target.value)}
 								rows={2}
 								maxLength={400}
-								placeholder="Kurz vorstellen…"
+								placeholder={t("recurring.messagePlaceholder")}
 							/>
 						</label>
 						<button
@@ -479,7 +466,9 @@ export function RecurringDetail() {
 							disabled={anyBusy}
 							onClick={() => void onApply()}
 						>
-							{busy === "apply" ? "Wird gesendet…" : "Bewerben"}
+							{busy === "apply"
+								? t("recurring.apply.busy")
+								: t("recurring.apply")}
 						</button>
 					</div>
 				)}
@@ -490,7 +479,7 @@ export function RecurringDetail() {
 						disabled={anyBusy}
 						onClick={() => void onWithdraw()}
 					>
-						{busy === "withdraw" ? "…" : "Bewerbung zurückziehen"}
+						{busy === "withdraw" ? "…" : t("recurring.withdraw")}
 					</button>
 				)}
 				{offer.is_own && offer.status === "assigned" && (
@@ -500,7 +489,7 @@ export function RecurringDetail() {
 						disabled={anyBusy}
 						onClick={() => void onUnassign()}
 					>
-						{busy === "unassign" ? "…" : "Abholer freigeben (wieder sichtbar)"}
+						{busy === "unassign" ? "…" : t("recurring.unassign")}
 					</button>
 				)}
 				{offer.is_own &&
@@ -511,13 +500,11 @@ export function RecurringDetail() {
 							disabled={anyBusy}
 							onClick={() => void onCancel()}
 						>
-							{busy === "cancel" ? "…" : "Wöchentliches Angebot stornieren"}
+							{busy === "cancel" ? "…" : t("recurring.cancel")}
 						</button>
 					)}
 				{offer.status === "cancelled" && (
-					<p className="muted action-done">
-						Dieses wöchentliche Angebot wurde storniert.
-					</p>
+					<p className="muted action-done">{t("recurring.cancelledDone")}</p>
 				)}
 			</div>
 		</div>

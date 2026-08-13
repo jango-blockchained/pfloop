@@ -1,3 +1,5 @@
+import { t } from "../i18n/translate";
+
 export type OfferItem = {
 	item_type: string;
 	quantity: number;
@@ -174,7 +176,7 @@ async function errorFromResponse(res: Response): Promise<string> {
 	if (msg) return msg;
 
 	if (res.status === 401) return "Bitte melde dich an.";
-	if (res.status === 403) return "Dafür hast du keine Berechtigung.";
+	if (res.status === 403) return t("api.forbidden");
 	if (res.status === 404) return "Nicht gefunden.";
 	if (res.status === 409) return "Hat sich gerade geändert – bitte Seite neu laden.";
 	if (res.status === 422) return "Die Angaben passen so nicht.";
@@ -224,7 +226,11 @@ export async function fetchMe() {
 	return json<{ user: AuthUser | null }>(await apiFetch("/api/auth/me"));
 }
 
-export async function requestMagicLink(email: string, display_name?: string) {
+export async function requestMagicLink(
+	email: string,
+	display_name?: string,
+	locale?: string,
+) {
 	return json<{
 		ok: boolean;
 		message: string;
@@ -233,7 +239,11 @@ export async function requestMagicLink(email: string, display_name?: string) {
 	}>(
 		await apiFetch("/api/auth/magic-link", {
 			method: "POST",
-			body: JSON.stringify({ email, display_name }),
+			body: JSON.stringify({
+				email,
+				display_name,
+				...(locale ? { locale } : {}),
+			}),
 		}),
 	);
 }

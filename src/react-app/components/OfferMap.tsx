@@ -29,6 +29,7 @@ import { formatItemsShort, formatRecurringPfandLabel } from "../lib/pfand-ui";
 import { weekdayLabel } from "../lib/labels";
 import { searchAddress, type GeocodeResult } from "../lib/geocode";
 import { DEFAULT_MAP_CENTER } from "../hooks/useGeolocation";
+import { useT } from "../i18n";
 
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
@@ -79,14 +80,6 @@ type Props = {
 	}) => void;
 	className?: string;
 };
-
-const recurringIcon = L.divIcon({
-	className: "map-marker-recurring",
-	html: `<span class="map-marker-recurring-inner" title="Wöchentlich">↻</span>`,
-	iconSize: [28, 28],
-	iconAnchor: [14, 28],
-	popupAnchor: [0, -24],
-});
 
 function BoundsWatcher({
 	onBoundsChange,
@@ -164,8 +157,9 @@ function ClickPicker({
 }
 
 const OfferMarker = memo(function OfferMarker({ offer }: { offer: PublicOffer }) {
+	const t = useT();
 	const items = formatItemsShort(offer.items);
-	const title = offer.title?.trim() || items || "Pfand-Angebot";
+	const title = offer.title?.trim() || items || t("offer.fallbackTitle");
 	const pfand = centsToEuro(offer.pfand_value_cents);
 
 	return (
@@ -174,17 +168,19 @@ const OfferMarker = memo(function OfferMarker({ offer }: { offer: PublicOffer })
 				<div className="map-popup">
 					<div className="map-popup-head">
 						<div className="map-popup-value">{pfand} €</div>
-						<span className="map-popup-kind muted small">Pfand</span>
+						<span className="map-popup-kind muted small">
+							{t("map.popup.kindOnce")}
+						</span>
 					</div>
 					<strong className="map-popup-title">{title}</strong>
 					{items && offer.title?.trim() ? (
 						<div className="map-popup-items muted small">{items}</div>
 					) : null}
 					<div className="map-popup-hint muted small">
-						{offer.address_hint || "Ungefähre Lage"}
+						{offer.address_hint || t("map.approxLocation")}
 					</div>
 					<Link className="map-popup-link btn btn-sm btn-primary" to={`/angebot/${offer.id}`}>
-						Details ansehen
+						{t("map.popup.details")}
 					</Link>
 				</div>
 			</Popup>
@@ -197,10 +193,23 @@ const RecurringMarker = memo(function RecurringMarker({
 }: {
 	offer: PublicRecurringOffer;
 }) {
+	const t = useT();
 	const items = formatItemsShort(offer.items);
-	const title = offer.title?.trim() || items || "Wöchentliches Pfand";
+	const title =
+		offer.title?.trim() || items || t("offer.recurringFallbackTitle");
 	const pfand = formatRecurringPfandLabel(offer.pfand_value_cents);
 	const day = weekdayLabel(offer.weekday);
+	const recurringIcon = useMemo(
+		() =>
+			L.divIcon({
+				className: "map-marker-recurring",
+				html: `<span class="map-marker-recurring-inner" title="${t("map.marker.recurringTitle")}">↻</span>`,
+				iconSize: [28, 28],
+				iconAnchor: [14, 28],
+				popupAnchor: [0, -24],
+			}),
+		[t],
+	);
 
 	return (
 		<Marker position={[offer.lat, offer.lng]} icon={recurringIcon}>
@@ -208,7 +217,9 @@ const RecurringMarker = memo(function RecurringMarker({
 				<div className="map-popup map-popup-recurring">
 					<div className="map-popup-head">
 						<div className="map-popup-value">{pfand}</div>
-						<span className="map-popup-kind badge">Wöchentlich</span>
+						<span className="map-popup-kind badge">
+							{t("map.popup.recurringBadge")}
+						</span>
 					</div>
 					<strong className="map-popup-title">{title}</strong>
 					<div className="map-popup-items muted small">
@@ -219,7 +230,7 @@ const RecurringMarker = memo(function RecurringMarker({
 						<div className="map-popup-hint muted small">{offer.address_hint}</div>
 					) : null}
 					<Link className="map-popup-link btn btn-sm btn-primary" to={`/woche/${offer.id}`}>
-						Details & bewerben
+						{t("map.popup.recurringDetails")}
 					</Link>
 				</div>
 			</Popup>
@@ -234,6 +245,7 @@ function MapToolbar({
 	onFly: (t: MapFlyTarget) => void;
 	onLocationResolved?: Props["onLocationResolved"];
 }) {
+	const t = useT();
 	const listId = useId();
 	const inputId = useId();
 	const statusId = useId();
@@ -259,48 +271,51 @@ function MapToolbar({
 		return () => document.removeEventListener("mousedown", onDoc);
 	}, []);
 
-	const runSearch = useCallback(async (q: string) => {
-		abortRef.current?.abort();
-		if (q.trim().length < 3) {
-			setResults([]);
-			setOpen(false);
-			setSearching(false);
-			setActiveIdx(-1);
-			setMsg(null);
-			return;
-		}
-		const ac = new AbortController();
-		abortRef.current = ac;
-		setSearching(true);
-		setMsg(null);
-		try {
-			const hits = await searchAddress(q, { signal: ac.signal, limit: 6 });
-			if (ac.signal.aborted) return;
-			setResults(hits);
-			setOpen(true);
-			setActiveIdx(hits.length > 0 ? 0 : -1);
-			if (hits.length === 0) {
-				setMsg("Nichts gefunden – versuch einen anderen Suchbegriff");
-				setMsgTone("info");
+	const runSearch = useCallback(
+		async (q: string) => {
+			abortRef.current?.abort();
+			if (q.trim().length < 3) {
+				setResults([]);
+				setOpen(false);
+				setSearching(false);
+				setActiveIdx(-1);
+				setMsg(null);
+				return;
 			}
-		} catch (e) {
-			if ((e as Error).name === "AbortError") return;
-			setMsg(e instanceof Error ? e.message : "Suche hat nicht geklappt");
-			setMsgTone("error");
-			setResults([]);
-			setOpen(false);
-			setActiveIdx(-1);
-		} finally {
-			if (!ac.signal.aborted) setSearching(false);
-		}
-	}, []);
+			const ac = new AbortController();
+			abortRef.current = ac;
+			setSearching(true);
+			setMsg(null);
+			try {
+				const hits = await searchAddress(q, { signal: ac.signal, limit: 6 });
+				if (ac.signal.aborted) return;
+				setResults(hits);
+				setOpen(true);
+				setActiveIdx(hits.length > 0 ? 0 : -1);
+				if (hits.length === 0) {
+					setMsg(t("map.search.none"));
+					setMsgTone("info");
+				}
+			} catch (e) {
+				if ((e as Error).name === "AbortError") return;
+				setMsg(e instanceof Error ? e.message : t("map.search.failed"));
+				setMsgTone("error");
+				setResults([]);
+				setOpen(false);
+				setActiveIdx(-1);
+			} finally {
+				if (!ac.signal.aborted) setSearching(false);
+			}
+		},
+		[t],
+	);
 
 	useEffect(() => {
-		const t = window.setTimeout(() => {
+		const timer = window.setTimeout(() => {
 			void runSearch(query);
 		}, 400);
 		return () => {
-			window.clearTimeout(t);
+			window.clearTimeout(timer);
 			// cancel in-flight when query changes / unmount
 			abortRef.current?.abort();
 		};
@@ -353,12 +368,12 @@ function MapToolbar({
 
 	function relocate() {
 		if (!navigator.geolocation) {
-			setMsg("Standort geht auf diesem Gerät nicht");
+			setMsg(t("map.locate.unsupported"));
 			setMsgTone("error");
 			return;
 		}
 		setLocating(true);
-		setMsg("Standort wird ermittelt…");
+		setMsg(t("map.locate.progress"));
 		setMsgTone("info");
 
 		/**
@@ -388,7 +403,7 @@ function MapToolbar({
 			const acc = pos.coords.accuracy;
 			const zoom = acc <= GOOD_ACCURACY_M ? 16 : acc <= ACCEPTABLE_ACCURACY_M ? 15 : 13;
 			onFly({ lat, lng, zoom, key: Date.now() });
-			onLocationResolved?.({ lat, lng, label: "Mein Standort" });
+			onLocationResolved?.({ lat, lng, label: t("map.locate.myLocation") });
 		};
 
 		const doneOk = () => {
@@ -403,14 +418,13 @@ function MapToolbar({
 			if (finished) return;
 			finished = true;
 			cleanup();
-			let text = "Standort konnte nicht ermittelt werden";
+			let text = t("map.locate.failed");
 			if (err.code === err.PERMISSION_DENIED) {
-				text =
-					"Standort blockiert – in den Browser-Einstellungen freigeben";
+				text = t("map.locate.denied");
 			} else if (err.code === err.TIMEOUT) {
-				text = "Standort dauert zu lange – nochmal versuchen";
+				text = t("map.locate.timeout");
 			} else if (err.code === err.POSITION_UNAVAILABLE) {
-				text = "Standort gerade nicht verfügbar";
+				text = t("map.locate.unavailable");
 			}
 			setMsg(text);
 			setMsgTone("error");
@@ -441,7 +455,7 @@ function MapToolbar({
 
 				// Coarse first fix (common on first click) → refine a few seconds
 				if (pos.coords.accuracy > GOOD_ACCURACY_M) {
-					setMsg("Standort wird verfeinert…");
+					setMsg(t("map.locate.refining"));
 					watchId = navigator.geolocation.watchPosition(
 						(better) => {
 							consider(better);
@@ -505,20 +519,20 @@ function MapToolbar({
 					onSubmit={onSubmit}
 					autoComplete="off"
 					role="search"
-					aria-label="Adresse suchen"
+					aria-label={t("map.search.aria")}
 				>
 					<input
 						id={inputId}
 						type="search"
 						className="map-search-input"
-						placeholder="Adresse oder Ort suchen…"
+						placeholder={t("map.search.placeholder")}
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
 						onFocus={() => {
 							if (results.length > 0 || msg) setOpen(true);
 						}}
 						onKeyDown={onKeyDown}
-						aria-label="Adresse suchen"
+						aria-label={t("map.search.aria")}
 						aria-autocomplete="list"
 						aria-controls={listId}
 						aria-expanded={showResultsPanel}
@@ -528,7 +542,7 @@ function MapToolbar({
 					/>
 					{searching && (
 						<span className="map-search-status" aria-live="polite">
-							Suche…
+							{t("map.search.busy")}
 						</span>
 					)}
 					{showResultsPanel && results.length > 0 && (
@@ -536,7 +550,7 @@ function MapToolbar({
 							id={listId}
 							className="map-search-results"
 							role="listbox"
-							aria-label="Suchergebnisse"
+							aria-label={t("map.search.resultsAria")}
 						>
 							{results.map((r, idx) => (
 								<li
@@ -568,9 +582,9 @@ function MapToolbar({
 					className="map-locate-btn"
 					onClick={relocate}
 					disabled={locating}
-					title="Zu meinem Standort"
+					title={t("map.locate.button")}
 					aria-label={
-						locating ? "Standort wird ermittelt" : "Zu meinem Standort"
+						locating ? t("map.locate.buttonBusy") : t("map.locate.button")
 					}
 					aria-busy={locating}
 				>
@@ -626,8 +640,8 @@ export function OfferMap({
 		[offers, recurringOffers],
 	);
 
-	const onFly = useCallback((t: MapFlyTarget) => {
-		setInternalFly(t);
+	const onFly = useCallback((target: MapFlyTarget) => {
+		setInternalFly(target);
 	}, []);
 
 	return (

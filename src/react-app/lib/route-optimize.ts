@@ -1,3 +1,5 @@
+import { t } from "../i18n/translate";
+
 /** Lat/lng point used for haversine route optimization. */
 export type LatLngPoint = {
 	lat: number;
@@ -71,7 +73,7 @@ export function optimizeStopOrder<T extends LatLngPoint>(
 		};
 	}
 	if (stops.length > 5) {
-		throw new Error("Höchstens 5 Zwischenstopps zum Optimieren");
+		throw new Error(t("route.optimizeMax"));
 	}
 
 	let bestOrder = stops.slice();

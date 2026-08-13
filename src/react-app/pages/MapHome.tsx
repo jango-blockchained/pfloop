@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { OfferMap } from "../components/OfferMap";
+import { useT } from "../i18n";
 import {
 	centsToEuro,
 	collectOffer,
@@ -52,6 +53,7 @@ function roughlyEqualBbox(a: BBox, b: BBox, eps = 1e-5): boolean {
 
 export function MapHome() {
 	const { user, loading: authLoading } = useAuth();
+	const t = useT();
 	const { center, ready: geoReady, error: geoError } = useGeolocation();
 	const [offers, setOffers] = useState<PublicOffer[]>([]);
 	const [recurring, setRecurring] = useState<PublicRecurringOffer[]>([]);
@@ -79,8 +81,8 @@ export function MapHome() {
 	const fetchGenRef = useRef(0);
 
 	useEffect(() => {
-		const t = setInterval(() => setNow(Date.now()), 15_000);
-		return () => clearInterval(t);
+		const timer = setInterval(() => setNow(Date.now()), 15_000);
+		return () => clearInterval(timer);
 	}, []);
 
 	useEffect(() => {
@@ -127,30 +129,35 @@ export function MapHome() {
 		void loadSide();
 	}, [loadSide]);
 
-	const loadOffersForBbox = useCallback(async (bbox: BBox) => {
-		abortRef.current?.abort();
-		const ac = new AbortController();
-		abortRef.current = ac;
-		const gen = ++fetchGenRef.current;
-		lastFetchedBboxRef.current = bbox;
-		setMapLoading(true);
-		try {
-			const [data, rec] = await Promise.all([
-				fetchOffersInBbox(bbox),
-				fetchRecurringInBbox(bbox),
-			]);
-			if (ac.signal.aborted || gen !== fetchGenRef.current) return;
-			setOffers(data.offers);
-			setRecurring(rec.offers);
-			setError(null);
-			setMapLoadedOnce(true);
-		} catch (e) {
-			if (ac.signal.aborted || gen !== fetchGenRef.current) return;
-			setError(e instanceof Error ? e.message : "Karte laden hat nicht geklappt");
-		} finally {
-			if (gen === fetchGenRef.current) setMapLoading(false);
-		}
-	}, []);
+	const loadOffersForBbox = useCallback(
+		async (bbox: BBox) => {
+			abortRef.current?.abort();
+			const ac = new AbortController();
+			abortRef.current = ac;
+			const gen = ++fetchGenRef.current;
+			lastFetchedBboxRef.current = bbox;
+			setMapLoading(true);
+			try {
+				const [data, rec] = await Promise.all([
+					fetchOffersInBbox(bbox),
+					fetchRecurringInBbox(bbox),
+				]);
+				if (ac.signal.aborted || gen !== fetchGenRef.current) return;
+				setOffers(data.offers);
+				setRecurring(rec.offers);
+				setError(null);
+				setMapLoadedOnce(true);
+			} catch (e) {
+				if (ac.signal.aborted || gen !== fetchGenRef.current) return;
+				setError(
+					e instanceof Error ? e.message : t("home.mapLoadFailed"),
+				);
+			} finally {
+				if (gen === fetchGenRef.current) setMapLoading(false);
+			}
+		},
+		[t],
+	);
 
 	const refreshMapPins = useCallback(() => {
 		const bbox = viewportBboxRef.current ?? lastFetchedBboxRef.current;
@@ -177,11 +184,7 @@ export function MapHome() {
 	);
 
 	async function onMarkCollected(offerId: string) {
-		if (
-			!confirm(
-				"Hast du das Pfand abgeholt? Der Inserent muss danach noch bestätigen.",
-			)
-		) {
+		if (!confirm(t("home.confirmCollect"))) {
 			return;
 		}
 		setBusyId(offerId);
@@ -190,18 +193,14 @@ export function MapHome() {
 			await loadSide();
 			refreshMapPins();
 		} catch (e) {
-			setError(e instanceof Error ? e.message : "Melden hat nicht geklappt");
+			setError(e instanceof Error ? e.message : t("home.collectFailed"));
 		} finally {
 			setBusyId(null);
 		}
 	}
 
 	async function onConfirmHandover(offerId: string) {
-		if (
-			!confirm(
-				"Hat der Abholer das Pfand wirklich mitgenommen?",
-			)
-		) {
+		if (!confirm(t("home.confirmHandover"))) {
 			return;
 		}
 		setBusyId(offerId);
@@ -210,7 +209,7 @@ export function MapHome() {
 			await loadSide();
 			refreshMapPins();
 		} catch (e) {
-			setError(e instanceof Error ? e.message : "Bestätigen hat nicht geklappt");
+			setError(e instanceof Error ? e.message : t("home.confirmFailed"));
 		} finally {
 			setBusyId(null);
 		}
@@ -226,12 +225,18 @@ export function MapHome() {
 	const recurringCount = recurring.length;
 	const summaryBits = [
 		mapLoading && !mapLoadedOnce
-			? "Lade Angebote…"
-			: `${openCount + recurringCount} offen in der Nähe`,
-		recurringCount ? `${recurringCount} wöchentlich` : null,
-		user ? `${mine.length + mineRecurring.length} eigene` : null,
+			? t("home.loadingOffers")
+			: t("home.summary.openNearby", { n: openCount + recurringCount }),
+		recurringCount
+			? t("home.summary.recurring", { n: recurringCount })
+			: null,
+		user
+			? t("home.summary.own", { n: mine.length + mineRecurring.length })
+			: null,
 		unfinishedReservations.length
-			? `${unfinishedReservations.length} Abholung offen`
+			? t("home.summary.pickupsOpen", {
+					n: unfinishedReservations.length,
+				})
 			: null,
 	].filter(Boolean);
 
@@ -253,12 +258,12 @@ export function MapHome() {
 				)}
 				{!geoReady && (
 					<div className="map map-loading" role="status" aria-live="polite">
-						Standort wird ermittelt…
+						{t("home.geoLoading")}
 					</div>
 				)}
 				{geoReady && mapLoading && (
 					<p className="map-fetch-status" role="status" aria-live="polite">
-						Angebote werden geladen…
+						{t("home.offersLoading")}
 					</p>
 				)}
 				{bannerError && (
@@ -270,7 +275,7 @@ export function MapHome() {
 								className="btn btn-sm"
 								onClick={() => refreshMapPins()}
 							>
-								Nochmal laden
+								{t("home.reload")}
 							</button>
 						)}
 					</p>
@@ -289,7 +294,7 @@ export function MapHome() {
 					<span className="sheet-grip" aria-hidden />
 					<span className="sheet-summary">
 						<span className="sheet-summary-main">
-							{summaryBits[0] ?? "Angebote in der Nähe"}
+							{summaryBits[0] ?? t("home.sheetFallback")}
 						</span>
 						{summaryBits.length > 1 && (
 							<span className="sheet-summary-extra muted small">
@@ -298,7 +303,7 @@ export function MapHome() {
 						)}
 					</span>
 					<span className="sheet-expand-hint muted small" aria-hidden>
-						{sheetExpanded ? "Einklappen" : "Mehr anzeigen"}
+						{sheetExpanded ? t("home.sheet.collapse") : t("home.sheet.expand")}
 					</span>
 				</button>
 
@@ -306,17 +311,19 @@ export function MapHome() {
 					{/* Nearby open offers */}
 					<section className="panel-block panel-section">
 						<div className="panel-head">
-							<h2>In der Nähe</h2>
+							<h2>{t("home.nearby.title")}</h2>
 							{mapLoadedOnce && (
 								<span className="muted small panel-head-meta">
-									{openCount} einmalig
-									{recurringCount ? ` · ${recurringCount} wöchentlich` : ""}
+									{t("home.nearby.metaOnce", { n: openCount })}
+									{recurringCount
+										? ` · ${t("home.nearby.metaRecurring", { n: recurringCount })}`
+										: ""}
 								</span>
 							)}
 						</div>
 						{!mapLoadedOnce && mapLoading && (
 							<p className="muted" role="status">
-								Lade offene Angebote…
+								{t("home.nearby.loading")}
 							</p>
 						)}
 						{mapLoadedOnce &&
@@ -327,17 +334,19 @@ export function MapHome() {
 								<span className="empty-state-icon" aria-hidden>
 									📍
 								</span>
-								<p className="empty-state-title">Hier gerade nichts Offenes</p>
+								<p className="empty-state-title">
+									{t("home.nearby.emptyTitle")}
+								</p>
 								<p className="empty-state-text">
-									Karte verschieben oder zoomen – oder selbst was einstellen.
+									{t("home.nearby.emptyText")}
 								</p>
 								{user ? (
 									<Link className="btn btn-primary btn-sm" to="/neu">
-										Angebot erstellen
+										{t("home.createOffer")}
 									</Link>
 								) : (
 									<Link className="btn btn-primary btn-sm" to="/login">
-										Anmelden zum Einstellen
+										{t("home.loginToPost")}
 									</Link>
 								)}
 							</div>
@@ -354,7 +363,9 @@ export function MapHome() {
 													to={`/angebot/${o.id}`}
 												>
 													<strong>
-														{o.title?.trim() || items || "Pfand-Angebot"}
+														{o.title?.trim() ||
+															items ||
+															t("offer.fallbackTitle")}
 													</strong>
 												</Link>
 												<span className="list-pfand">
@@ -363,7 +374,7 @@ export function MapHome() {
 											</div>
 											<div className="meta list-item-meta">
 												{items ? `${items} · ` : null}
-												{o.address_hint || "Ungefähre Lage"}
+												{o.address_hint || t("map.approxLocation")}
 											</div>
 										</li>
 									);
@@ -381,7 +392,7 @@ export function MapHome() {
 														<span className="list-item-badge" aria-hidden>
 															↻
 														</span>{" "}
-														{o.title?.trim() || items || "Wöchentlich"}
+														{o.title?.trim() || items || t("home.weekly")}
 													</strong>
 												</Link>
 												<span className="list-pfand">
@@ -392,7 +403,7 @@ export function MapHome() {
 												{weekdayLabel(o.weekday)}
 												{o.time_hint ? ` · ${o.time_hint}` : ""}
 												{" · "}
-												{o.address_hint || "Ungefähre Lage"}
+												{o.address_hint || t("map.approxLocation")}
 											</div>
 										</li>
 									);
@@ -403,9 +414,9 @@ export function MapHome() {
 
 					<section className="panel-block panel-section">
 						<div className="panel-head">
-							<h2>Meine Angebote</h2>
+							<h2>{t("home.mine.title")}</h2>
 							<Link className="btn btn-primary btn-sm" to="/neu">
-								+ Neu
+								{t("home.mine.new")}
 							</Link>
 						</div>
 						{!authLoading && !user && (
@@ -413,9 +424,11 @@ export function MapHome() {
 								<span className="empty-state-icon" aria-hidden>
 									🔐
 								</span>
-								<p className="empty-state-title">Anmeldung nötig</p>
+								<p className="empty-state-title">
+									{t("home.authRequiredTitle")}
+								</p>
 								<p className="empty-state-text">
-									Zum Einstellen bitte <Link to="/login">anmelden</Link>.
+									<Link to="/login">{t("home.mine.loginText")}</Link>
 								</p>
 							</div>
 						)}
@@ -424,7 +437,7 @@ export function MapHome() {
 							mine.length === 0 &&
 							mineRecurring.length === 0 && (
 							<p className="muted" role="status">
-								Lade deine Angebote…
+								{t("home.mine.loading")}
 							</p>
 						)}
 						{user &&
@@ -435,12 +448,14 @@ export function MapHome() {
 								<span className="empty-state-icon" aria-hidden>
 									📦
 								</span>
-								<p className="empty-state-title">Noch keine eigenen Angebote</p>
+								<p className="empty-state-title">
+									{t("home.mine.emptyTitle")}
+								</p>
 								<p className="empty-state-text">
-									Stell dein erstes Pfand ein – in der Nähe sieht man es sofort.
+									{t("home.mine.emptyText")}
 								</p>
 								<Link className="btn btn-primary btn-sm" to="/neu">
-									Erstes Angebot erstellen
+									{t("home.mine.firstCreate")}
 								</Link>
 							</div>
 						)}
@@ -456,7 +471,9 @@ export function MapHome() {
 													to={`/angebot/${o.id}`}
 												>
 													<strong>
-														{o.title?.trim() || items || "Pfand-Angebot"}
+														{o.title?.trim() ||
+															items ||
+															t("offer.fallbackTitle")}
 													</strong>
 												</Link>
 												<span className={offerStatusClass(o.status)}>
@@ -479,13 +496,15 @@ export function MapHome() {
 														disabled={busyId === o.id}
 														onClick={() => void onConfirmHandover(o.id)}
 													>
-														{busyId === o.id ? "…" : "Übergabe bestätigen"}
+														{busyId === o.id
+															? "…"
+															: t("home.confirmHandoverBtn")}
 													</button>
 												</div>
 											)}
 											{o.status === "reserved" && (
 												<p className="muted small list-item-hint">
-													Warte, bis der Abholer „Abgeholt“ tippt.
+													{t("home.waitCollect")}
 												</p>
 											)}
 										</li>
@@ -502,7 +521,7 @@ export function MapHome() {
 													<span className="list-item-badge" aria-hidden>
 														↻
 													</span>{" "}
-													{o.title?.trim() || "Wöchentlich"}
+													{o.title?.trim() || t("home.weekly")}
 												</strong>
 											</Link>
 											<span className={offerStatusClass(o.status)}>
@@ -516,7 +535,9 @@ export function MapHome() {
 											{" · "}
 											{weekdayLabel(o.weekday)}
 											{o.pending_applications > 0
-												? ` · ${o.pending_applications} Bewerbung(en)`
+												? ` · ${t("home.pendingApps", {
+														n: o.pending_applications,
+													})}`
 												: ""}
 											{o.assigned_display_name
 												? ` · ${o.assigned_display_name}`
@@ -531,8 +552,10 @@ export function MapHome() {
 					{user && myRecurringApps.length > 0 && (
 						<section className="panel-block panel-section">
 							<div className="panel-head">
-								<h2>Meine Bewerbungen</h2>
-								<span className="muted small panel-head-meta">wöchentlich</span>
+								<h2>{t("home.apps.title")}</h2>
+								<span className="muted small panel-head-meta">
+									{t("home.apps.meta")}
+								</span>
 							</div>
 							<ul className="list">
 								{myRecurringApps.map((a) => (
@@ -566,21 +589,23 @@ export function MapHome() {
 
 					<section className="panel-block panel-section">
 						<div className="panel-head">
-							<h2>Meine Abholungen</h2>
+							<h2>{t("home.pickups.title")}</h2>
 							{user && unfinishedReservations.length > 0 ? (
 								<span className="muted small panel-head-meta">
-									{unfinishedReservations.length} offen ·{" "}
-									<Link to="/route">Route</Link>
+									{t("home.pickups.openMeta", {
+										n: unfinishedReservations.length,
+									})}{" "}
+									<Link to="/route">{t("home.routeLink")}</Link>
 								</span>
 							) : user ? (
 								<span className="muted small panel-head-meta">
-									<Link to="/route">Routenplaner</Link>
+									<Link to="/route">{t("home.routePlanner")}</Link>
 								</span>
 							) : null}
 						</div>
 						{user && sideLoading && unfinishedReservations.length === 0 && (
 							<p className="muted" role="status">
-								Lade Abholungen…
+								{t("home.pickups.loading")}
 							</p>
 						)}
 						{!user && !authLoading && (
@@ -588,9 +613,11 @@ export function MapHome() {
 								<span className="empty-state-icon" aria-hidden>
 									🔐
 								</span>
-								<p className="empty-state-title">Anmeldung nötig</p>
+								<p className="empty-state-title">
+									{t("home.authRequiredTitle")}
+								</p>
 								<p className="empty-state-text">
-									Zum Abholen bitte <Link to="/login">anmelden</Link>.
+									<Link to="/login">{t("home.pickups.loginText")}</Link>
 								</p>
 							</div>
 						)}
@@ -599,15 +626,14 @@ export function MapHome() {
 								<span className="empty-state-icon" aria-hidden>
 									✓
 								</span>
-								<p className="empty-state-title">Keine offenen Abholungen</p>
+								<p className="empty-state-title">
+									{t("home.pickups.emptyTitle")}
+								</p>
 								<p className="empty-state-text">
-									Du kannst immer nur eins gleichzeitig machen – erst fertig,
-									dann das nächste.
+									{t("home.pickups.emptyText")}
 								</p>
 								{openCount > 0 && (
-									<p className="muted small">
-										Tipp auf einen Pin oder ein Angebot unter „In der Nähe“.
-									</p>
+									<p className="muted small">{t("home.pickups.tip")}</p>
 								)}
 							</div>
 						)}
@@ -628,7 +654,7 @@ export function MapHome() {
 												</span>
 											) : (
 												<span className="badge badge-warn">
-													wartet auf Bestätigung
+													{t("home.waitingConfirm")}
 												</span>
 											)}
 										</div>
@@ -647,14 +673,15 @@ export function MapHome() {
 													disabled={busyId === r.offer_id}
 													onClick={() => void onMarkCollected(r.offer_id)}
 												>
-													{busyId === r.offer_id ? "…" : "Abgeholt"}
+													{busyId === r.offer_id
+														? "…"
+														: t("action.collected")}
 												</button>
 											</div>
 										)}
 										{r.reservation_status === "collected" && (
 											<p className="muted small list-item-hint">
-												Bitte den Inserenten bestätigen – dann darfst du was
-												Neues annehmen.
+												{t("home.needPosterConfirm")}
 											</p>
 										)}
 									</li>
@@ -665,15 +692,18 @@ export function MapHome() {
 
 					{user && quota && (
 						<p className="muted small quota-hint">
-							Heute: {quota.accepted_today}/{quota.daily_limit} angenommen ·{" "}
-							{quota.remaining_today} frei · {quota.unfinished} offen · Limit
-							wächst bis {quota.limit_max}/Tag, wenn bestätigt wird
+							{t("home.quota", {
+								accepted: quota.accepted_today,
+								limit: quota.daily_limit,
+								remaining: quota.remaining_today,
+								unfinished: quota.unfinished,
+								max: quota.limit_max,
+							})}
 						</p>
 					)}
 					<p className="footnote">
-						Kostenlos · Tageslimit 1–5 (nach Bestätigungen) · Abholer meldet,
-						Inserent bestätigt in 24 Std. ·{" "}
-						<Link to="/route">Routenplaner</Link>
+						{t("home.footnote")}{" "}
+						<Link to="/route">{t("home.routePlanner")}</Link>
 					</p>
 				</div>
 			</aside>

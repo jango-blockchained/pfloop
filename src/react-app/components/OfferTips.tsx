@@ -1,3 +1,6 @@
+import { useT } from "../i18n";
+import type { MessageParams } from "../i18n";
+
 type Variant = "create" | "poster" | "collector" | "public";
 
 type Props = {
@@ -7,18 +10,21 @@ type Props = {
 	compact?: boolean;
 };
 
+type TFn = (key: string, params?: MessageParams) => string;
+
 /**
  * Practical tips for one-shot (einmalige) Pfand pickups – who does what.
  */
 export function OfferTips({ variant = "public", compact = false }: Props) {
+	const t = useT();
 	const title =
 		variant === "create" || variant === "poster"
-			? "So läuft ein einmaliges Angebot"
+			? t("tips.offer.title.create")
 			: variant === "collector"
-				? "Tipps für dich als Abholer"
-				: "Wer macht was?";
+				? t("tips.offer.title.collector")
+				: t("tips.offer.title.public");
 
-	const items = tipsFor(variant);
+	const items = tipsFor(variant, t);
 
 	if (compact) {
 		const [lead, ...rest] = items;
@@ -29,12 +35,12 @@ export function OfferTips({ variant = "public", compact = false }: Props) {
 				{rest.length > 0 && (
 					<details className="weekly-tips-more">
 						<summary className="weekly-tips-more-summary">
-							Weitere Tipps
+							{t("tips.more")}
 						</summary>
 						<ul className="weekly-tips-list">
-							{rest.map((t) => (
-								<li key={t} className="weekly-tips-item">
-									{t}
+							{rest.map((tip) => (
+								<li key={tip} className="weekly-tips-item">
+									{tip}
 								</li>
 							))}
 						</ul>
@@ -48,9 +54,9 @@ export function OfferTips({ variant = "public", compact = false }: Props) {
 		<div className="banner info handover-hint weekly-tips offer-tips">
 			<strong className="weekly-tips-title">{title}</strong>
 			<ul className="weekly-tips-list">
-				{items.map((t) => (
-					<li key={t} className="weekly-tips-item">
-						{t}
+				{items.map((tip) => (
+					<li key={tip} className="weekly-tips-item">
+						{tip}
 					</li>
 				))}
 			</ul>
@@ -58,57 +64,46 @@ export function OfferTips({ variant = "public", compact = false }: Props) {
 	);
 }
 
-function tipsFor(variant: Variant): string[] {
-	const sixHours =
-		"Nach der Annahme hat der Abholer 6 Stunden Zeit. Danach wird das Angebot wieder frei, wenn niemand abholt.";
-	const addressPrivacy =
-		"Die genaue Adresse bleibt privat, bis jemand annimmt – auf der Karte siehst du nur die Gegend.";
-	const twoStep =
-		"Übergabe in 2 Schritten: 1) Abholer tippt „Abgeholt“, 2) Inserent bestätigt innerhalb von 24 Stunden. Ohne Bestätigung storniert das System das Angebot.";
-	const blockRule =
-		"Neue Abholer starten mit 1 Annahme pro Tag. Wenn alles bestätigt wird, steigt das Limit (max. 5/Tag). Weniger Bestätigungen = niedrigeres Limit am nächsten Tag.";
-	const readyHint =
-		"Stell das Pfand bereit, sobald es reserviert ist – idealerweise an der Tür, im Hof oder wo ihr es kurz und klar findet.";
-
+function tipsFor(variant: Variant, t: TFn): string[] {
 	if (variant === "create") {
 		return [
-			"Du inserierst Menge und Ort. Mindestens 3 € Pfand nach deutschem Katalog.",
-			addressPrivacy,
-			"Jemand nimmt an → der Abholer sieht die Adresse und hat 6 Stunden.",
-			twoStep,
-			"Du bestätigst erst, wenn das Pfand wirklich weg ist. Stornieren geht, solange noch nicht alles erledigt ist.",
-			readyHint,
+			t("tips.offer.create.1"),
+			t("tips.offer.create.2"),
+			t("tips.offer.create.3"),
+			t("tips.offer.create.4"),
+			t("tips.offer.create.5"),
+			t("tips.offer.create.6"),
 		];
 	}
 
 	if (variant === "poster") {
 		return [
-			"Dein Job: Angebot online halten, Pfand bereitstellen, am Ende die Übergabe bestätigen.",
-			sixHours,
-			"Sobald der Abholer „Abgeholt“ tippt, bestätigst du in der App – sonst bleibt die Sache für ihn blockiert.",
-			readyHint,
-			"Hinweis mit Klingelcode, Hofeingang o. Ä. spart Hin und Her.",
-			"Stimmt etwas nicht (falsche Menge, niemand da), sprich dich kurz ab oder storniere, wenn nötig.",
+			t("tips.offer.poster.1"),
+			t("tips.offer.poster.2"),
+			t("tips.offer.poster.3"),
+			t("tips.offer.poster.4"),
+			t("tips.offer.poster.5"),
+			t("tips.offer.poster.6"),
 		];
 	}
 
 	if (variant === "collector") {
 		return [
-			"Dein Job: annehmen → innerhalb von 6 Stunden abholen → „Abgeholt“ tippen → auf Bestätigung warten.",
-			"Nach der Annahme siehst du die Adresse. Nutze die Karten-Links und komm in der Frist.",
-			twoStep,
-			blockRule,
-			"Steht das Pfand draußen und ihr habt das so abgesprochen, nimm es mit – dann entfällt das Klingeln.",
-			"Nur „Abgeholt“ tippen, wenn du das Pfand wirklich hast – der Inserent muss danach noch bestätigen.",
+			t("tips.offer.collector.1"),
+			t("tips.offer.collector.2"),
+			t("tips.offer.collector.3"),
+			t("tips.offer.collector.4"),
+			t("tips.offer.collector.5"),
+			t("tips.offer.collector.6"),
 		];
 	}
 
 	// public / open listing (browsing before accept)
 	return [
-		"Inserent stellt ein → Abholer nimmt an → Abholer holt ab und meldet „Abgeholt“ → Inserent bestätigt.",
-		addressPrivacy,
-		sixHours,
-		twoStep,
-		blockRule,
+		t("tips.offer.public.1"),
+		t("tips.offer.public.2"),
+		t("tips.offer.public.3"),
+		t("tips.offer.public.4"),
+		t("tips.offer.public.5"),
 	];
 }
