@@ -65,6 +65,7 @@ app.get("/api/health", (c) =>
 			confirm_hours: CONFIRM_HOURS,
 			collector_daily_limit_min: COLLECTOR_DAILY_LIMIT_MIN,
 			collector_daily_limit_max: COLLECTOR_DAILY_LIMIT_MAX,
+			/** Absolute concurrent unfinished ceiling (personal cap = daily limit 1–5). */
 			max_unfinished_reservations: MAX_UNFINISHED_RESERVATIONS_PER_USER,
 			max_map_offers: MAX_MAP_OFFERS,
 			max_bbox_span_deg: MAX_BBOX_SPAN_DEG,

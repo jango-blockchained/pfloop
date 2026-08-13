@@ -1,10 +1,16 @@
 import { Hono } from "hono";
 import { assertMinPfand } from "../lib/money";
-import { isPast, nowIso, reservationDeadlineIso } from "../lib/time";
 import {
+	berlinDayKey,
+	isPast,
+	nowIso,
+	reservationDeadlineIso,
+} from "../lib/time";
+import {
+	claimAcceptSlot,
 	ensureCollectorQuota,
-	recordCollectorAccept,
 	recordCollectorConfirm,
+	refundAcceptSlot,
 } from "../lib/collector-quota";
 import {
 	MAX_MAP_OFFERS,
@@ -326,17 +332,17 @@ offersRoutes.post("/:id/accept", async (c) => {
 		return jsonError(c, "Das Angebot ist leider schon weg", 409);
 	}
 
-	const quota = await ensureCollectorQuota(c.env.DB, userId);
-
-	if (quota.remaining_today <= 0) {
+	// Atomic daily slot first — serializes concurrent accepts on accepted_today.
+	const claimed = await claimAcceptSlot(c.env.DB, userId);
+	if (!claimed) {
+		const q = await ensureCollectorQuota(c.env.DB, userId);
 		return jsonError(
 			c,
-			`Tageslimit erreicht (${quota.daily_limit} Abholungen heute). Morgen kann sich dein Limit ändern – je nachdem, wie viele heute bestätigt wurden.`,
+			`Tageslimit erreicht (${q.daily_limit} Abholungen heute). Morgen kann sich dein Limit ändern – je nachdem, wie viele Annahmen heute bestätigt wurden.`,
 			400,
 		);
 	}
 
-	// Concurrent unfinished handovers limited by today's daily limit.
 	const unfinished = await c.env.DB.prepare(
 		`SELECT COUNT(*) AS n FROM reservations
 		 WHERE collector_id = ? AND status IN ('active', 'collected')`,
@@ -344,16 +350,18 @@ offersRoutes.post("/:id/accept", async (c) => {
 		.bind(userId)
 		.first<{ n: number }>();
 
-	if ((unfinished?.n ?? 0) >= quota.max_unfinished) {
+	if ((unfinished?.n ?? 0) >= claimed.max_unfinished) {
+		await refundAcceptSlot(c.env.DB, userId);
 		return jsonError(
 			c,
-			`Du hast schon ${quota.max_unfinished} offene Abholung(en). Schließ welche ab (abholen + bestätigen lassen), bevor du mehr annimmst.`,
+			`Du hast schon ${claimed.max_unfinished} offene Abholung(en). Schließ welche ab (abholen + bestätigen lassen), bevor du mehr annimmst.`,
 			400,
 		);
 	}
 
 	const reservationId = crypto.randomUUID();
 	const acceptedAt = nowIso();
+	const acceptDay = berlinDayKey(new Date(acceptedAt));
 	const deadlineAt = reservationDeadlineIso(new Date(acceptedAt));
 
 	try {
@@ -364,19 +372,26 @@ offersRoutes.post("/:id/accept", async (c) => {
 			).bind(acceptedAt, offerId),
 			c.env.DB.prepare(
 				`INSERT INTO reservations (
-					id, offer_id, collector_id, accepted_at, deadline_at, status
-				) VALUES (?, ?, ?, ?, ?, 'active')`,
-			).bind(reservationId, offerId, userId, acceptedAt, deadlineAt),
+					id, offer_id, collector_id, accepted_at, deadline_at, status, accept_day
+				) VALUES (?, ?, ?, ?, ?, 'active', ?)`,
+			).bind(
+				reservationId,
+				offerId,
+				userId,
+				acceptedAt,
+				deadlineAt,
+				acceptDay,
+			),
 		]);
 
 		const offerChanges = batchResults[0]?.meta?.changes ?? 0;
 		if (offerChanges === 0) {
-			// Lost the race — unique index may still have blocked insert; clean if needed.
 			await c.env.DB.prepare(
 				`DELETE FROM reservations WHERE id = ? AND status = 'active'`,
 			)
 				.bind(reservationId)
 				.run();
+			await refundAcceptSlot(c.env.DB, userId);
 			return jsonError(
 				c,
 				"Pech – gerade hat’s jemand anderes angenommen",
@@ -384,7 +399,13 @@ offersRoutes.post("/:id/accept", async (c) => {
 			);
 		}
 	} catch {
-		// Unique index on unfinished reservation per offer, or other constraint.
+		await c.env.DB.prepare(
+			`DELETE FROM reservations WHERE id = ? AND status = 'active'`,
+		)
+			.bind(reservationId)
+			.run()
+			.catch(() => {});
+		await refundAcceptSlot(c.env.DB, userId);
 		return jsonError(
 			c,
 			"Pech – gerade hat’s jemand anderes angenommen",
@@ -392,21 +413,20 @@ offersRoutes.post("/:id/accept", async (c) => {
 		);
 	}
 
-	// Concurrent accepts of *different* offers by the same user can slip past the
-	// pre-check. Keep the earliest unfinished reservation(s); release this one if over limit.
+	// Keep earliest unfinished up to max; release this accept if over concurrent cap.
 	const unfinishedRows = await c.env.DB.prepare(
 		`SELECT id FROM reservations
 		 WHERE collector_id = ? AND status IN ('active', 'collected')
 		 ORDER BY accepted_at ASC
 		 LIMIT ?`,
 	)
-		.bind(userId, quota.max_unfinished + 5)
+		.bind(userId, claimed.max_unfinished + 8)
 		.all<{ id: string }>();
 
 	const unfinishedList = unfinishedRows.results ?? [];
-	if (unfinishedList.length > quota.max_unfinished) {
+	if (unfinishedList.length > claimed.max_unfinished) {
 		const keep = new Set(
-			unfinishedList.slice(0, quota.max_unfinished).map((r) => r.id),
+			unfinishedList.slice(0, claimed.max_unfinished).map((r) => r.id),
 		);
 		if (!keep.has(reservationId)) {
 			await c.env.DB.batch([
@@ -419,15 +439,15 @@ offersRoutes.post("/:id/accept", async (c) => {
 					 WHERE id = ? AND status = 'reserved'`,
 				).bind(nowIso(), offerId),
 			]);
+			await refundAcceptSlot(c.env.DB, userId);
 			return jsonError(
 				c,
-				`Du hast schon ${quota.max_unfinished} offene Abholung(en). Schließ welche ab, bevor du mehr annimmst.`,
+				`Du hast schon ${claimed.max_unfinished} offene Abholung(en). Schließ welche ab, bevor du mehr annimmst.`,
 				400,
 			);
 		}
 	}
 
-	// Confirm our reservation row exists (defensive).
 	const ours = await c.env.DB.prepare(
 		`SELECT id FROM reservations WHERE id = ? AND collector_id = ? AND status = 'active'`,
 	)
@@ -435,6 +455,7 @@ offersRoutes.post("/:id/accept", async (c) => {
 		.first<{ id: string }>();
 
 	if (!ours) {
+		await refundAcceptSlot(c.env.DB, userId);
 		return jsonError(
 			c,
 			"Pech – gerade hat’s jemand anderes angenommen",
@@ -442,7 +463,6 @@ offersRoutes.post("/:id/accept", async (c) => {
 		);
 	}
 
-	await recordCollectorAccept(c.env.DB, userId);
 	const quotaAfter = await ensureCollectorQuota(c.env.DB, userId);
 
 	return c.json({
@@ -604,11 +624,16 @@ offersRoutes.post("/:id/confirm", async (c) => {
 	}
 
 	const reservation = await c.env.DB.prepare(
-		`SELECT id, collector_id FROM reservations
+		`SELECT id, collector_id, accept_day, accepted_at FROM reservations
 		 WHERE offer_id = ? AND status = 'collected'`,
 	)
 		.bind(offerId)
-		.first<{ id: string; collector_id: string }>();
+		.first<{
+			id: string;
+			collector_id: string;
+			accept_day: string | null;
+			accepted_at: string;
+		}>();
 
 	if (!reservation) {
 		return jsonError(
@@ -638,7 +663,10 @@ offersRoutes.post("/:id/confirm", async (c) => {
 		);
 	}
 
-	await recordCollectorConfirm(c.env.DB, reservation.collector_id);
+	const acceptDay =
+		reservation.accept_day?.trim() ||
+		berlinDayKey(new Date(reservation.accepted_at));
+	await recordCollectorConfirm(c.env.DB, reservation.collector_id, acceptDay);
 
 	return c.json({ ok: true, status: "completed" });
 });

@@ -79,6 +79,7 @@ export async function releaseExpiredReservations(
 	}
 
 	// Collected but poster never confirmed within CONFIRM_HOURS → cancel offer.
+	// collected_at + CONFIRM_HOURS <= now  ⇔  collected_at <= now - CONFIRM_HOURS
 	const confirmCutoff = hoursAgoIso(CONFIRM_HOURS);
 	const staleCollected = await db
 		.prepare(

@@ -135,6 +135,8 @@ export type CollectorQuota = {
 	remaining_today: number;
 	max_unfinished: number;
 	unfinished: number;
+	max_unfinished_effective?: number;
+	max_unfinished_ceiling?: number;
 	limit_min: number;
 	limit_max: number;
 	confirm_hours: number;

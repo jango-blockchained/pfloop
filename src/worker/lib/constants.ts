@@ -35,7 +35,7 @@ export const COLLECTOR_DAILY_LIMIT_MAX = 5;
 
 /**
  * Absolute cap on concurrent unfinished handovers (active + collected).
- * Effective concurrent max is min(this, collector’s current daily limit).
+ * Accept path uses min(this, collector daily_limit); equals MAX for the ceiling only.
  */
 export const MAX_UNFINISHED_RESERVATIONS_PER_USER = COLLECTOR_DAILY_LIMIT_MAX;
 

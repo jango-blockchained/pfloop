@@ -36,6 +36,10 @@ reservationsRoutes.get("/quota", async (c) => {
 	return c.json({
 		...quota,
 		unfinished: unfinished?.n ?? 0,
+		/** Your concurrent open-handover cap today (= daily_limit). */
+		max_unfinished_effective: quota.max_unfinished,
+		/** Absolute system ceiling (not today's personal limit). */
+		max_unfinished_ceiling: COLLECTOR_DAILY_LIMIT_MAX,
 		limit_min: COLLECTOR_DAILY_LIMIT_MIN,
 		limit_max: COLLECTOR_DAILY_LIMIT_MAX,
 		confirm_hours: CONFIRM_HOURS,
