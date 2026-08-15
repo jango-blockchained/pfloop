@@ -149,7 +149,7 @@ Assets live under `ios/App/App/Assets.xcassets/`. Replace **AppIcon** and
              │ same origin
              ▼
 ┌──────────────────────────┐
-│ grabme.cryptolinx…       │  React SPA + Hono API + D1
+│ pfloop.cryptolinx…       │  React SPA + Hono API + D1
 └──────────────────────────┘
 ```
 

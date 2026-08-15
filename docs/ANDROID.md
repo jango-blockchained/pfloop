@@ -145,7 +145,7 @@ Replace with branded assets (e.g. Android Studio **Image Asset** studio, or
             │ same origin
             ▼
 ┌─────────────────────────┐
-│ grabme.cryptolinx…      │  React SPA + Hono API + D1
+│ pfloop.cryptolinx…      │  React SPA + Hono API + D1
 └─────────────────────────┘
 ```
 
