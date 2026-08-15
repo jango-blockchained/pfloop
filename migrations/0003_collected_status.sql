@@ -1,3 +1,6 @@
+-- SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+-- SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 -- Two-step handover:
 --   reserved  = accepted by collector (must pick up within 6h)
 --   collected = collector marked pickup done; waiting for poster confirm

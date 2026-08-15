@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /** Web Crypto helpers for magic-link and session tokens. */
 
 export function randomToken(bytes = 32): string {

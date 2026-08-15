@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "pfloop",

@@ -1,3 +1,6 @@
+-- SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+-- SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 -- Attribute completions to the Berlin accept day for progressive limits.
 ALTER TABLE reservations ADD COLUMN accept_day TEXT NOT NULL DEFAULT '';
 

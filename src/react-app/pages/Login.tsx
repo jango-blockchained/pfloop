@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useLocale, useT } from "../i18n";

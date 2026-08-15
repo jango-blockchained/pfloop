@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 import type { Locale, MessageParams, Messages } from "./types";
 import { de } from "./messages/de";
 import { en } from "./messages/en";

@@ -1,3 +1,7 @@
+<!--
+  SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+  SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+-->
 # Pfloop — iOS (Capacitor)
 
 Native iOS shell around the Pfloop PWA. Same approach as Android: the WKWebView

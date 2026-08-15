@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /** UI labels for offer / reservation status — locale-aware via t(). */
 
 import { t } from "../i18n/translate";

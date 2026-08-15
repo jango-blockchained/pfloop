@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /** Domain rules for Pfloop (Pfand pickup). */
 
 /** Minimum one-shot offer value in euro cents (€3.00). */

@@ -1,3 +1,6 @@
+-- SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+-- SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 -- Lower recurring weekly estimate minimum to €2.50 (250 cents).
 -- One-shot offers stay at €3.00 (300 cents).
 -- Rebuild recurring_offers only (no FK dependents on pfand check).

@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" role="img" aria-label="Pfloop Farbpalette">
+  <!-- SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de> -->
+  <!-- SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0 -->
   <!-- Brand kit swatch — primary identity colors -->
   <rect width="640" height="200" fill="#f4f5f7"/>
   <text x="24" y="36" font-family="system-ui,sans-serif" font-size="18" font-weight="700" fill="#0f1221">Pfloop · Brand palette</text>

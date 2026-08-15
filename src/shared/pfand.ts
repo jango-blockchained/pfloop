@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /**
  * Deutsches Pfandsystem — feste Stückpreise (Stand typischer Einweg-/Mehrwegpfand).
  * Server berechnet den Gesamtbetrag nur aus diesen Werten × Stückzahl.

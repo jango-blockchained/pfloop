@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /**
  * Cron: release expired active reservations (6h miss → reopen offer)
  * and cancel unconfirmed collected handovers (24h after collected_at).

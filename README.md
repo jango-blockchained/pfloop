@@ -1,4 +1,10 @@
+<!--
+  SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+  SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+-->
 # Pfloop
+
+[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue.svg)](LICENSE)
 
 PWA zum **Inserieren und Abholen von Flaschenpfand** (deutsches Pfandsystem).
 
@@ -146,4 +152,9 @@ npm run cap:sync
 
 ## Lizenz
 
-Private / TBD.
+[PolyForm Noncommercial License 1.0.0](LICENSE) — kostenlos für **nicht-kommerzielle** Nutzung.
+
+- **Erlaubt:** persönlich, Hobby, Bildung, Forschung, gemeinnützige / öffentliche Einrichtungen; Quellcode ansehen, ändern, weitergeben
+- **Nicht erlaubt:** kommerzielle Nutzung (ohne gesonderte Lizenz)
+- Copyright: CryptoLinx — siehe [NOTICE](NOTICE)
+- Kommerzielle Lizenz: [info@cryptolinx.de](mailto:info@cryptolinx.de)

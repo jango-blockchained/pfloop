@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { AreaSelect } from "../components/AreaSelect";

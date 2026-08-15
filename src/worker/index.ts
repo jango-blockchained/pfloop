@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { offersRoutes } from "./routes/offers";

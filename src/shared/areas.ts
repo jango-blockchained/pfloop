@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /**
  * Public area labels (Stadtteil / Gegend) shown on the map before accept.
  * Stored as free-text `address_hint` but limited to this catalog.

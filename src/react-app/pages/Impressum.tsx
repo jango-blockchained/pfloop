@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 import { Link } from "react-router-dom";
 import { useLocale } from "../i18n";
 
@@ -130,6 +133,19 @@ export function Impressum() {
 								kind of exploitation beyond the limits of copyright require the
 								written consent of the respective author or creator.
 							</p>
+							<p>
+								The Pfloop source code is licensed under the{" "}
+								<a
+									href="https://polyformproject.org/licenses/noncommercial/1.0.0"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									PolyForm Noncommercial License 1.0.0
+								</a>
+								: free for noncommercial use, not for commercial use. Commercial
+								licensing:{" "}
+								<a href="mailto:info@cryptolinx.de">info@cryptolinx.de</a>.
+							</p>
 						</section>
 
 						<section>
@@ -255,6 +271,19 @@ export function Impressum() {
 								jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes
 								bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw.
 								Erstellers.
+							</p>
+							<p>
+								Der Quellcode von Pfloop steht unter der{" "}
+								<a
+									href="https://polyformproject.org/licenses/noncommercial/1.0.0"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									PolyForm Noncommercial License 1.0.0
+								</a>
+								: kostenlos für nicht-kommerzielle Nutzung, nicht für
+								kommerzielle Nutzung. Kommerzielle Lizenz:{" "}
+								<a href="mailto:info@cryptolinx.de">info@cryptolinx.de</a>.
 							</p>
 						</section>
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /**
  * Optional analytics — only loads when the visitor granted analytics consent.
  * Set VITE_CF_WEB_ANALYTICS_TOKEN in env to enable Cloudflare Web Analytics.

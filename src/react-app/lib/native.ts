@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /**
  * Capacitor native shell helpers (no-ops on web).
  * Safe to import from the web app — dynamic import keeps the web bundle lean.

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 import { centsToEuro } from "../lib/api";
 import type { OfferItemDto } from "../lib/pfand-ui";
 import { labelForItemType } from "../lib/pfand-ui";

@@ -1,3 +1,6 @@
+-- SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+-- SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 -- Recurring weekly offers + lower minimum Pfand to €3 (300 cents).
 -- Rebuild offers by dropping dependents first (D1 enforces FKs).
 
