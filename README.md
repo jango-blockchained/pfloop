@@ -1,5 +1,5 @@
 <!--
-  SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+  SPDX-FileCopyrightText: 2026 jango-blockchained <op@hoox.sh>
   SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 -->
 # Pfloop
@@ -156,5 +156,5 @@ npm run cap:sync
 
 - **Erlaubt:** persönlich, Hobby, Bildung, Forschung, gemeinnützige / öffentliche Einrichtungen; Quellcode ansehen, ändern, weitergeben
 - **Nicht erlaubt:** kommerzielle Nutzung (ohne gesonderte Lizenz)
-- Copyright: CryptoLinx — siehe [NOTICE](NOTICE)
-- Kommerzielle Lizenz: [info@cryptolinx.de](mailto:info@cryptolinx.de)
+- Copyright: jango-blockchained — siehe [NOTICE](NOTICE)
+- Kommerzielle Lizenz: [op@hoox.sh](mailto:op@hoox.sh)

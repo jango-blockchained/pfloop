@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2026 CryptoLinx <info@cryptolinx.de>
+// SPDX-FileCopyrightText: 2026 jango-blockchained <op@hoox.sh>
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
 import { Link } from "react-router-dom";
 import { useLocale } from "../i18n";
 
-const UPDATED = "12.08.2026";
+const UPDATED = "15.08.2026";
 
 export function Impressum() {
 	const { locale, t } = useLocale();
@@ -32,7 +32,7 @@ export function Impressum() {
 							<p>
 								<strong>Pfloop</strong>
 								<br />
-								Operated / brand: CryptoLinx
+								Operated by: jango-blockchained
 								<br />
 								Online service for arranging deposit (Pfand) collections
 							</p>
@@ -52,7 +52,7 @@ export function Impressum() {
 							<h2>Contact</h2>
 							<p>
 								Email:{" "}
-								<a href="mailto:login@hoox.sh">login@hoox.sh</a>
+								<a href="mailto:op@hoox.sh">op@hoox.sh</a>
 								<br />
 								(Login and general enquiries; please include “Pfloop” in the
 								subject line)
@@ -144,7 +144,7 @@ export function Impressum() {
 								</a>
 								: free for noncommercial use, not for commercial use. Commercial
 								licensing:{" "}
-								<a href="mailto:info@cryptolinx.de">info@cryptolinx.de</a>.
+								<a href="mailto:op@hoox.sh">op@hoox.sh</a>.
 							</p>
 						</section>
 
@@ -167,7 +167,7 @@ export function Impressum() {
 							<p>
 								<strong>Pfloop</strong>
 								<br />
-								Betrieb / Marke: CryptoLinx
+								Betrieb: jango-blockchained
 								<br />
 								Online-Dienst zur Vermittlung von Pfand-Abholungen
 							</p>
@@ -187,7 +187,7 @@ export function Impressum() {
 							<h2>Kontakt</h2>
 							<p>
 								E-Mail:{" "}
-								<a href="mailto:login@hoox.sh">login@hoox.sh</a>
+								<a href="mailto:op@hoox.sh">op@hoox.sh</a>
 								<br />
 								(Login- und allgemeine Anfragen; bitte „Pfloop“ im Betreff
 								angeben)
@@ -283,7 +283,7 @@ export function Impressum() {
 								</a>
 								: kostenlos für nicht-kommerzielle Nutzung, nicht für
 								kommerzielle Nutzung. Kommerzielle Lizenz:{" "}
-								<a href="mailto:info@cryptolinx.de">info@cryptolinx.de</a>.
+								<a href="mailto:op@hoox.sh">op@hoox.sh</a>.
 							</p>
 						</section>
 

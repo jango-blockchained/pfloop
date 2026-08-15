@@ -4,7 +4,7 @@
 	"description": "Pfloop — Pfand-Abhol-PWA (Cloudflare Workers + D1)",
 	"private": true,
 	"license": "PolyForm-Noncommercial-1.0.0",
-	"author": "CryptoLinx <info@cryptolinx.de>",
+	"author": "jango-blockchained <op@hoox.sh>",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
