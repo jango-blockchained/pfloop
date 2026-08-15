@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2026 jango-blockchained <op@hoox.sh>
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { OfferMap } from "../components/OfferMap";
+import { OfferMap, type MapFlyTarget } from "../components/OfferMap";
+import { searchAddress } from "../lib/geocode";
 import {
 	emptyQuantities,
 	PfandQuantityForm,
@@ -38,6 +39,13 @@ import {
 import { centsToEuroDe } from "../../shared/pfand";
 
 const WEEKDAYS: Weekday[] = [1, 2, 3, 4, 5, 6, 7];
+const GEOCODE_DEBOUNCE_MS = 800;
+
+function addressReadyToGeocode(raw: string, strict: boolean): boolean {
+	const q = raw.trim();
+	if (strict) return q.length >= 8 && /\d/.test(q);
+	return q.length >= 5;
+}
 
 export function CreateOffer() {
 	const navigate = useNavigate();
@@ -58,6 +66,79 @@ export function CreateOffer() {
 	const [selectedAddressId, setSelectedAddressId] = useState<string>("");
 	const [saveAsNew, setSaveAsNew] = useState(false);
 	const [addressPrefillDone, setAddressPrefillDone] = useState(false);
+	const [flyTo, setFlyTo] = useState<MapFlyTarget | null>(null);
+	const [geoStatus, setGeoStatus] = useState<
+		"idle" | "loading" | "ok" | "empty" | "error"
+	>("idle");
+	const flyKeyRef = useRef(0);
+	const lastGeocodedQuery = useRef("");
+	const addressHintRef = useRef(addressHint);
+	addressHintRef.current = addressHint;
+	const selectedAddressIdRef = useRef(selectedAddressId);
+	selectedAddressIdRef.current = selectedAddressId;
+
+	const flyMapTo = useCallback((lat: number, lng: number) => {
+		flyKeyRef.current += 1;
+		setFlyTo({ lat, lng, zoom: 16, key: flyKeyRef.current });
+	}, []);
+
+	const applySavedAddress = useCallback(
+		(a: SavedAddress) => {
+			setAddressText(a.address_text);
+			// Only apply catalog areas (legacy free-text hints may not match)
+			setAddressHint(
+				isPublicArea(a.address_hint)
+					? canonicalizePublicArea(a.address_hint)
+					: (suggestPublicArea(a.address_hint || a.address_text) ?? ""),
+			);
+			setPick([a.lat, a.lng]);
+			setSelectedAddressId(a.id);
+			lastGeocodedQuery.current = a.address_text.trim();
+			setGeoStatus("ok");
+			flyMapTo(a.lat, a.lng);
+		},
+		[flyMapTo],
+	);
+
+	const geocodeTypedAddress = useCallback(
+		async (raw: string, opts?: { signal?: AbortSignal; strict?: boolean }) => {
+			if (selectedAddressIdRef.current) return;
+			const q = raw.trim();
+			if (!addressReadyToGeocode(q, opts?.strict ?? true)) return;
+			const hint = addressHintRef.current.trim();
+			const query =
+				hint && isPublicArea(hint) ? `${q}, ${hint}` : q;
+			if (query === lastGeocodedQuery.current) return;
+
+			setGeoStatus("loading");
+			try {
+				const hits = await searchAddress(query, {
+					limit: 1,
+					signal: opts?.signal,
+				});
+				if (opts?.signal?.aborted) return;
+				const hit = hits[0];
+				if (!hit) {
+					setGeoStatus("empty");
+					return;
+				}
+				lastGeocodedQuery.current = query;
+				setPick([hit.lat, hit.lng]);
+				flyMapTo(hit.lat, hit.lng);
+				setGeoStatus("ok");
+				if (!hint || !isPublicArea(hint)) {
+					const suggested = suggestPublicArea(hit.label || hit.display_name);
+					if (suggested) setAddressHint(suggested);
+				}
+			} catch (e) {
+				if (opts?.signal?.aborted) return;
+				const name = e instanceof Error ? e.name : "";
+				if (name === "AbortError") return;
+				setGeoStatus("error");
+			}
+		},
+		[flyMapTo],
+	);
 
 	useEffect(() => {
 		if (!user) {
@@ -75,7 +156,6 @@ export function CreateOffer() {
 					data.addresses.find((a) => a.is_default) ?? data.addresses[0];
 				if (def && !addressPrefillDone) {
 					applySavedAddress(def);
-					setSelectedAddressId(def.id);
 					setAddressPrefillDone(true);
 				} else {
 					setAddressPrefillDone(true);
@@ -90,21 +170,25 @@ export function CreateOffer() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- prefill once per login
 	}, [user]);
 
-	function applySavedAddress(a: SavedAddress) {
-		setAddressText(a.address_text);
-		// Only apply catalog areas (legacy free-text hints may not match)
-		setAddressHint(
-			isPublicArea(a.address_hint)
-				? canonicalizePublicArea(a.address_hint)
-				: (suggestPublicArea(a.address_hint || a.address_text) ?? ""),
-		);
-		setPick([a.lat, a.lng]);
-		setSelectedAddressId(a.id);
-	}
+	useEffect(() => {
+		if (selectedAddressId) return;
+		if (!addressReadyToGeocode(addressText, true)) return;
+		const ac = new AbortController();
+		const timer = window.setTimeout(() => {
+			void geocodeTypedAddress(addressText, { signal: ac.signal, strict: true });
+		}, GEOCODE_DEBOUNCE_MS);
+		return () => {
+			window.clearTimeout(timer);
+			ac.abort();
+		};
+	}, [addressText, selectedAddressId, geocodeTypedAddress]);
 
 	function onSelectSaved(id: string) {
 		setSelectedAddressId(id);
-		if (!id) return;
+		if (!id) {
+			lastGeocodedQuery.current = "";
+			return;
+		}
 		const a = savedAddresses.find((x) => x.id === id);
 		if (a) applySavedAddress(a);
 	}
@@ -468,6 +552,9 @@ export function CreateOffer() {
 								setAddressText(e.target.value);
 								setSelectedAddressId("");
 							}}
+							onBlur={() => {
+								void geocodeTypedAddress(addressText, { strict: false });
+							}}
 							placeholder={t("create.addressPlaceholder")}
 							required
 							autoComplete="street-address"
@@ -518,15 +605,24 @@ export function CreateOffer() {
 								pickPosition={pick}
 								showControls
 								center={pick ?? undefined}
+								flyTo={flyTo}
 								onPick={(lat, lng) => {
 									setPick([lat, lng]);
 									setSelectedAddressId("");
+									setGeoStatus("ok");
 								}}
 								onLocationResolved={({ lat, lng, label }) => {
 									setPick([lat, lng]);
 									setSelectedAddressId("");
-									if (label && label !== myLocationLabel) {
+									setGeoStatus("ok");
+									// Map search / locate only fills an empty address; pin is for fine-tune.
+									if (
+										!addressText.trim() &&
+										label &&
+										label !== myLocationLabel
+									) {
 										setAddressText(label);
+										lastGeocodedQuery.current = label;
 										if (!addressHint || !isPublicArea(addressHint)) {
 											const suggested = suggestPublicArea(label);
 											if (suggested) setAddressHint(suggested);
@@ -536,12 +632,24 @@ export function CreateOffer() {
 								className="map map-sm"
 							/>
 						</div>
+						{geoStatus === "loading" && (
+							<p className="muted small map-pin-status" role="status">
+								{t("create.geocoding")}
+							</p>
+						)}
+						{geoStatus === "empty" && (
+							<p className="muted small map-pin-status">{t("create.geocodeEmpty")}</p>
+						)}
+						{geoStatus === "error" && (
+							<p className="muted small map-pin-status">{t("create.geocodeError")}</p>
+						)}
 						{pick ? (
 							<p className="muted small map-pin-status">
 								{t("create.pinStatus", {
 									lat: pick[0].toFixed(5),
 									lng: pick[1].toFixed(5),
-								})}
+								})}{" "}
+								{t("create.pinHint")}
 							</p>
 						) : (
 							<p

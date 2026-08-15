@@ -159,6 +159,30 @@ function ClickPicker({
 	return null;
 }
 
+function DraggablePickMarker({
+	position,
+	onPick,
+}: {
+	position: [number, number];
+	onPick?: (lat: number, lng: number) => void;
+}) {
+	const markerRef = useRef<L.Marker>(null);
+	return (
+		<Marker
+			position={position}
+			draggable
+			autoPan
+			ref={markerRef}
+			eventHandlers={{
+				dragend: () => {
+					const ll = markerRef.current?.getLatLng();
+					if (ll) onPick?.(ll.lat, ll.lng);
+				},
+			}}
+		/>
+	);
+}
+
 const OfferMarker = memo(function OfferMarker({ offer }: { offer: PublicOffer }) {
 	const t = useT();
 	const items = formatItemsShort(offer.items);
@@ -673,7 +697,9 @@ export function OfferMap({
 				{onBoundsChange && <BoundsWatcher onBoundsChange={onBoundsChange} />}
 				{pickMode && <ClickPicker enabled onPick={onPick} />}
 				{markers}
-				{pickPosition && <Marker position={pickPosition} />}
+				{pickPosition && (
+					<DraggablePickMarker position={pickPosition} onPick={onPick} />
+				)}
 			</MapContainer>
 		</div>
 	);
